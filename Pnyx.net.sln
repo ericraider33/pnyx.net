@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pnyx.net", "pnyx.net\pnyx.net.csproj", "{0DF1D0E3-7A40-46D4-A9C4-077BBDA8E9E2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pnyx.cmd", "pnyx.cmd\pnyx.cmd.csproj", "{BA831CBF-5942-463A-BC48-9423D7FBDE6F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0DF1D0E3-7A40-46D4-A9C4-077BBDA8E9E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DF1D0E3-7A40-46D4-A9C4-077BBDA8E9E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DF1D0E3-7A40-46D4-A9C4-077BBDA8E9E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DF1D0E3-7A40-46D4-A9C4-077BBDA8E9E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA831CBF-5942-463A-BC48-9423D7FBDE6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA831CBF-5942-463A-BC48-9423D7FBDE6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA831CBF-5942-463A-BC48-9423D7FBDE6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA831CBF-5942-463A-BC48-9423D7FBDE6F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
