@@ -3,7 +3,7 @@ using System.IO;
 
 namespace pnyx.net.processors
 {
-    public class ReaderToLineProcessor : ILineProcessorPlug
+    public class ReaderToLineProcessor : IProcessor
     {
         public TextReader reader;
         public ILineProcessor lineProcessor;
@@ -15,16 +15,6 @@ namespace pnyx.net.processors
             {
                 lineProcessor.process(line);
             }
-        }
-
-        public ILineProcessor getLineProcessor()
-        {
-            return lineProcessor;
-        }
-
-        public void setLineProcess(ILineProcessor processor)
-        {
-            lineProcessor = processor;
         }
     }
 }
