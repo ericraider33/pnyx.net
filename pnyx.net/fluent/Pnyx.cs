@@ -1,28 +1,32 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using pnyx.net.api;
+using pnyx.net.errors;
 using pnyx.net.filters;
 using pnyx.net.processors;
 
 namespace pnyx.net.fluent
 {
-    public class Pnyx
+    public class Pnyx : IDisposable
     {
         private Stream start;
         private Stream end;
         private readonly ArrayList parts;
+        private readonly List<IDisposable> resources;
+        private IProcessor processor;
             
-        private Pnyx()
+        public Pnyx()
         {            
             parts = new ArrayList();
+            resources = new List<IDisposable>();
         }
 
-        public static Pnyx read(String path)
+        public Pnyx read(String path)
         {
-            Pnyx builder = new Pnyx();
-            builder.start = new FileStream(path, FileMode.Open, FileAccess.Read);
-            return builder;
+            start = new FileStream(path, FileMode.Open, FileAccess.Read);
+            return this;
         }
 
         public Pnyx grep(String textToFind, bool caseSensitive = true, bool invert = false)
@@ -31,31 +35,55 @@ namespace pnyx.net.fluent
             return this;
         }
 
-        public IProcessor write(String path)
+        public Pnyx write(String path)
         {
             end = new FileStream(path, FileMode.Open, FileAccess.Write);
-            return compile();
+            compile();
+            return this;
         }
 
-        private IProcessor compile()
+        public Pnyx process()
         {
-            TextReader reader = new StreamReader(start);
-            TextWriter writer = new StreamWriter(end);
+            if (processor == null)
+                throw new IllegalStateException("Pnyx must be compiled first by calling a 'write' method");
+                
+            processor.process();
+            return this;
+        }
+
+        private void compile()
+        {
+            if (processor != null)
+                throw new IllegalStateException("Pnyx has already been compiled");
             
-            LineProcessorToWriter lpEnd = new LineProcessorToWriter { writer = writer };
+            LineProcessorToWriter lpEnd = new LineProcessorToWriter(end);
             ILineProcessor last = lpEnd; 
             for (int i = parts.Count-1; i >= 0; i--)
             {
                 var part = parts[i];
                 
                 ILineFilter current = part as ILineFilter;                
-                LineFilterProcessor processor = new LineFilterProcessor { filter = current, processor = last };
+                LineFilterProcessor currentProcessor = new LineFilterProcessor { filter = current, processor = last };
 
-                last = processor;
+                last = currentProcessor;
             }
 
-            ReaderToLineProcessor result = new ReaderToLineProcessor { reader = reader, lineProcessor = last };
-            return result;
+            processor = new ReaderToLineProcessor(start, last);
+        }
+
+        public void Dispose()
+        {
+            foreach (IDisposable resource in resources)
+                resource.Dispose();                                    
+            resources.Clear();
+            
+            if (start != null)
+                start.Dispose();
+            start = null;
+            
+            if (end != null)
+                end.Dispose();
+            end = null;
         }
     }
 }

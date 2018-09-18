@@ -6,7 +6,4 @@
   <ItemGroup>
     <ProjectReference Include="..\pnyx.net\pnyx.net.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="utils" />
-  </ItemGroup>
 </Project>
