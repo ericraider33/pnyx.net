@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using pnyx.net.api;
 using pnyx.net.errors;
-using pnyx.net.filters;
-using pnyx.net.filters.sed;
+using pnyx.net.transforms;
+using pnyx.net.transforms.sed;
 using pnyx.net.processors;
 
 namespace pnyx.net.fluent
@@ -84,9 +84,9 @@ namespace pnyx.net.fluent
                 ILineProcessor currentProcessor;
                                 
                 if (part is ILineFilter)                    
-                    currentProcessor = new LineFilterProcessor { filter = (ILineFilter)part, processor = last };
+                    currentProcessor = new LineFilterProcessor { transform = (ILineFilter)part, processor = last };
                 else if (part is ILineBuffering)
-                    currentProcessor = new LineBufferingProcessor { filter = (ILineBuffering) part, processor = last};
+                    currentProcessor = new LineBufferingProcessor { transform = (ILineBuffering) part, processor = last};
                 else
                     throw new NotImplementedException("Work in progress");
 

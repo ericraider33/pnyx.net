@@ -13,7 +13,7 @@ namespace pnyx.net.errors
         {
         }
 
-        public IllegalStateException(string message, object[] replacements) : base(message, replacements)
+        public IllegalStateException(string message, params object[] replacements) : base(message, replacements)
         {
         }
 

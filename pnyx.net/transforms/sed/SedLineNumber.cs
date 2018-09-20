@@ -1,7 +1,7 @@
 using System;
 using pnyx.net.api;
 
-namespace pnyx.net.filters.sed
+namespace pnyx.net.transforms.sed
 {
     // https://linux.die.net/man/1/sed
     // http://www.grymoire.com/Unix/Sed.html#uh-0    

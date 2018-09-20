@@ -5,17 +5,17 @@ namespace pnyx.net.processors
 {
     public class LineBufferingProcessor : ILineProcessor
     {
-        public ILineBuffering filter;
+        public ILineBuffering transform;
         public ILineProcessor processor;
 
         public void process(string line)
         {
-            forward(filter.bufferingLine(line));
+            forward(transform.bufferingLine(line));
         }
 
         public void endOfFile()
         {
-            forward(filter.endOfFile());
+            forward(transform.endOfFile());
             processor.endOfFile();
         }
 
