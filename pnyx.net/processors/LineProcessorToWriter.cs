@@ -28,12 +28,16 @@ namespace pnyx.net.processors
 
         public void endOfFile()
         {
+            writer.Flush();
         }
 
         public void Dispose()
         {
             if (writer != null)
+            {
+                writer.Flush();
                 writer.Dispose();
+            }
 
             writer = null;
         }

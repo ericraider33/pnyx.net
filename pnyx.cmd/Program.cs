@@ -1,8 +1,5 @@
 ﻿using System;
-using System.IO;
-using pnyx.net.filters;
 using pnyx.net.fluent;
-using pnyx.net.processors;
 
 namespace pnyx.cmd
 {
@@ -12,9 +9,10 @@ namespace pnyx.cmd
         {            
             using (Pnyx p = new Pnyx())
             {                
-                p.read("c:\\dev\\ee.txt");
+                p.read("c:/dev/ee.txt");
                 p.grep("s");
-                p.write("c:\\dev\\ee1.txt");
+                p.sedAppend("nextLine");
+                p.write("c:/dev/ee1.txt");
                 p.process();
             }
            

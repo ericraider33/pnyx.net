@@ -31,6 +31,7 @@ namespace pnyx.net.processors
             {
                 lineProcessor.process(line);
             }
+            lineProcessor.endOfFile();
         }
 
         public void Dispose()

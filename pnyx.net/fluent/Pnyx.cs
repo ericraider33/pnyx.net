@@ -5,6 +5,7 @@ using System.IO;
 using pnyx.net.api;
 using pnyx.net.errors;
 using pnyx.net.filters;
+using pnyx.net.filters.sed;
 using pnyx.net.processors;
 
 namespace pnyx.net.fluent
@@ -35,6 +36,24 @@ namespace pnyx.net.fluent
             return this;
         }
 
+        public Pnyx sedLineNumber()
+        {
+            parts.Add(new SedLineNumber());
+            return this;
+        }
+
+        public Pnyx sedAppend(String text)
+        {
+            parts.Add(new SedAppend { text = text });
+            return this;
+        }
+
+        public Pnyx sedInsert(String text)
+        {
+            parts.Add(new SedInsert { text = text });
+            return this;
+        }               
+
         public Pnyx write(String path)
         {
             end = new FileStream(path, FileMode.Open, FileAccess.Write);
@@ -60,10 +79,16 @@ namespace pnyx.net.fluent
             ILineProcessor last = lpEnd; 
             for (int i = parts.Count-1; i >= 0; i--)
             {
-                var part = parts[i];
-                
-                ILineFilter current = part as ILineFilter;                
-                LineFilterProcessor currentProcessor = new LineFilterProcessor { filter = current, processor = last };
+                Object part = parts[i];
+
+                ILineProcessor currentProcessor;
+                                
+                if (part is ILineFilter)                    
+                    currentProcessor = new LineFilterProcessor { filter = (ILineFilter)part, processor = last };
+                else if (part is ILineBuffering)
+                    currentProcessor = new LineBufferingProcessor { filter = (ILineBuffering) part, processor = last};
+                else
+                    throw new NotImplementedException("Work in progress");
 
                 last = currentProcessor;
             }
@@ -80,7 +105,7 @@ namespace pnyx.net.fluent
             if (start != null)
                 start.Dispose();
             start = null;
-            
+
             if (end != null)
                 end.Dispose();
             end = null;
