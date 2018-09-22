@@ -183,11 +183,11 @@ namespace pnyx.net.transforms.sed
                         
                     
                     // Performs replacement
-                    builder.Replace(match.Groups[0].Value, actualText, match.Groups[0].Index + replacementOffset, match.Groups[0].Length);
-                    replacementOffset += actualText.Length - match.Groups[0].Length;            // adjusts for new length of text
+                    builder.Replace(match.Value, actualText, match.Index + replacementOffset, match.Length);
+                    replacementOffset += actualText.Length - match.Length;            // adjusts for new length of text
                 }
                 
-                int startAt = match.Groups[0].Index + match.Groups[0].Length;
+                int startAt = match.Index + match.Length;
                 match = regex.Match(line, startAt);
                 matchIndex++;
             }
