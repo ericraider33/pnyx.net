@@ -20,8 +20,7 @@ namespace pnyx.net.transforms.sed
 
         private Regex regex;
         private StringBuilder builder = new StringBuilder();
-        private String replacementFormat;
-        private int replacementCount;
+        private bool hasReplacementFormat = false;
         
         public SedReplace(string pattern, string replacement, string flags)
         {
@@ -85,54 +84,26 @@ namespace pnyx.net.transforms.sed
 
         private void compileReplacementFormat()
         {            
-            StringBuilder formatBuilder = new StringBuilder();
             int state = 0;
-            bool needsFormat = false;
+            int replacementCount = 0;
             foreach (char c in replacement)
             {
                 if (state == 0)
                 {
-                    switch (c)
-                    {
-                        case '\\': state = 1; break;
-                        case '{': formatBuilder.Append("{{"); break;
-                        case '}': formatBuilder.Append("}}"); break;
-                        default: formatBuilder.Append(c); break;
-                    }
+                    if (c == '\\')
+                        state = 1;
                 }
                 else
                 {
-                    switch (c)
-                    {
-                        case '\\': formatBuilder.Append('\\'); break;
-                        case 'n': formatBuilder.Append('\n'); break;
-                        case 'r': formatBuilder.Append('\r'); break;
-                        case 't': formatBuilder.Append('\t'); break;
-                        case '0':
-                        case '1':
-                        case '2':
-                        case '3':
-                        case '4':
-                        case '5':
-                        case '6':
-                        case '7':
-                        case '8':
-                        case '9':
-                            formatBuilder.Append('{').Append(c).Append('}');
-                            int groupNumber = c - '0';
-                            replacementCount = Math.Max(replacementCount, groupNumber);
-                            break;
+                    if (c >= '0' && c <= '9')
+                    {                        
+                        int groupNumber = c - '0';
+                        replacementCount = Math.Max(replacementCount, groupNumber);
                     }
-                    needsFormat = true;
+                    hasReplacementFormat = true;
                     state = 0;
                 }
             }
-
-            if (state == 1)
-                formatBuilder.Append('\\');
-
-            if (needsFormat)
-                replacementFormat = formatBuilder.ToString();
             
             if (replacementCount+1 > regex.GetGroupNumbers().Length)                // adds 1 for '0' index
                 throw new InvalidArgumentException("Invalid reference \\{0} on replace RHS", replacementCount);
@@ -167,21 +138,9 @@ namespace pnyx.net.transforms.sed
                 if (shouldReplace)
                 {
                     String actualText = replacement;
-                    if (replacementFormat != null)
-                    {
-                        object[] formatArgs = new object[replacementCount+1];
-                        for (int i = 0; i < formatArgs.Length; i++)
-                        {
-                            if (i < match.Groups.Count)
-                                formatArgs[i] = match.Groups[i].Value;
-                            else
-                                formatArgs[i] = "";
-                        }
-
-                        actualText = String.Format(replacementFormat, formatArgs);
-                    }
-                        
-                    
+                    if (hasReplacementFormat)
+                        actualText = generateReplacementText(match.Groups);
+                                            
                     // Performs replacement
                     builder.Replace(match.Value, actualText, match.Index + replacementOffset, match.Length);
                     replacementOffset += actualText.Length - match.Length;            // adjusts for new length of text
@@ -205,5 +164,55 @@ namespace pnyx.net.transforms.sed
             
             return false;
         }
+        
+        private String generateReplacementText(GroupCollection groups)
+        {            
+            StringBuilder formatBuilder = new StringBuilder();
+            int state = 0;
+            foreach (char c in replacement)
+            {
+                if (state == 0)
+                {
+                    switch (c)
+                    {
+                        case '\\': state = 1; break;
+                        default: formatBuilder.Append(c); break;
+                    }
+                }
+                else
+                {
+                    switch (c)
+                    {
+                        case '\\': formatBuilder.Append('\\'); break;
+                        case 'n': formatBuilder.Append('\n'); break;
+                        case 'r': formatBuilder.Append('\r'); break;
+                        case 't': formatBuilder.Append('\t'); break;
+                        case '0':
+                        case '1':
+                        case '2':
+                        case '3':
+                        case '4':
+                        case '5':
+                        case '6':
+                        case '7':
+                        case '8':
+                        case '9':
+                            int groupNumber = c - '0';
+                            
+                            if (groupNumber < groups.Count)
+                                formatBuilder.Append(groups[groupNumber]);
+                                                        
+                            break;
+                    }
+                    state = 0;
+                }
+            }
+
+            if (state == 1)
+                formatBuilder.Append('\\');
+
+            return formatBuilder.ToString();
+        }
+        
     }
 }
