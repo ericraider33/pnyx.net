@@ -119,12 +119,12 @@ namespace pnyx.net.transforms.sed
                         case '8':
                         case '9':
                             formatBuilder.Append('{').Append(c).Append('}');
-                            needsFormat = true;
                             int groupNumber = c - '0';
                             replacementCount = Math.Max(replacementCount, groupNumber);
-                            state = 0;
                             break;
                     }
+                    needsFormat = true;
+                    state = 0;
                 }
             }
 
@@ -134,7 +134,7 @@ namespace pnyx.net.transforms.sed
             if (needsFormat)
                 replacementFormat = formatBuilder.ToString();
             
-            if (replacementCount > regex.GetGroupNumbers().Length)
+            if (replacementCount+1 > regex.GetGroupNumbers().Length)                // adds 1 for '0' index
                 throw new InvalidArgumentException("Invalid reference \\{0} on replace RHS", replacementCount);
         }
 
@@ -146,6 +146,7 @@ namespace pnyx.net.transforms.sed
             
             builder.Append(line);
             int matchIndex = 1;
+            int replacementOffset = 0;
             while (match.Success && match.Value.Length > 0)
             {
                 bool shouldReplace = false;
@@ -180,8 +181,10 @@ namespace pnyx.net.transforms.sed
                         actualText = String.Format(replacementFormat, formatArgs);
                     }
                         
+                    
                     // Performs replacement
-                    builder.Replace(match.Groups[0].Value, actualText, match.Groups[0].Index, match.Groups[0].Length);
+                    builder.Replace(match.Groups[0].Value, actualText, match.Groups[0].Index + replacementOffset, match.Groups[0].Length);
+                    replacementOffset += actualText.Length - match.Groups[0].Length;            // adjusts for new length of text
                 }
                 
                 int startAt = match.Groups[0].Index + match.Groups[0].Length;

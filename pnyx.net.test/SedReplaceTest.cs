@@ -50,6 +50,17 @@ namespace pnyx.net.test
         }
 
         [Fact]
+        public void replaceLength()
+        {
+            verify("eoe", "", "g",      "eoe eoe eoe", "  ");            
+            verify("eoe", "X", "g",     "eoe eoe eoe", "X X X");            
+            verify("eoe", "XX", "g",    "eoe eoe eoe", "XX XX XX");            
+            verify("eoe", "XXX", "g",   "eoe eoe eoe", "XXX XXX XXX");            
+            verify("eoe", "XXXX", "g",  "eoe eoe eoe", "XXXX XXXX XXXX");            
+            verify("eoe", "XXXXX", "g", "eoe eoe eoe", "XXXXX XXXXX XXXXX");            
+        }
+
+        [Fact]
         public void ranges()
         {
             verify("eoe", "XXX", "g",         "eoe eoe eoe eoe eoe eoe eoe eoe eoe eoe", "XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX");
@@ -84,6 +95,13 @@ namespace pnyx.net.test
             verify("(first) (second) (third)", "\\2 \\1 \\3", "g", "first second third first second third", "second first third second first third");
 
             constructionException(".*", "\\0\\1", null);
+            
+            verify(".*", "\\\\0", null, "first", "\\0");            
+            verify(".*", "\\\\\\0", null, "first", "\\first");            
+            verify(".*", "\\", null, "first", "\\");            
+            verify(".*", "\\0\\", null, "first", "first\\");
+            verify(".*", "\\n", null, "first", "\n");
+            verify(".*", "\\t", null, "first", "\t");
         }
         
     }
