@@ -20,6 +20,8 @@ namespace pnyx.net.transforms.sed
 
         private Regex regex;
         private StringBuilder builder = new StringBuilder();
+        private String replacementFormat;
+        private int replacementCount;
         
         public SedReplace(string pattern, string replacement, string flags)
         {
@@ -30,12 +32,14 @@ namespace pnyx.net.transforms.sed
             
             RegexOptions options = RegexOptions.None;
             if (ignoreCase)
-                options |= RegexOptions.IgnoreCase;
-            
+                options |= RegexOptions.IgnoreCase;            
             regex = new Regex(pattern, options);
+
+            // Regex needs to be compiled first
+            compileReplacementFormat();
         }
 
-        private static readonly Regex FLAG_PATTERN = new Regex("^([ig]*)([1-9,-]*)$");
+        private static readonly Regex FLAG_PATTERN = new Regex("^([ig]*)([0-9,-]*)$");
         private void compileFlags(String flags)
         {
             if (flags == null)
@@ -45,7 +49,7 @@ namespace pnyx.net.transforms.sed
             }
 
             Match match = FLAG_PATTERN.Match(flags);            
-            if (match == null)
+            if (!match.Success)
                 throw new InvalidArgumentException("Invalid flags: {0}", flags);
 
             String textFlags = match.Groups[1].Value;
@@ -57,7 +61,9 @@ namespace pnyx.net.transforms.sed
             List<IndexRange> ranges = IndexRange.parse(textRanges);
             if (ranges.Count == 1 && ranges[0].isSingleIndex())
             {
-                replaceIndex = ranges[0].low;
+                replaceIndex = ranges[0].low;                
+                if (replaceIndex <= 0)
+                    throw new InvalidArgumentException("Invalid index: {0}. Must be greater than zero", replaceIndex);
             }
             else if (ranges.Count > 0)
             {
@@ -65,7 +71,71 @@ namespace pnyx.net.transforms.sed
                     throw new InvalidArgumentException("Global flag cannot be used with a range of replacement indexes");
                     
                 replaceRanges = ranges;
+
+                foreach (IndexRange toCheck in replaceRanges)
+                {
+                    if (toCheck.high < toCheck.low)
+                        throw new InvalidArgumentException("Invalid range: {0}. End index must be greater than start index", toCheck);
+                        
+                    if (toCheck.low <= 0)
+                        throw new InvalidArgumentException("Invalid index: {0}. Must be greater than zero", toCheck.low);
+                }
             }
+        }
+
+        private void compileReplacementFormat()
+        {            
+            StringBuilder formatBuilder = new StringBuilder();
+            int state = 0;
+            bool needsFormat = false;
+            foreach (char c in replacement)
+            {
+                if (state == 0)
+                {
+                    switch (c)
+                    {
+                        case '\\': state = 1; break;
+                        case '{': formatBuilder.Append("{{"); break;
+                        case '}': formatBuilder.Append("}}"); break;
+                        default: formatBuilder.Append(c); break;
+                    }
+                }
+                else
+                {
+                    switch (c)
+                    {
+                        case '\\': formatBuilder.Append('\\'); break;
+                        case 'n': formatBuilder.Append('\n'); break;
+                        case 'r': formatBuilder.Append('\r'); break;
+                        case 't': formatBuilder.Append('\t'); break;
+                        case '0':
+                        case '1':
+                        case '2':
+                        case '3':
+                        case '4':
+                        case '5':
+                        case '6':
+                        case '7':
+                        case '8':
+                        case '9':
+                            formatBuilder.Append('{').Append(c).Append('}');
+                            needsFormat = true;
+                            int groupNumber = c - '0';
+                            replacementCount = Math.Max(replacementCount, groupNumber);
+                            state = 0;
+                            break;
+                    }
+                }
+            }
+
+            if (state == 1)
+                formatBuilder.Append('\\');
+
+            if (needsFormat)
+                replacementFormat = formatBuilder.ToString();
+            
+            if (replacementCount > regex.GetGroupNumbers().Length)
+                throw new InvalidArgumentException("Invalid reference \\{0} on replace RHS", replacementCount);
         }
 
         public string transformLine(string line)
@@ -76,7 +146,7 @@ namespace pnyx.net.transforms.sed
             
             builder.Append(line);
             int matchIndex = 1;
-            while (match.Success)
+            while (match.Success && match.Value.Length > 0)
             {
                 bool shouldReplace = false;
                 if (global && replaceIndex == null && replaceRanges == null)
@@ -90,12 +160,29 @@ namespace pnyx.net.transforms.sed
                 }
                 else if (replaceRanges != null)
                 {
-                    //TODO
+                    shouldReplace = matchReplaceRanges(matchIndex);
                 }
-                
+
                 if (shouldReplace)
+                {
+                    String actualText = replacement;
+                    if (replacementFormat != null)
+                    {
+                        object[] formatArgs = new object[replacementCount+1];
+                        for (int i = 0; i < formatArgs.Length; i++)
+                        {
+                            if (i < match.Groups.Count)
+                                formatArgs[i] = match.Groups[i].Value;
+                            else
+                                formatArgs[i] = "";
+                        }
+
+                        actualText = String.Format(replacementFormat, formatArgs);
+                    }
+                        
                     // Performs replacement
-                    builder.Replace(match.Groups[0].Value, replacement, match.Groups[0].Index, match.Groups[0].Length);
+                    builder.Replace(match.Groups[0].Value, actualText, match.Groups[0].Index, match.Groups[0].Length);
+                }
                 
                 int startAt = match.Groups[0].Index + match.Groups[0].Length;
                 match = regex.Match(line, startAt);
@@ -105,6 +192,15 @@ namespace pnyx.net.transforms.sed
             String result = builder.ToString();
             builder.Clear();
             return result;
+        }
+
+        private bool matchReplaceRanges(int matchIndex)
+        {
+            foreach (IndexRange toCheck in replaceRanges)
+                if (toCheck.containsInclusive(matchIndex))
+                    return true;
+            
+            return false;
         }
     }
 }

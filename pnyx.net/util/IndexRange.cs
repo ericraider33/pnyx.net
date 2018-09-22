@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using pnyx.net.errors;
 
 namespace pnyx.net.util
 {
@@ -72,13 +73,13 @@ namespace pnyx.net.util
                     int num = int.Parse(innerParts[0]);
                     result.Add(new IndexRange(num, num));
                 }
-                else if (innerParts.Length == 2)
+                else if (innerParts.Length == 2 && innerParts[0].Length > 0 && innerParts[1].Length > 0)
                 {
                     result.Add(new IndexRange(int.Parse(innerParts[0]), int.Parse(innerParts[1])));
                 }
                 else
                 {
-                    throw new ArgumentException("Invalid range: " + text);
+                    throw new InvalidArgumentException("Invalid range: " + text);
                 }
             }
             return result;
