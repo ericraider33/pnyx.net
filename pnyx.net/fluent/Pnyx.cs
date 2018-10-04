@@ -18,6 +18,7 @@ namespace pnyx.net.fluent
         private readonly ArrayList parts;
         private readonly List<IDisposable> resources;
         private IProcessor processor;
+        public StreamInformation streamInformation { get; private set; }        
             
         public Pnyx()
         {            
@@ -57,7 +58,9 @@ namespace pnyx.net.fluent
 
         public Pnyx write(String path)
         {
-            end = new FileStream(path, FileMode.Open, FileAccess.Write);
+            FileHelper.assureDirectoryStructExists(path);
+            
+            end = new FileStream(path, FileMode.Create, FileAccess.Write);
             compile();
             return this;
         }
@@ -76,7 +79,7 @@ namespace pnyx.net.fluent
             if (processor != null)
                 throw new IllegalStateException("Pnyx has already been compiled");
             
-            StreamInformation streamInformation = new StreamInformation();
+            streamInformation = new StreamInformation();
             
             LineProcessorToStream lpEnd = new LineProcessorToStream(streamInformation, end);
             ILineProcessor last = lpEnd; 

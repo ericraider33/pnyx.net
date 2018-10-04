@@ -17,7 +17,7 @@ namespace pnyx.net.processors
         public StreamToLineProcessor(StreamInformation streamInformation, Stream stream, ILineProcessor lineProcessor)
         {
             this.streamInformation = streamInformation;
-            reader = new StreamReader(stream);
+            reader = new StreamReader(stream, Encoding.ASCII, true);
             this.lineProcessor = lineProcessor;
         }
 
