@@ -7,6 +7,7 @@ using pnyx.net.errors;
 using pnyx.net.transforms;
 using pnyx.net.transforms.sed;
 using pnyx.net.processors;
+using pnyx.net.util;
 
 namespace pnyx.net.fluent
 {
@@ -75,7 +76,9 @@ namespace pnyx.net.fluent
             if (processor != null)
                 throw new IllegalStateException("Pnyx has already been compiled");
             
-            LineProcessorToWriter lpEnd = new LineProcessorToWriter(end);
+            StreamInformation streamInformation = new StreamInformation();
+            
+            LineProcessorToStream lpEnd = new LineProcessorToStream(streamInformation, end);
             ILineProcessor last = lpEnd; 
             for (int i = parts.Count-1; i >= 0; i--)
             {
@@ -93,7 +96,7 @@ namespace pnyx.net.fluent
                 last = currentProcessor;
             }
 
-            processor = new ReaderToLineProcessor(start, last);
+            processor = new StreamToLineProcessor(streamInformation, start, last);
         }
 
         public void Dispose()
