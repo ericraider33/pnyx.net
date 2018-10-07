@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using pnyx.net.fluent;
 using pnyx.net.test.util;
+using pnyx.net.util;
 using Xunit;
 
 namespace pnyx.net.test
@@ -26,6 +27,7 @@ namespace pnyx.net.test
         {
             String inPath = Path.Combine(TestHelper.findTestFileLocation(), "encoding", file);
             String outPath = Path.Combine(TestHelper.findTestOutputLocation(), "encoding", file);
+            FileHelper.assureDirectoryStructExists(outPath);
 
             using (Pnyx p = new Pnyx())
             {                

@@ -58,8 +58,6 @@ namespace pnyx.net.fluent
 
         public Pnyx write(String path)
         {
-            FileHelper.assureDirectoryStructExists(path);
-            
             end = new FileStream(path, FileMode.Create, FileAccess.Write);
             compile();
             return this;

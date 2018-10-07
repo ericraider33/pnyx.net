@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace pnyx.net.util
@@ -6,11 +7,17 @@ namespace pnyx.net.util
     public static class FileHelper
     {        
         public static void assureDirectoryStructExists(String absolutePath)
-        {
-            String directoryPath = "" + Path.GetDirectoryName(absolutePath);
-            DirectoryInfo dir = new DirectoryInfo(directoryPath);
-            if (!dir.Exists)
-                dir.Create();
+        {                        
+            List<DirectoryInfo> toBuild = new List<DirectoryInfo>();            
+            DirectoryInfo parent = Directory.GetParent(absolutePath);
+            while (parent != null && !parent.Exists)
+            {
+                toBuild.Insert(0, parent);
+                parent = parent.Parent;
+            }
+
+            foreach (DirectoryInfo di in toBuild)
+                di.Create();
         }
     }
 }

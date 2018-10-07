@@ -49,6 +49,10 @@ namespace pnyx.net.test.util
                 }
 
                 path = Path.Combine(path, "out");
+
+                DirectoryInfo info = new DirectoryInfo(path);
+                if (!info.Exists)
+                    info.Create();
             }
 
             if (!Directory.Exists(path))
