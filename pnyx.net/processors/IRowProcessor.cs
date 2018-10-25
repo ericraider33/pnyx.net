@@ -2,9 +2,9 @@ using System;
 
 namespace pnyx.net.processors
 {
-    public interface ILineProcessor
+    public interface IRowProcessor
     {
-        void processLine(String line);
+        void processRow(String[] row);
         void endOfFile();
     }
 }

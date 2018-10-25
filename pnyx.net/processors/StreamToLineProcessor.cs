@@ -29,7 +29,7 @@ namespace pnyx.net.processors
             while ((line = readLine(lineNumber))!= null)
             {
                 lineNumber++;
-                lineProcessor.process(line);
+                lineProcessor.processLine(line);
             }
 
             lineProcessor.endOfFile();

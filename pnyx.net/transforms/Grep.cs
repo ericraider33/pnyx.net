@@ -10,7 +10,7 @@ namespace pnyx.net.transforms
         public bool caseSensitive;
         public bool invert;               
                 
-        public bool shouldKeep(string line)
+        public bool shouldKeepLine(string line)
         {
             bool match;
             if (caseSensitive)

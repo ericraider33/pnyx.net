@@ -8,7 +8,7 @@ namespace pnyx.net.processors
         public ILineBuffering transform;
         public ILineProcessor processor;
 
-        public void process(string line)
+        public void processLine(string line)
         {
             forward(transform.bufferingLine(line));
         }
@@ -25,7 +25,7 @@ namespace pnyx.net.processors
                 return;
             
             foreach (String line in lines)
-                processor.process(line);
+                processor.processLine(line);
         }
     }
 }

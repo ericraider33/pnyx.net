@@ -7,10 +7,10 @@ namespace pnyx.net.processors
         public ILineFilter transform;
         public ILineProcessor processor;
 
-        public void process(string line)
+        public void processLine(string line)
         {
-            if (transform.shouldKeep(line))
-                processor.process(line);
+            if (transform.shouldKeepLine(line))
+                processor.processLine(line);
         }
 
         public void endOfFile()
