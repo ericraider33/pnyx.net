@@ -9,11 +9,15 @@ namespace pnyx.cmd
         {            
             using (Pnyx p = new Pnyx())
             {                
-                p.read("c:/dev/ee.txt");
-                p.grep("s");
-                p.sedAppend("nextLine");
+//                p.read("c:/dev/ee.txt");
+//                p.grep("s");
+//                p.sedAppend("nextLine");
+//                p.write("c:/dev/ee1.txt");
+//                p.process();
+
+                p.readCsv("c:/dev/ee.txt", strict: false);
                 p.write("c:/dev/ee1.txt");
-                p.process();
+                p.process();                
             }
            
            /* 

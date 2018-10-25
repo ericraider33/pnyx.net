@@ -27,6 +27,13 @@ namespace pnyx.net.processors
             this.rowProcessor = rowProcessor;
         }
 
+        public void setStrict(bool strict)
+        {
+            allowStrayQuotes = !strict;
+            allowTextAfterClosingQuote = !strict;
+            terminateQuoteOnEndOfFile = !strict;            
+        }
+
         public void process()
         {
             endOfFile = false;

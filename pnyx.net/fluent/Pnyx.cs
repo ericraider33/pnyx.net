@@ -14,7 +14,8 @@ namespace pnyx.net.fluent
     public class Pnyx : IDisposable
     {
         private Stream start;
-        private Stream end;
+        private StreamToRowProcessorDelegate rowReaderBuilder;
+        private Stream end;        
         private readonly ArrayList parts;
         private readonly List<IDisposable> resources;
         private IProcessor processor;
@@ -30,6 +31,18 @@ namespace pnyx.net.fluent
         {
             start = new FileStream(path, FileMode.Open, FileAccess.Read);
             return this;
+        }
+
+        public Pnyx readCsv(String path, bool strict = true)
+        {
+            start = new FileStream(path, FileMode.Open, FileAccess.Read);
+            rowReaderBuilder = (information, stream, rowProcessor) =>
+            {
+                CsvStreamToRowProcessor result = new CsvStreamToRowProcessor(information, stream, rowProcessor);
+                result.setStrict(strict);                
+                return result;
+            };
+            return this;            
         }
 
         public Pnyx grep(String textToFind, bool caseSensitive = true, bool invert = false)
@@ -76,7 +89,15 @@ namespace pnyx.net.fluent
         {
             if (processor != null)
                 throw new IllegalStateException("Pnyx has already been compiled");
-            
+
+            if (rowReaderBuilder != null)
+                compileRowParts();
+            else
+                compileLineParts();
+        }
+        
+        private void compileLineParts()
+        {
             streamInformation = new StreamInformation();
             
             LineProcessorToStream lpEnd = new LineProcessorToStream(streamInformation, end);
@@ -100,6 +121,31 @@ namespace pnyx.net.fluent
             processor = new StreamToLineProcessor(streamInformation, start, last);
         }
 
+        private void compileRowParts()
+        {
+            streamInformation = new StreamInformation();
+            
+            RowToCsvStream lpEnd = new RowToCsvStream(streamInformation, end);
+            IRowProcessor last = lpEnd; 
+//            for (int i = parts.Count-1; i >= 0; i--)
+//            {
+//                Object part = parts[i];
+//
+//                ILineProcessor currentProcessor;
+//                                
+//                if (part is ILineFilter)                    
+//                    currentProcessor = new LineFilterProcessor { transform = (ILineFilter)part, processor = last };
+//                else if (part is ILineBuffering)
+//                    currentProcessor = new LineBufferingProcessor { transform = (ILineBuffering) part, processor = last};
+//                else
+//                    throw new NotImplementedException("Work in progress");
+//
+//                last = currentProcessor;
+//            }
+            
+            processor = rowReaderBuilder(streamInformation, start, last);            
+        }
+
         public void Dispose()
         {
             foreach (IDisposable resource in resources)
@@ -113,6 +159,8 @@ namespace pnyx.net.fluent
             if (end != null)
                 end.Dispose();
             end = null;
+
+            rowReaderBuilder = null;
         }
     }
 }
