@@ -7,6 +7,7 @@ using pnyx.net.errors;
 using pnyx.net.transforms;
 using pnyx.net.transforms.sed;
 using pnyx.net.processors;
+using pnyx.net.shims;
 using pnyx.net.util;
 
 namespace pnyx.net.fluent
@@ -110,8 +111,10 @@ namespace pnyx.net.fluent
                                 
                 if (part is ILineFilter)                    
                     currentProcessor = new LineFilterProcessor { transform = (ILineFilter)part, processor = last };
+                else if (part is ILineTransformer)
+                    currentProcessor = new LineTransformerProcessor { transform = (ILineTransformer)part, processor = last };
                 else if (part is ILineBuffering)
-                    currentProcessor = new LineBufferingProcessor { transform = (ILineBuffering) part, processor = last};
+                    currentProcessor = new LineBufferingProcessor { transform = (ILineBuffering)part, processor = last};
                 else
                     throw new NotImplementedException("Work in progress");
 
@@ -124,26 +127,57 @@ namespace pnyx.net.fluent
         private void compileRowParts()
         {
             streamInformation = new StreamInformation();
+         
+            // Builds any shims
+            shimLineParts();
             
             RowToCsvStream lpEnd = new RowToCsvStream(streamInformation, end);
             IRowProcessor last = lpEnd; 
-//            for (int i = parts.Count-1; i >= 0; i--)
-//            {
-//                Object part = parts[i];
-//
-//                ILineProcessor currentProcessor;
-//                                
-//                if (part is ILineFilter)                    
-//                    currentProcessor = new LineFilterProcessor { transform = (ILineFilter)part, processor = last };
-//                else if (part is ILineBuffering)
-//                    currentProcessor = new LineBufferingProcessor { transform = (ILineBuffering) part, processor = last};
-//                else
-//                    throw new NotImplementedException("Work in progress");
-//
-//                last = currentProcessor;
-//            }
+            for (int i = parts.Count-1; i >= 0; i--)
+            {
+                Object part = parts[i];
+
+                IRowProcessor currentProcessor;
+                                
+                if (part is IRowFilter)
+                    currentProcessor = new RowFilterProcessor { transform = (IRowFilter)part, processor = last };
+                else if (part is IRowTransformer)
+                    currentProcessor = new RowTransformerProcessor { transform = (IRowTransformer)part, processor = last };
+                else if (part is ILineBuffering)
+                    currentProcessor = new RowBufferingProcessor { transform = (IRowBuffering)part, processor = last};
+                else
+                    throw new NotImplementedException("Work in progress");
+
+                last = currentProcessor;
+            }
             
             processor = rowReaderBuilder(streamInformation, start, last);            
+        }
+
+        private void shimLineParts()
+        {
+            for (int i = 0; i < parts.Count; i++)
+            {
+                Object part = parts[i];
+
+                if (part is ILineFilter)
+                {
+                    if (!(part is IRowFilter))
+                        parts[i] = new RowFilterShim { lineFilter = (ILineFilter)part };
+                }
+                else if (part is ILineTransformer)
+                {
+                    if (!(part is IRowTransformer))
+                        parts[i] = new RowTransformerShim { lineTransformer = (ILineTransformer)part };
+                }
+                else if (part is ILineBuffering)
+                {
+                    if (!(part is IRowBuffering))
+                        throw new NotImplementedException();
+                        
+//                        parts[i] = new RowBufferingShim(); // { lineBuffering = (ILineBuffering)part };
+                }
+            }
         }
 
         public void Dispose()

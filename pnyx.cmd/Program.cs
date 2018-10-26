@@ -15,8 +15,9 @@ namespace pnyx.cmd
 //                p.write("c:/dev/ee1.txt");
 //                p.process();
 
-                p.readCsv("c:/dev/ee.txt", strict: false);
-                p.write("c:/dev/ee1.txt");
+                p.readCsv("c:/dev/pnyx.net/pnyx.net.test/files/csv/books.csv");
+                p.grep("dickens");
+                p.write("c:/dev/pnyx.net/pnyx.net.test/out/csv/dickens.csv");
                 p.process();                
             }
            

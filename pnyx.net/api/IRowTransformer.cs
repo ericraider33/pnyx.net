@@ -2,7 +2,7 @@ using System;
 
 namespace pnyx.net.api
 {
-    public interface IColumnTransformer
+    public interface IRowTransformer
     {
         String[] transformRow(String[] values);
     }
