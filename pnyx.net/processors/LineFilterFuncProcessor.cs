@@ -1,16 +1,15 @@
-using pnyx.net.api;
+using System;
 
 namespace pnyx.net.processors
 {
-    public class LineTransformerProcessor : ILineProcessor
+    public class LineFilterFuncProcessor : ILineProcessor
     {
-        public ILineTransformer transform;
+        public Func<String, bool> transform;
         public ILineProcessor processor;
 
         public void processLine(string line)
         {
-            line = transform.transformLine(line);
-            if (line != null)
+            if (transform(line))
                 processor.processLine(line);
         }
 

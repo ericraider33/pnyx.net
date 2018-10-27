@@ -10,7 +10,8 @@ namespace pnyx.net.processors
         public void processRow(string[] row)
         {
             row = transform.transformRow(row);
-            processor.processRow(row);
+            if (row != null)
+                processor.processRow(row);
         }
 
         public void endOfFile()

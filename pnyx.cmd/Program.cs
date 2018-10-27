@@ -1,5 +1,6 @@
 ﻿using System;
 using pnyx.net.fluent;
+using pnyx.net.util;
 
 namespace pnyx.cmd
 {
@@ -16,7 +17,8 @@ namespace pnyx.cmd
 //                p.process();
 
                 p.readCsv("c:/dev/pnyx.net/pnyx.net.test/files/csv/books.csv");
-                p.grep("dickens");
+//                p.grep("dickens");
+                p.lineFilter(x => x.containsIgnoreCase("dickens"));
                 p.write("c:/dev/pnyx.net/pnyx.net.test/out/csv/dickens.csv");
                 p.process();                
             }

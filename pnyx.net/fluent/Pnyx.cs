@@ -68,7 +68,19 @@ namespace pnyx.net.fluent
         {
             parts.Add(new SedInsert { text = text });
             return this;
-        }               
+        }
+
+        public Pnyx lineFilter(Func<String, bool> filter)
+        {
+            parts.Add(filter);
+            return this;
+        }
+        
+        public Pnyx lineTransformer(Func<String, String> transform)
+        {
+            parts.Add(transform);
+            return this;
+        }
 
         public Pnyx write(String path)
         {
@@ -115,6 +127,10 @@ namespace pnyx.net.fluent
                     currentProcessor = new LineTransformerProcessor { transform = (ILineTransformer)part, processor = last };
                 else if (part is ILineBuffering)
                     currentProcessor = new LineBufferingProcessor { transform = (ILineBuffering)part, processor = last};
+                else if (part is Func<String,bool>)
+                    currentProcessor = new LineFilterFuncProcessor { transform = (Func<String,bool>)part, processor = last };
+                else if (part is Func<String,String>)
+                    currentProcessor = new LineTransformerFuncProcessor { transform = (Func<String,String>)part, processor = last };                    
                 else
                     throw new NotImplementedException("Work in progress");
 
@@ -177,6 +193,10 @@ namespace pnyx.net.fluent
                         
 //                        parts[i] = new RowBufferingShim(); // { lineBuffering = (ILineBuffering)part };
                 }
+                else if (part is Func<String,bool>)
+                    parts[i] = new RowFilterFuncShim { lineFilter = (Func<String,bool>)part };
+                else if (part is Func<String,String>)
+                    parts[i] = new RowTransformerFuncShim { lineTransformer = (Func<String,String>)part };                
             }
         }
 

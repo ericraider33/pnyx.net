@@ -3,9 +3,9 @@ using pnyx.net.api;
 
 namespace pnyx.net.shims
 {
-    public class RowTransformerShim : IRowTransformer
+    public class RowTransformerFuncShim : IRowTransformer
     {
-        public ILineTransformer lineTransformer;
+        public Func<String,String> lineTransformer;
         
         public string[] transformRow(string[] row)
         {
@@ -13,7 +13,7 @@ namespace pnyx.net.shims
             string[] result = new string[row.Length];
             for (int i = 0; i < row.Length; i++)
             {
-                String value = lineTransformer.transformLine(row[i]);
+                String value = lineTransformer(row[i]);
                 if (value == null)
                 {
                     result[i] = "";
