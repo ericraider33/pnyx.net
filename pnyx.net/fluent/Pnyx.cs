@@ -24,6 +24,7 @@ namespace pnyx.net.fluent
             
         public Pnyx()
         {            
+            streamInformation = new StreamInformation();
             parts = new ArrayList();
             resources = new List<IDisposable>();
         }
@@ -31,6 +32,37 @@ namespace pnyx.net.fluent
         public Pnyx read(String path)
         {
             start = new FileStream(path, FileMode.Open, FileAccess.Read);
+            return this;
+        }
+
+        public Pnyx readStream(Stream input)
+        {
+            start = input;
+            return this;
+        }
+
+        public Pnyx readString(String source)
+        {
+            MemoryStream stream = new MemoryStream();
+            StreamWriter writer = new StreamWriter(stream);
+
+            writer.Write(source);
+            writer.Flush();
+            stream.Position = 0;
+
+            start = stream;
+            
+            return this;
+        }
+
+        public Pnyx rowCsv(bool strict = true)
+        {
+            rowReaderBuilder = (information, stream, rowProcessor) =>
+            {
+                CsvStreamToRowProcessor result = new CsvStreamToRowProcessor(information, stream, rowProcessor);
+                result.setStrict(strict);                
+                return result;
+            };
             return this;
         }
 
@@ -49,6 +81,12 @@ namespace pnyx.net.fluent
         public Pnyx grep(String textToFind, bool caseSensitive = true, bool invert = false)
         {
             parts.Add(new Grep { textToFind = textToFind, caseSensitive = caseSensitive, invert = invert });
+            return this;
+        }
+
+        public Pnyx sed(String pattern, String replacement, String flags = null)
+        {
+            parts.Add(new SedReplace(pattern, replacement, flags));
             return this;
         }
 
@@ -77,6 +115,24 @@ namespace pnyx.net.fluent
             return this;
         }
 
+        public Pnyx writeStream(Stream output)
+        {
+            end = output;
+            compile();
+            return this;
+        }
+
+        public String processToString()
+        {
+            using (MemoryStream stream = new MemoryStream())
+            {
+                writeStream(stream);
+                processor.process();
+
+                return streamInformation.encoding.GetString(stream.ToArray());
+            }
+        }
+
         public Pnyx process()
         {
             if (processor == null)
@@ -98,9 +154,7 @@ namespace pnyx.net.fluent
         }
         
         private void compileLineParts()
-        {
-            streamInformation = new StreamInformation();
-            
+        {            
             LineProcessorToStream lpEnd = new LineProcessorToStream(streamInformation, end);
             ILineProcessor last = lpEnd; 
             for (int i = parts.Count-1; i >= 0; i--)
@@ -125,9 +179,7 @@ namespace pnyx.net.fluent
         }
 
         private void compileRowParts()
-        {
-            streamInformation = new StreamInformation();
-         
+        {         
             // Builds any shims
             shimLineParts();
             

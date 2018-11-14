@@ -23,7 +23,7 @@ namespace pnyx.net.processors
             if (previousLine != null)
             {
                 writer.Write(previousLine);
-                writer.Write(streamInformation.newLine);
+                writer.Write(streamInformation.getNewline());
             }
             else
             {
@@ -39,7 +39,7 @@ namespace pnyx.net.processors
             {              
                 writer.Write(previousLine);
                 if (streamInformation.endsWithNewLine)
-                    writer.Write(streamInformation.newLine);
+                    writer.Write(streamInformation.getNewline());
             }
             else
             {
