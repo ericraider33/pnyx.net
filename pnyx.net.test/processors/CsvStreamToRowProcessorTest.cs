@@ -47,13 +47,7 @@ namespace pnyx.net.test.processors
         [InlineData("\"ab", new String[] { "ab" })]
         public void settings(String source, String[] rowA)
         {
-            verifyRows(source, rowA, null,
-                x =>
-                {
-                    x.allowStrayQuotes = true;
-                    x.allowTextAfterClosingQuote = true;
-                    x.terminateQuoteOnEndOfFile = true;
-                });
+            verifyRows(source, rowA, null, x => { x.setStrict(false); });
         }
         
         private void verifyRows(string source, string[] rowA, string[] rowB, Action<CsvStreamToRowProcessor> callback = null)
@@ -75,7 +69,8 @@ namespace pnyx.net.test.processors
 
             StreamInformation si = new StreamInformation();
             CaptureRowProcessor capture = new CaptureRowProcessor();
-            CsvStreamToRowProcessor csvProcess = new CsvStreamToRowProcessor(si, stream, capture);
+            CsvStreamToRowProcessor csvProcess = new CsvStreamToRowProcessor();
+            csvProcess.setSource(si, stream, capture);
 
             if (callback != null)
                 callback(csvProcess);

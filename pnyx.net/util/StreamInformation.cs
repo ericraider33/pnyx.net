@@ -8,10 +8,12 @@ namespace pnyx.net.util
         public Encoding encoding;
         public String newLine;
         public bool endsWithNewLine;
+        public Encoding defaultEncoding;
         public String defaultNewline;
 
         public StreamInformation()
         {
+            defaultEncoding = Encoding.ASCII;
             defaultNewline = Environment.NewLine;
         }
 

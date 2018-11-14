@@ -149,8 +149,8 @@ The Lord is my shepherd";
             using (Pnyx p = new Pnyx())
             {
                 p.streamInformation.setDefaultNewline(NewLineEnum.Windows);
-                p.rowCsv();
                 p.readString(EARTH);
+                p.rowCsv();
                 p.sedAppend("The Lord is my shepherd");
                 
                 Assert.Throws<NotImplementedException>(() => p.processToString());
