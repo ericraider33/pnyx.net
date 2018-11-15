@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using pnyx.net.api;
 using pnyx.net.errors;
+using pnyx.net.processors;
+using pnyx.net.util;
 
 namespace pnyx.net.transforms
 {
@@ -171,6 +174,11 @@ namespace pnyx.net.transforms
             }
 
             return result.ToString();
-        }        
+        }
+
+        public IRowProcessor buildRowDestination(StreamInformation streamInformation, Stream stream)
+        {
+            return new RowToCsvStream(streamInformation, stream);
+        }
     }
 }

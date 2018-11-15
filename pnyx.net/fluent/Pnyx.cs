@@ -220,18 +220,56 @@ namespace pnyx.net.fluent
             return lineBuffering(new SedInsert { text = text });
         }
 
+        private Pnyx setEnd(Stream output, IRowConverter endRowConverter = null, ILineProcessor lineDestination = null)
+        {
+            if (state == FluentState.New || state == FluentState.End)
+                throw new IllegalStateException("Pnyx is not in Line, Row, or Start state: {0}", state.ToString());
+
+            end = output;
+
+            if ((state == FluentState.Start || state == FluentState.Line) && endRowConverter != null)
+            {
+                //TODO insert a lineToRow conversion and then compile as ROW
+                throw new NotImplementedException("TODO");    
+            }
+
+            if (state == FluentState.Row && lineDestination != null)
+            {
+                //TODO insert a rowToLine conversion and then compile as LINE
+                throw new NotImplementedException("TODO");    
+            }
+            
+            if (state == FluentState.Row)
+            {
+                endRowConverter = endRowConverter ?? rowConverter;
+                IRowProcessor rowDestination = endRowConverter.buildRowDestination(streamInformation, output);
+
+                if (rowDestination == null)
+                {
+                    //TODO insert a rowToLine conversion and drop to line
+                    throw new NotImplementedException("TODO");    
+                    //state = FluentState.Line;
+                }
+                else
+                    compileRowParts(rowDestination);
+            }
+            
+            if (state == FluentState.Line || state == FluentState.Start)
+                compileLineParts(lineDestination);
+            
+            state = FluentState.End;
+            return this;
+        }
+        
+
         public Pnyx write(String path)
         {
-            end = new FileStream(path, FileMode.Create, FileAccess.Write);
-            compile();
-            return this;
+            return setEnd(new FileStream(path, FileMode.Create, FileAccess.Write));
         }
 
         public Pnyx writeStream(Stream output)
         {
-            end = output;
-            compile();
-            return this;
+            return setEnd(output);
         }
 
         public String processToString()
@@ -247,28 +285,16 @@ namespace pnyx.net.fluent
 
         public Pnyx process()
         {
-            if (processor == null)
-                throw new IllegalStateException("Pnyx must be compiled first by calling a 'write' method");
+            if (state != FluentState.End)
+                throw new IllegalStateException("Pnyx must be fully compiled");
                 
             processor.process();
             return this;
         }
-
-        private void compile()
-        {
-            if (processor != null)
-                throw new IllegalStateException("Pnyx has already been compiled");
-
-            if (rowSource != null)
-                compileRowParts();
-            else
-                compileLineParts();
-        }
         
-        private void compileLineParts()
+        private void compileLineParts(ILineProcessor lineDestination)
         {            
-            LineProcessorToStream lpEnd = new LineProcessorToStream(streamInformation, end);
-            ILineProcessor last = lpEnd; 
+            ILineProcessor last = lineDestination ?? new LineProcessorToStream(streamInformation, end); 
             for (int i = parts.Count-1; i >= 0; i--)
             {
                 Object part = parts[i];
@@ -281,10 +307,9 @@ namespace pnyx.net.fluent
             processor = new StreamToLineProcessor(streamInformation, start, last);
         }
 
-        private void compileRowParts()
+        private void compileRowParts(IRowProcessor rowDestination)
         {                     
-            RowToCsvStream lpEnd = new RowToCsvStream(streamInformation, end);
-            IRowProcessor last = lpEnd; 
+            IRowProcessor last = rowDestination; 
             for (int i = parts.Count-1; i >= 0; i--)
             {
                 Object part = parts[i];
