@@ -15,40 +15,85 @@ namespace pnyx.net.fluent
     public class Pnyx : IDisposable
     {
         private Stream start;
-        private StreamToRowProcessorDelegate rowReaderBuilder;
         private Stream end;        
         private readonly ArrayList parts;
         private readonly List<IDisposable> resources;
         private IProcessor processor;
-        public StreamInformation streamInformation { get; private set; }        
+        private IRowSource rowSource;
+        private IRowConverter rowConverter;
+        private FluentState state { get; set; }
+        public StreamInformation streamInformation { get; private set; }
             
         public Pnyx()
         {            
+            streamInformation = new StreamInformation();
             parts = new ArrayList();
             resources = new List<IDisposable>();
         }
 
+        private void setStart(Stream start)
+        {
+            if (state != FluentState.New)
+                throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
+
+            this.start = start;
+            state = FluentState.Start;
+        }
+
         public Pnyx read(String path)
         {
-            start = new FileStream(path, FileMode.Open, FileAccess.Read);
+            setStart(new FileStream(path, FileMode.Open, FileAccess.Read));
             return this;
         }
 
-        public Pnyx readCsv(String path, bool strict = true)
+        public Pnyx readStream(Stream input)
         {
-            start = new FileStream(path, FileMode.Open, FileAccess.Read);
-            rowReaderBuilder = (information, stream, rowProcessor) =>
+            setStart(input);
+            return this;
+        }
+
+        public Pnyx readString(String source)
+        {
+            MemoryStream stream = new MemoryStream();
+            StreamWriter writer = new StreamWriter(stream);
+
+            writer.Write(source);
+            writer.Flush();
+            stream.Position = 0;
+
+            setStart(stream);
+            return this;
+        }
+
+        public Pnyx rowCsv(bool strict = true)
+        {
+            if (state == FluentState.Start)
             {
-                CsvStreamToRowProcessor result = new CsvStreamToRowProcessor(information, stream, rowProcessor);
-                result.setStrict(strict);                
-                return result;
-            };
-            return this;            
+                CsvStreamToRowProcessor csv = new CsvStreamToRowProcessor();
+                csv.setStrict(strict);
+                rowSource = csv;
+                rowConverter = csv.getRowConverter();
+                state = FluentState.Row;
+            }
+            else if (state == FluentState.Line)
+            {
+                throw new NotImplementedException("Code line to CSV converter");
+            }
+            else 
+                throw new IllegalStateException("Pnyx is not in Start or Line state: {0}", state.ToString());
+
+            return this;
         }
 
         public Pnyx grep(String textToFind, bool caseSensitive = true, bool invert = false)
         {
             parts.Add(new Grep { textToFind = textToFind, caseSensitive = caseSensitive, invert = invert });
+            return this;
+        }
+
+        public Pnyx sed(String pattern, String replacement, String flags = null)
+        {
+            parts.Add(new SedReplace(pattern, replacement, flags));
             return this;
         }
 
@@ -89,6 +134,24 @@ namespace pnyx.net.fluent
             return this;
         }
 
+        public Pnyx writeStream(Stream output)
+        {
+            end = output;
+            compile();
+            return this;
+        }
+
+        public String processToString()
+        {
+            using (MemoryStream stream = new MemoryStream())
+            {
+                writeStream(stream);
+                processor.process();
+
+                return streamInformation.encoding.GetString(stream.ToArray());
+            }
+        }
+
         public Pnyx process()
         {
             if (processor == null)
@@ -103,16 +166,14 @@ namespace pnyx.net.fluent
             if (processor != null)
                 throw new IllegalStateException("Pnyx has already been compiled");
 
-            if (rowReaderBuilder != null)
+            if (rowSource != null)
                 compileRowParts();
             else
                 compileLineParts();
         }
         
         private void compileLineParts()
-        {
-            streamInformation = new StreamInformation();
-            
+        {            
             LineProcessorToStream lpEnd = new LineProcessorToStream(streamInformation, end);
             ILineProcessor last = lpEnd; 
             for (int i = parts.Count-1; i >= 0; i--)
@@ -141,9 +202,7 @@ namespace pnyx.net.fluent
         }
 
         private void compileRowParts()
-        {
-            streamInformation = new StreamInformation();
-         
+        {         
             // Builds any shims
             shimLineParts();
             
@@ -167,7 +226,8 @@ namespace pnyx.net.fluent
                 last = currentProcessor;
             }
             
-            processor = rowReaderBuilder(streamInformation, start, last);            
+            rowSource.setSource(streamInformation, start, last);
+            processor = rowSource;
         }
 
         private void shimLineParts()
@@ -213,8 +273,6 @@ namespace pnyx.net.fluent
             if (end != null)
                 end.Dispose();
             end = null;
-
-            rowReaderBuilder = null;
         }
     }
 }

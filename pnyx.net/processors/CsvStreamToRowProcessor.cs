@@ -2,36 +2,38 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using pnyx.net.api;
 using pnyx.net.errors;
+using pnyx.net.transforms;
 using pnyx.net.util;
 
 namespace pnyx.net.processors
 {
-    public class CsvStreamToRowProcessor : IProcessor, IDisposable
+    public class CsvStreamToRowProcessor : IRowSource, IDisposable
     {
+        public CsvRowConverter rowConverter { get; private set; }
         public StreamReader reader { get; private set; }
-        public IRowProcessor rowProcessor;
-        public readonly StreamInformation streamInformation;
-        public bool allowStrayQuotes { get; set; }
-        public bool allowTextAfterClosingQuote { get; set; }
-        public bool terminateQuoteOnEndOfFile { get; set; }
+        public IRowProcessor rowProcessor { get; private set; }
+        public StreamInformation streamInformation { get; private set; }
         
         private readonly StringBuilder stringBuilder = new StringBuilder();
         private readonly List<String> row = new List<String>();
         private bool endOfFile;
-        
-        public CsvStreamToRowProcessor(StreamInformation streamInformation, Stream stream, IRowProcessor rowProcessor)
+
+
+        public CsvStreamToRowProcessor()
         {
-            this.streamInformation = streamInformation;
-            reader = new StreamReader(stream, Encoding.ASCII, true);
-            this.rowProcessor = rowProcessor;
+            rowConverter = new CsvRowConverter();
         }
 
+        public IRowConverter getRowConverter()
+        {
+            return rowConverter;
+        }
+        
         public void setStrict(bool strict)
         {
-            allowStrayQuotes = !strict;
-            allowTextAfterClosingQuote = !strict;
-            terminateQuoteOnEndOfFile = !strict;            
+            rowConverter.setStrict(strict);
         }
 
         public void process()
@@ -97,7 +99,7 @@ namespace pnyx.net.processors
                             case '"':
                                 if (state == CsvState.Data)
                                 {
-                                    if (allowStrayQuotes)
+                                    if (rowConverter.allowStrayQuotes)
                                         stringBuilder.Append('"');
                                     else 
                                         throw new IllegalStateException(String.Format("Line {0} contains a quote that isn't wrapped with quotes", rowNumber+1)); 
@@ -140,7 +142,7 @@ namespace pnyx.net.processors
                                     break;
                                 
                                 default:
-                                    if (allowTextAfterClosingQuote)
+                                    if (rowConverter.allowTextAfterClosingQuote)
                                         state = CsvState.Data;
                                     else
                                         throw new IllegalStateException(String.Format("Line {0} contains an unexpected character {1} after quote", rowNumber+1, (char)next));
@@ -167,7 +169,7 @@ namespace pnyx.net.processors
                     return null;
                 
                 case CsvState.Quoted:
-                    if (!terminateQuoteOnEndOfFile)
+                    if (!rowConverter.terminateQuoteOnEndOfFile)
                         throw new IllegalStateException("File ends with open quotes");
                     break;
             }
@@ -191,6 +193,13 @@ namespace pnyx.net.processors
                 reader.Dispose();
             
             reader = null;
+        }
+
+        public void setSource(StreamInformation streamInformation, Stream stream, IRowProcessor rowProcessor)
+        {
+            this.streamInformation = streamInformation;
+            reader = new StreamReader(stream, streamInformation.defaultEncoding, true);
+            this.rowProcessor = rowProcessor;
         }
     }
 }
