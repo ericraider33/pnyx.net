@@ -3,7 +3,7 @@ using pnyx.net.api;
 
 namespace pnyx.net.processors
 {
-    public class RowBufferingProcessor : IRowProcessor
+    public class RowBufferingProcessor : IRowPart, IRowProcessor
     {
         public IRowBuffering transform;
         public IRowProcessor processor;
@@ -27,5 +27,10 @@ namespace pnyx.net.processors
             foreach (String[] row in rows)
                 processor.processRow(row);
         }
+
+        public void setNext(IRowProcessor next)
+        {
+            processor = next;
+        }        
     }
 }

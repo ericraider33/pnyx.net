@@ -3,7 +3,7 @@ using pnyx.net.api;
 
 namespace pnyx.net.processors
 {
-    public class LineBufferingProcessor : ILineProcessor
+    public class LineBufferingProcessor : ILinePart, ILineProcessor
     {
         public ILineBuffering transform;
         public ILineProcessor processor;
@@ -27,5 +27,10 @@ namespace pnyx.net.processors
             foreach (String line in lines)
                 processor.processLine(line);
         }
+
+        public void setNext(ILineProcessor next)
+        {
+            processor = next;
+        }        
     }
 }

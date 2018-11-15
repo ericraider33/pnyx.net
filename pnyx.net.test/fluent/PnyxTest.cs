@@ -151,9 +151,8 @@ The Lord is my shepherd";
                 p.streamInformation.setDefaultNewline(NewLineEnum.Windows);
                 p.readString(EARTH);
                 p.rowCsv();
-                p.sedAppend("The Lord is my shepherd");
-                
-                Assert.Throws<NotImplementedException>(() => p.processToString());
+                Assert.Throws<NotImplementedException>(() => p.sedAppend("The Lord is my shepherd"));                
+//                Assert.Throws<NotImplementedException>(() => p.processToString());
             }
         }
         

@@ -85,46 +85,139 @@ namespace pnyx.net.fluent
             return this;
         }
 
-        public Pnyx grep(String textToFind, bool caseSensitive = true, bool invert = false)
+        public Pnyx linePart(ILinePart linePart)
         {
-            parts.Add(new Grep { textToFind = textToFind, caseSensitive = caseSensitive, invert = invert });
-            return this;
+            if (state == FluentState.Line || state == FluentState.Start)
+            {
+                parts.Add(linePart);
+                state = FluentState.Line;
+                return this;
+            }
+            else if (state == FluentState.Row)
+            {
+                // look for SHIM
+                
+                // else convert to LINE
+                
+                throw new NotImplementedException("Code ROW to LINE");
+                
+            }
+            else
+                throw new IllegalStateException("Pnyx is not in Line, Row, or Start state: {0}", state.ToString());
         }
 
-        public Pnyx sed(String pattern, String replacement, String flags = null)
+        public Pnyx lineFilter(ILineFilter filter)
         {
-            parts.Add(new SedReplace(pattern, replacement, flags));
-            return this;
+            if (state == FluentState.Row)
+            {
+                if (filter is IRowFilter)
+                    return rowFilter((IRowFilter) filter);
+                else
+                    return rowFilter(new RowFilterShim { lineFilter = filter });                
+            }
+                
+            return linePart(new LineFilterProcessor { transform = filter });
         }
-
-        public Pnyx sedLineNumber()
+        
+        public Pnyx lineTransformer(ILineTransformer transform)
         {
-            parts.Add(new SedLineNumber());
-            return this;
-        }
+            if (state == FluentState.Row)
+            {
+                if (transform is IRowTransformer)
+                    return rowTransformer((IRowTransformer)transform);
+                else
+                    return rowTransformer(new RowTransformerShim { lineTransformer = transform });                
+            }
 
-        public Pnyx sedAppend(String text)
+            return linePart(new LineTransformerProcessor { transform = transform });
+        }             
+        
+        public Pnyx lineBuffering(ILineBuffering transform)
         {
-            parts.Add(new SedAppend { text = text });
-            return this;
-        }
-
-        public Pnyx sedInsert(String text)
-        {
-            parts.Add(new SedInsert { text = text });
-            return this;
-        }
-
+            if (state == FluentState.Row)
+            {
+                if (transform is IRowBuffering)
+                    return rowBuffering((IRowBuffering) transform);
+                else                        
+                    throw new NotImplementedException();                
+            }
+            
+            return linePart(new LineBufferingProcessor { transform = transform });
+        }             
+        
         public Pnyx lineFilter(Func<String, bool> filter)
-        {
-            parts.Add(filter);
-            return this;
+        {            
+            if (state == FluentState.Row)
+                return rowFilter(new RowFilterFuncShim { lineFilter = filter });
+
+            return linePart(new LineFilterFuncProcessor { transform = filter });
         }
         
         public Pnyx lineTransformer(Func<String, String> transform)
         {
-            parts.Add(transform);
-            return this;
+            if (state == FluentState.Row)
+                return rowTransformer(new RowTransformerFuncShim { lineTransformer = transform });                
+
+            return linePart(new LineTransformerFuncProcessor { transform = transform });
+        }           
+        
+        public Pnyx rowPart(IRowPart rowPart)
+        {
+            if (state == FluentState.Line)
+            {
+                if (rowConverter == null)
+                    throw new IllegalStateException("Specify a RowConverter to before adding Row parts");
+                
+                throw new NotImplementedException("Code LINE to ROW");
+            }
+            else if (state == FluentState.Row || state == FluentState.Start)
+            {
+                parts.Add(rowPart);
+                state = FluentState.Row;
+                return this;
+            }
+            else
+                throw new IllegalStateException("Pnyx is not in Line, Row, or Start state: {0}", state.ToString());
+        }
+
+        public Pnyx rowFilter(IRowFilter transform)
+        {
+            return rowPart(new RowFilterProcessor { transform = transform });
+        }
+
+        public Pnyx rowTransformer(IRowTransformer transform)
+        {
+            return rowPart(new RowTransformerProcessor { transform = transform });
+        }
+
+        public Pnyx rowBuffering(IRowBuffering transform)
+        {
+            return rowPart(new RowBufferingProcessor { transform = transform });
+        }
+
+        public Pnyx grep(String textToFind, bool caseSensitive = true, bool invert = false)
+        {
+            return lineFilter(new Grep { textToFind = textToFind, caseSensitive = caseSensitive, invert = invert });
+        }
+
+        public Pnyx sed(String pattern, String replacement, String flags = null)
+        {
+            return lineTransformer(new SedReplace(pattern, replacement, flags));
+        }
+
+        public Pnyx sedLineNumber()
+        {
+            return lineBuffering(new SedLineNumber());
+        }
+
+        public Pnyx sedAppend(String text)
+        {
+            return lineBuffering(new SedAppend { text = text });
+        }
+
+        public Pnyx sedInsert(String text)
+        {
+            return lineBuffering(new SedInsert { text = text });
         }
 
         public Pnyx write(String path)
@@ -180,84 +273,29 @@ namespace pnyx.net.fluent
             {
                 Object part = parts[i];
 
-                ILineProcessor currentProcessor;
-                                
-                if (part is ILineFilter)                    
-                    currentProcessor = new LineFilterProcessor { transform = (ILineFilter)part, processor = last };
-                else if (part is ILineTransformer)
-                    currentProcessor = new LineTransformerProcessor { transform = (ILineTransformer)part, processor = last };
-                else if (part is ILineBuffering)
-                    currentProcessor = new LineBufferingProcessor { transform = (ILineBuffering)part, processor = last};
-                else if (part is Func<String,bool>)
-                    currentProcessor = new LineFilterFuncProcessor { transform = (Func<String,bool>)part, processor = last };
-                else if (part is Func<String,String>)
-                    currentProcessor = new LineTransformerFuncProcessor { transform = (Func<String,String>)part, processor = last };                    
-                else
-                    throw new NotImplementedException("Work in progress");
-
-                last = currentProcessor;
+                ILinePart currentPart = (ILinePart)part;
+                currentPart.setNext(last);                        // links part to next processor
+                last = currentPart;
             }
 
             processor = new StreamToLineProcessor(streamInformation, start, last);
         }
 
         private void compileRowParts()
-        {         
-            // Builds any shims
-            shimLineParts();
-            
+        {                     
             RowToCsvStream lpEnd = new RowToCsvStream(streamInformation, end);
             IRowProcessor last = lpEnd; 
             for (int i = parts.Count-1; i >= 0; i--)
             {
                 Object part = parts[i];
 
-                IRowProcessor currentProcessor;
-                                
-                if (part is IRowFilter)
-                    currentProcessor = new RowFilterProcessor { transform = (IRowFilter)part, processor = last };
-                else if (part is IRowTransformer)
-                    currentProcessor = new RowTransformerProcessor { transform = (IRowTransformer)part, processor = last };
-                else if (part is ILineBuffering)
-                    currentProcessor = new RowBufferingProcessor { transform = (IRowBuffering)part, processor = last};
-                else
-                    throw new NotImplementedException("Work in progress");
-
-                last = currentProcessor;
+                IRowPart currentPart = (IRowPart)part;
+                currentPart.setNext(last);
+                last = currentPart;
             }
             
             rowSource.setSource(streamInformation, start, last);
             processor = rowSource;
-        }
-
-        private void shimLineParts()
-        {
-            for (int i = 0; i < parts.Count; i++)
-            {
-                Object part = parts[i];
-
-                if (part is ILineFilter)
-                {
-                    if (!(part is IRowFilter))
-                        parts[i] = new RowFilterShim { lineFilter = (ILineFilter)part };
-                }
-                else if (part is ILineTransformer)
-                {
-                    if (!(part is IRowTransformer))
-                        parts[i] = new RowTransformerShim { lineTransformer = (ILineTransformer)part };
-                }
-                else if (part is ILineBuffering)
-                {
-                    if (!(part is IRowBuffering))
-                        throw new NotImplementedException();
-                        
-//                        parts[i] = new RowBufferingShim(); // { lineBuffering = (ILineBuffering)part };
-                }
-                else if (part is Func<String,bool>)
-                    parts[i] = new RowFilterFuncShim { lineFilter = (Func<String,bool>)part };
-                else if (part is Func<String,String>)
-                    parts[i] = new RowTransformerFuncShim { lineTransformer = (Func<String,String>)part };                
-            }
         }
 
         public void Dispose()

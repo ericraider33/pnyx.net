@@ -2,7 +2,7 @@ using System;
 
 namespace pnyx.net.processors
 {
-    public class LineTransformerFuncProcessor : ILineProcessor
+    public class LineTransformerFuncProcessor : ILinePart, ILineProcessor
     {
         public Func<String,String> transform;
         public ILineProcessor processor;
@@ -17,6 +17,11 @@ namespace pnyx.net.processors
         public void endOfFile()
         {
             processor.endOfFile();
+        }
+
+        public void setNext(ILineProcessor next)
+        {
+            processor = next;
         }
     }
 }

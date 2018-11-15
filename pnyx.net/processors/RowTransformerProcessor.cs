@@ -2,7 +2,7 @@ using pnyx.net.api;
 
 namespace pnyx.net.processors
 {
-    public class RowTransformerProcessor : IRowProcessor
+    public class RowTransformerProcessor : IRowPart, IRowProcessor
     {
         public IRowTransformer transform;
         public IRowProcessor processor;
@@ -18,5 +18,10 @@ namespace pnyx.net.processors
         {
             processor.endOfFile();
         }
+
+        public void setNext(IRowProcessor next)
+        {
+            processor = next;
+        }        
     }
 }
