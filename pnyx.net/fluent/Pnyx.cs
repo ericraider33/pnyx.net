@@ -65,6 +65,19 @@ namespace pnyx.net.fluent
             return this;
         }
 
+        public Pnyx lineToRow(IRowConverter converter)
+        {
+            if (state == FluentState.Line || state == FluentState.Start)
+            {
+                parts.Add(new LineToRowProcessor { rowConverter = converter });
+                state = FluentState.Row;
+                rowConverter = converter;
+                return this;
+            }
+            else
+                throw new IllegalStateException("Pnyx is not in Line, Row, or Start state: {0}", state.ToString());
+        }
+
         public Pnyx rowCsv(bool strict = true)
         {
             if (state == FluentState.Start)
@@ -77,7 +90,9 @@ namespace pnyx.net.fluent
             }
             else if (state == FluentState.Line)
             {
-                throw new NotImplementedException("Code line to CSV converter");
+                CsvRowConverter rc = new CsvRowConverter();
+                rc.setStrict(strict);
+                lineToRow(rc);
             }
             else 
                 throw new IllegalStateException("Pnyx is not in Start or Line state: {0}", state.ToString());
@@ -220,13 +235,16 @@ namespace pnyx.net.fluent
             return lineBuffering(new SedInsert { text = text });
         }
 
-        private Pnyx setEnd(Stream output, IRowConverter endRowConverter = null, ILineProcessor lineDestination = null)
+        private Pnyx setEnd(Stream output, Object destination = null)
         {
             if (state == FluentState.New || state == FluentState.End)
                 throw new IllegalStateException("Pnyx is not in Line, Row, or Start state: {0}", state.ToString());
 
             end = output;
 
+            IRowConverter endRowConverter = destination as IRowConverter;
+            ILineProcessor lineDestination = destination as ILineProcessor;
+            
             if ((state == FluentState.Start || state == FluentState.Line) && endRowConverter != null)
             {
                 //TODO insert a lineToRow conversion and then compile as ROW
@@ -251,16 +269,60 @@ namespace pnyx.net.fluent
                     //state = FluentState.Line;
                 }
                 else
-                    compileRowParts(rowDestination);
+                    compile(rowDestination);
+            }
+
+            if (state == FluentState.Line || state == FluentState.Start)
+            {
+                lineDestination = lineDestination ?? new LineProcessorToStream(streamInformation, end);
+                compile(lineDestination);
             }
             
-            if (state == FluentState.Line || state == FluentState.Start)
-                compileLineParts(lineDestination);
-            
-            state = FluentState.End;
             return this;
         }
-        
+
+        private void compile(Object destination)
+        {                     
+            Object last = destination; 
+            for (int i = parts.Count-1; i >= 0; i--)
+            {
+                Object part = parts[i];
+
+                if (part is IRowPart)
+                {
+                    IRowPart currentPart = (IRowPart)part;
+                    currentPart.setNext((IRowProcessor)last);
+                }
+                else if (part is ILinePart)
+                {
+                    ILinePart currentPart = (ILinePart)part;
+                    currentPart.setNext((ILineProcessor)last);
+                }
+                else
+                    throw new IllegalStateException("Unknown part {0}", part.GetType().Name);
+
+                last = part;                    
+            }
+
+            if (last is IRowProcessor)
+            {
+                rowSource.setSource(streamInformation, start, (IRowProcessor)last);
+                processor = rowSource;
+            }
+            else if (last is ILineProcessor)
+            {
+                processor = new StreamToLineProcessor(streamInformation, start, (ILineProcessor)last);
+            }
+            else if (last == null)
+            {
+                last = new LineProcessorToStream(streamInformation, end);
+                processor = new StreamToLineProcessor(streamInformation, start, (ILineProcessor)last);
+            }
+            else
+                throw new IllegalStateException("Unknown part {0}", last.GetType().Name);                        
+            
+            state = FluentState.End;
+        }        
 
         public Pnyx write(String path)
         {
@@ -290,37 +352,6 @@ namespace pnyx.net.fluent
                 
             processor.process();
             return this;
-        }
-        
-        private void compileLineParts(ILineProcessor lineDestination)
-        {            
-            ILineProcessor last = lineDestination ?? new LineProcessorToStream(streamInformation, end); 
-            for (int i = parts.Count-1; i >= 0; i--)
-            {
-                Object part = parts[i];
-
-                ILinePart currentPart = (ILinePart)part;
-                currentPart.setNext(last);                        // links part to next processor
-                last = currentPart;
-            }
-
-            processor = new StreamToLineProcessor(streamInformation, start, last);
-        }
-
-        private void compileRowParts(IRowProcessor rowDestination)
-        {                     
-            IRowProcessor last = rowDestination; 
-            for (int i = parts.Count-1; i >= 0; i--)
-            {
-                Object part = parts[i];
-
-                IRowPart currentPart = (IRowPart)part;
-                currentPart.setNext(last);
-                last = currentPart;
-            }
-            
-            rowSource.setSource(streamInformation, start, last);
-            processor = rowSource;
         }
 
         public void Dispose()

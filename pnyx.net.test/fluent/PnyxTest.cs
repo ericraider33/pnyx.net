@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using pnyx.net.errors;
 using pnyx.net.fluent;
 using pnyx.net.util;
 using Xunit;
@@ -109,6 +111,30 @@ The Lord is my shepherd";
             
             Assert.Equal(PLANETS_GODS, actual);
         }        
+
+        [Fact]
+        public void csvInOutFixFormatting()
+        {
+            const String formatIssues = 
+@"Aphrodite,Venus,Goddess of love and beauty
+Ares,Mars,""Hated god ""of war
+Cronus,Saturn,""Titan sky god, supreme ruler of the titans""
+Hermes,Mercury,""Messenger of the gods, escort of souls to Hades""
+Poseidon,Neptune,""God of the sea and earthquakes""
+Uranus,Uranus,""Father of the Titans""
+Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
+";
+           
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(formatIssues);
+                p.rowCsv(strict: false);
+                actual = p.processToString();
+            }
+            
+            Assert.Equal(PLANETS_GODS, actual);            // verifies that output is formatted properly, even if input is loose
+        }        
         
         [Fact]
         public void rowFilter()
@@ -155,6 +181,68 @@ The Lord is my shepherd";
 //                Assert.Throws<NotImplementedException>(() => p.processToString());
             }
         }
-        
+
+        [Fact]
+        public void readImproperState()
+        {
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(EARTH);
+                p.sed("Ter.*", "Forma", "g");
+                Assert.Throws<IllegalStateException>(() => p.readString(EARTH));
+            }
+        }
+
+        [Fact]
+        public void cat()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(PLANETS_GODS);                
+                Assert.Throws<IllegalStateException>(() => p.readString(PLANETS_GODS));
+//                actual = p.processToString();
+            }
+            
+//            Assert.Equal(PLANETS_GODS + PLANETS_GODS, actual);
+        }
+
+        [Fact]
+        public void lineToRow()
+        {
+            String actual;
+            const String tabSource = "1) Be fruitful and multiply\t2) and fill the earth and subdue it";
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(tabSource);
+                p.sed("[\t]", ",", "g");
+                p.rowCsv(strict: false);
+                actual = p.processToString();
+            }
+            
+            const String expected = @"""1) Be fruitful and multiply"",""2) and fill the earth and subdue it""";
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void lineToRowImproperState()
+        {
+            Assert.Throws<IllegalStateException>(() => new Pnyx().rowCsv());
+
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(PLANETS_GODS);
+                p.rowCsv();
+                Assert.Throws<IllegalStateException>(() => p.rowCsv());
+            }            
+
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(PLANETS_GODS);
+                p.rowCsv();
+                p.writeStream(new MemoryStream());
+                Assert.Throws<IllegalStateException>(() => p.rowCsv());
+            }            
+        }
     }
 }
