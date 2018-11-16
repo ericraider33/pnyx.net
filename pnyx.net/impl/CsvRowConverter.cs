@@ -7,7 +7,7 @@ using pnyx.net.errors;
 using pnyx.net.processors;
 using pnyx.net.util;
 
-namespace pnyx.net.transforms
+namespace pnyx.net.impl
 {
     public class CsvRowConverter : IRowConverter
     {

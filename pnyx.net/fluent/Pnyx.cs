@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using pnyx.net.api;
 using pnyx.net.errors;
-using pnyx.net.transforms;
-using pnyx.net.transforms.sed;
+using pnyx.net.impl;
+using pnyx.net.impl.sed;
 using pnyx.net.processors;
 using pnyx.net.shims;
 using pnyx.net.util;
@@ -72,12 +72,47 @@ namespace pnyx.net.fluent
                 parts.Add(new LineToRowProcessor { rowConverter = converter });
                 state = FluentState.Row;
                 rowConverter = converter;
-                return this;
             }
             else
                 throw new IllegalStateException("Pnyx is not in Line, Row, or Start state: {0}", state.ToString());
+
+            return this;
         }
 
+        public Pnyx rowToLine(IRowConverter converter = null)
+        {
+            if (state == FluentState.Row)
+            {
+                converter = converter ?? rowConverter;
+                parts.Add(new RowToLineProcessor { rowConverter = converter });
+                state = FluentState.Line;
+                rowConverter = null;
+            }
+            else
+                throw new IllegalStateException("Pnyx is not in Row state: {0}", state.ToString());
+
+            return this;
+        }
+
+        public Pnyx print(String format)
+        {            
+            if (state == FluentState.Row)
+            {
+                parts.Add(new Print { format = format, rowConverter = rowConverter });
+                state = FluentState.Line;
+                rowConverter = null;
+            }
+            else if (state == FluentState.Start || state == FluentState.Line)
+            {
+                parts.Add(new Print { format = format });
+                state = FluentState.Line;                
+            }
+            else
+                throw new IllegalStateException("Pnyx is not in Row,Line or Start state: {0}", state.ToString());
+
+            return this;                
+        }
+        
         public Pnyx rowCsv(bool strict = true)
         {
             if (state == FluentState.Start)
@@ -304,12 +339,22 @@ namespace pnyx.net.fluent
                 last = part;                    
             }
 
-            if (last is IRowProcessor)
+            bool line = false, row = false;
+            if (last is ILinePart)                // gives precedence to "Part" interface for converters which implement both Line and Row
+                line = true;
+            else if (last is IRowPart)            // gives precedence to "Part" interface for converters which implement both Line and Row
+                row = true;
+            else if (last is ILineProcessor)
+                line = true;
+            else if (last is IRowProcessor)
+                row = true;
+                        
+            if (row)
             {
                 rowSource.setSource(streamInformation, start, (IRowProcessor)last);
                 processor = rowSource;
             }
-            else if (last is ILineProcessor)
+            else if (line)
             {
                 processor = new StreamToLineProcessor(streamInformation, start, (ILineProcessor)last);
             }

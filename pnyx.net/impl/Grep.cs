@@ -2,7 +2,7 @@
 using pnyx.net.api;
 using pnyx.net.util;
 
-namespace pnyx.net.transforms
+namespace pnyx.net.impl
 {
     public class Grep : ILineFilter, IRowFilter
     {

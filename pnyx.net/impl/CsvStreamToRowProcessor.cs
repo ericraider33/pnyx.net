@@ -4,10 +4,10 @@ using System.IO;
 using System.Text;
 using pnyx.net.api;
 using pnyx.net.errors;
-using pnyx.net.transforms;
+using pnyx.net.processors;
 using pnyx.net.util;
 
-namespace pnyx.net.processors
+namespace pnyx.net.impl
 {
     public class CsvStreamToRowProcessor : IRowSource, IDisposable
     {

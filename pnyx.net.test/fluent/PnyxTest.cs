@@ -244,5 +244,53 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
                 Assert.Throws<IllegalStateException>(() => p.rowCsv());
             }            
         }
+
+        [Fact]
+        public void rowToLine()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(EARTH);
+                p.rowCsv();
+                p.rowToLine();
+                p.sed(",", "\t", "g");
+                actual = p.processToString();
+            }
+            
+            const String expected = "Gaia\tTerra\t\"Mother goddess of the earth\"";
+            Assert.Equal(expected, actual);            
+        }
+
+        [Fact]
+        public void printRow()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(EARTH);
+                p.rowCsv();
+                p.print("$3,$2,$1");
+                actual = p.processToString();
+            }
+            
+            const String expected = "Mother goddess of the earth,Gaia,Terra";
+            Assert.Equal(expected, actual);                        
+        }
+
+        [Fact]
+        public void printLine()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString("Logic");
+                p.print("$0 $0");
+                actual = p.processToString();
+            }
+            
+            const String expected = "Logic Logic";
+            Assert.Equal(expected, actual);                        
+        }
     }
 }

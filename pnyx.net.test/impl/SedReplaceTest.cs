@@ -1,9 +1,9 @@
 using System;
 using pnyx.net.errors;
-using pnyx.net.transforms.sed;
+using pnyx.net.impl.sed;
 using Xunit;
 
-namespace pnyx.net.test
+namespace pnyx.net.test.impl
 {
     public class SedReplaceTest
     {

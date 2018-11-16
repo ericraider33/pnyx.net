@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using pnyx.net.errors;
-using pnyx.net.processors;
+using pnyx.net.impl;
+using pnyx.net.test.processors;
 using pnyx.net.test.util;
 using pnyx.net.util;
 using Xunit;
 
-namespace pnyx.net.test.processors
+namespace pnyx.net.test.impl
 {
     public class CsvStreamToRowProcessorTest
     {

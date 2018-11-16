@@ -7,7 +7,7 @@ using pnyx.net.api;
 using pnyx.net.errors;
 using pnyx.net.util;
 
-namespace pnyx.net.transforms.sed
+namespace pnyx.net.impl.sed
 {
     public class SedReplace : ILineTransformer
     {
