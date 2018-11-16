@@ -19,12 +19,14 @@ namespace pnyx.net.impl
         private readonly StringBuilder stringBuilder = new StringBuilder();
         private readonly List<String> row = new List<String>();
         
-        public void setStrict(bool strict)
+        public CsvRowConverter setStrict(bool strict)
         {
             allowStrayQuotes = !strict;
             allowTextAfterClosingQuote = !strict;
             terminateQuoteOnEndOfFile = !strict;
             allowUnquotedNewlines = !strict;
+
+            return this;
         }
 
         private enum  CsvState { StartOfLine, Quoted, Data, Seeking }

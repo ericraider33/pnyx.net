@@ -2,7 +2,6 @@
 File parsing and transforming automation scripting platform, Native .net
 
 ## Roadmap
-1. Awk column selection, filtering
 1. Tab-Seperated read, write
 1. Buffering for lines 'before' and 'after' filter match
 1. Sort
@@ -21,10 +20,11 @@ File parsing and transforming automation scripting platform, Native .net
 1. Port to Python, and Java
 
 ## Done
-1. Basic API
-1. Fluent API
-1. Plain text Grep
-1. Sed
-1. CSV read, write
-1. Preserve file encoding
-1. Preserve newlines of original file
+1. 2018-09-08: Basic API
+1. 2018-09-15: Plain text Grep
+1. 2018-09-22: Sed
+1. 2018-10-07: Preserve file encoding
+1. 2018-10-07: Preserve newlines of original file
+1. 2018-10-25: CSV read, write
+1. 2018-11-11: Fluent API
+1. 2018-11-16: Awk column selection, filtering

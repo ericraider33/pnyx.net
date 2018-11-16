@@ -33,6 +33,16 @@ Poseidon,Neptune,""God of the sea and earthquakes""
 Uranus,Uranus,""Father of the Titans""
 Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
 ";
+        
+        const String PLANETS_GODS_FORMAT_ISSUES = 
+            @"Aphrodite,Venus,Goddess of love and beauty
+Ares,Mars,""Hated god ""of war
+Cronus,Saturn,""Titan sky god, supreme ruler of the titans""
+Hermes,Mercury,""Messenger of the gods, escort of souls to Hades""
+Poseidon,Neptune,""God of the sea and earthquakes""
+Uranus,Uranus,""Father of the Titans""
+Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
+";        
 
         private const String EARTH = @"Gaia,Terra,""Mother goddess of the earth""";
         
@@ -111,30 +121,32 @@ The Lord is my shepherd";
             
             Assert.Equal(PLANETS_GODS, actual);
         }        
-
         [Fact]
         public void csvInOutFixFormatting()
-        {
-            const String formatIssues = 
-@"Aphrodite,Venus,Goddess of love and beauty
-Ares,Mars,""Hated god ""of war
-Cronus,Saturn,""Titan sky god, supreme ruler of the titans""
-Hermes,Mercury,""Messenger of the gods, escort of souls to Hades""
-Poseidon,Neptune,""God of the sea and earthquakes""
-Uranus,Uranus,""Father of the Titans""
-Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
-";
-           
+        {           
             String actual;
             using (Pnyx p = new Pnyx())
             {
-                p.readString(formatIssues);
+                p.readString(PLANETS_GODS_FORMAT_ISSUES);
                 p.rowCsv(strict: false);
                 actual = p.processToString();
             }
             
             Assert.Equal(PLANETS_GODS, actual);            // verifies that output is formatted properly, even if input is loose
         }        
+
+        [Fact]
+        public void csvInOutVariant()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(PLANETS_GODS_FORMAT_ISSUES);
+                actual = p.processToString((pnyx, stream) => pnyx.writeCsv(stream, strict: false));
+            }
+            
+            Assert.Equal(PLANETS_GODS, actual);
+        }      
         
         [Fact]
         public void rowFilter()
@@ -274,7 +286,7 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
                 actual = p.processToString();
             }
             
-            const String expected = "Mother goddess of the earth,Gaia,Terra";
+            const String expected = "Mother goddess of the earth,Terra,Gaia";
             Assert.Equal(expected, actual);                        
         }
 
@@ -291,6 +303,38 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
             
             const String expected = "Logic Logic";
             Assert.Equal(expected, actual);                        
+        }
+
+        [Fact]
+        public void columns()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(EARTH);
+                p.rowCsv();
+                p.columns(3,2,1);
+                actual = p.processToString();
+            }
+            
+            const String expected = @"""Mother goddess of the earth"",Terra,Gaia";
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void columnToLine()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(EARTH);
+                p.rowCsv();
+                p.columnToLine(2);
+                actual = p.processToString();
+            }
+            
+            const String expected = "Terra";
+            Assert.Equal(expected, actual);
         }
     }
 }

@@ -112,6 +112,41 @@ namespace pnyx.net.fluent
 
             return this;                
         }
+
+        public Pnyx columns(params int[] columnNumbers)
+        {
+            if (columnNumbers.Length == 0)
+                throw new InvalidArgumentException("Must specify at least one ColumnNumber");
+                
+            int[] indexes = new int[columnNumbers.Length];
+            for (int i = 0; i < columnNumbers.Length; i++)
+            {
+                int columnNumber = columnNumbers[i];
+                if (columnNumber <= 0)
+                    throw new InvalidArgumentException("Invalid ColumnNumber {0}, ColumnNumbers start at 1", columnNumber);
+
+                indexes[i] = columnNumber - 1;
+            }
+            
+            return rowTransformer(new Columns { indexes = indexes });
+        }
+        
+        public Pnyx columnToLine(int columnNumber)            // 1-based to be consistent with print and sed
+        {
+            if (state == FluentState.Row)
+            {
+                if (columnNumber <= 0)
+                    throw new InvalidArgumentException("Invalid ColumnNumber {0}, ColumnNumbers start at 1", columnNumber);
+                
+                parts.Add(new ColumnToLine { index = columnNumber-1 });
+                state = FluentState.Line;
+                rowConverter = null;
+            }
+            else
+                throw new IllegalStateException("Pnyx is not in Row state: {0}", state.ToString());
+
+            return this;
+        }
         
         public Pnyx rowCsv(bool strict = true)
         {
@@ -281,10 +316,7 @@ namespace pnyx.net.fluent
             ILineProcessor lineDestination = destination as ILineProcessor;
             
             if ((state == FluentState.Start || state == FluentState.Line) && endRowConverter != null)
-            {
-                //TODO insert a lineToRow conversion and then compile as ROW
-                throw new NotImplementedException("TODO");    
-            }
+                lineToRow(endRowConverter);                
 
             if (state == FluentState.Row && lineDestination != null)
             {
@@ -309,7 +341,7 @@ namespace pnyx.net.fluent
 
             if (state == FluentState.Line || state == FluentState.Start)
             {
-                lineDestination = lineDestination ?? new LineProcessorToStream(streamInformation, end);
+                lineDestination = lineDestination ?? new LineProcessorToStream(streamInformation, end);                
                 compile(lineDestination);
             }
             
@@ -338,29 +370,14 @@ namespace pnyx.net.fluent
 
                 last = part;                    
             }
-
-            bool line = false, row = false;
-            if (last is ILinePart)                // gives precedence to "Part" interface for converters which implement both Line and Row
-                line = true;
-            else if (last is IRowPart)            // gives precedence to "Part" interface for converters which implement both Line and Row
-                row = true;
-            else if (last is ILineProcessor)
-                line = true;
-            else if (last is IRowProcessor)
-                row = true;
                         
-            if (row)
+            if (rowSource != null)
             {
                 rowSource.setSource(streamInformation, start, (IRowProcessor)last);
                 processor = rowSource;
             }
-            else if (line)
+            else if (last is ILineProcessor)
             {
-                processor = new StreamToLineProcessor(streamInformation, start, (ILineProcessor)last);
-            }
-            else if (last == null)
-            {
-                last = new LineProcessorToStream(streamInformation, end);
                 processor = new StreamToLineProcessor(streamInformation, start, (ILineProcessor)last);
             }
             else
@@ -379,11 +396,25 @@ namespace pnyx.net.fluent
             return setEnd(output);
         }
 
-        public String processToString()
+        public Pnyx writeCsv(String path, bool strict = true)
+        {
+            return setEnd(new FileStream(path, FileMode.Create, FileAccess.Write), new CsvRowConverter().setStrict(strict));            
+        }
+
+        public Pnyx writeCsv(Stream stream, bool strict = true)
+        {
+            return setEnd(stream, new CsvRowConverter().setStrict(strict));            
+        }
+
+        public String processToString(Action<Pnyx,Stream> writeAction = null)
         {
             using (MemoryStream stream = new MemoryStream())
             {
-                writeStream(stream);
+                if (writeAction != null)
+                    writeAction(this, stream);
+                else
+                    writeStream(stream);
+                
                 processor.process();
 
                 return streamInformation.encoding.GetString(stream.ToArray());
