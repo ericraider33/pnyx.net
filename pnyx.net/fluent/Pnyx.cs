@@ -148,7 +148,7 @@ namespace pnyx.net.fluent
             return this;
         }
         
-        public Pnyx rowCsv(bool strict = true)
+        public Pnyx parseCsv(bool strict = true)
         {
             if (state == FluentState.Start)
             {
@@ -168,6 +168,26 @@ namespace pnyx.net.fluent
                 throw new IllegalStateException("Pnyx is not in Start or Line state: {0}", state.ToString());
 
             return this;
+        }
+
+        public Pnyx parseDelimiter(String delimiter)
+        {
+            return lineToRow(new DelimiterRowConverter { delimiter = delimiter });
+        }
+
+        public Pnyx parseTab()
+        {
+            return lineToRow(new DelimiterRowConverter { delimiter = "\t" });
+        }
+
+        public Pnyx printDelimiter(String delimiter)
+        {
+            return rowToLine(new DelimiterRowConverter { delimiter = delimiter });
+        }
+
+        public Pnyx printTab()
+        {
+            return rowToLine(new DelimiterRowConverter { delimiter = "\t" });
         }
 
         public Pnyx linePart(ILinePart linePart)
@@ -330,11 +350,7 @@ namespace pnyx.net.fluent
                 IRowProcessor rowDestination = endRowConverter.buildRowDestination(streamInformation, output);
 
                 if (rowDestination == null)
-                {
-                    //TODO insert a rowToLine conversion and drop to line
-                    throw new NotImplementedException("TODO");    
-                    //state = FluentState.Line;
-                }
+                    rowToLine();                    // converts to line, then falls through to (state == line)
                 else
                     compile(rowDestination);
             }

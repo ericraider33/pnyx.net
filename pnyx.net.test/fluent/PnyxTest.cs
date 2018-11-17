@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using pnyx.net.errors;
 using pnyx.net.fluent;
 using pnyx.net.util;
@@ -45,6 +46,14 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
 ";        
 
         private const String EARTH = @"Gaia,Terra,""Mother goddess of the earth""";
+
+        private const String ECONOMIC_FREEDOM =
+@"1	Hong Kong	90.2
+2	Singapore	88.8
+3	New Zealand	84.2
+4	Switzerland	81.7
+5	Australia	80.9
+";
         
         [Fact]
         public void inOut()
@@ -115,12 +124,13 @@ The Lord is my shepherd";
             using (Pnyx p = new Pnyx())
             {
                 p.readString(PLANETS_GODS);
-                p.rowCsv();
+                p.parseCsv();
                 actual = p.processToString();
             }
             
             Assert.Equal(PLANETS_GODS, actual);
         }        
+
         [Fact]
         public void csvInOutFixFormatting()
         {           
@@ -128,7 +138,7 @@ The Lord is my shepherd";
             using (Pnyx p = new Pnyx())
             {
                 p.readString(PLANETS_GODS_FORMAT_ISSUES);
-                p.rowCsv(strict: false);
+                p.parseCsv(strict: false);
                 actual = p.processToString();
             }
             
@@ -155,7 +165,7 @@ The Lord is my shepherd";
             using (Pnyx p = new Pnyx())
             {
                 p.readString(PLANETS_GODS);
-                p.rowCsv();
+                p.parseCsv();
                 p.grep("war");
                 actual = p.processToString();
             }
@@ -172,7 +182,7 @@ The Lord is my shepherd";
             using (Pnyx p = new Pnyx())
             {
                 p.readString(EARTH);
-                p.rowCsv();
+                p.parseCsv();
                 p.sed("Ter.*", "Forma", "g");
                 actual = p.processToString();
             }
@@ -188,7 +198,7 @@ The Lord is my shepherd";
             {
                 p.streamInformation.setDefaultNewline(NewLineEnum.Windows);
                 p.readString(EARTH);
-                p.rowCsv();
+                p.parseCsv();
                 Assert.Throws<NotImplementedException>(() => p.sedAppend("The Lord is my shepherd"));                
 //                Assert.Throws<NotImplementedException>(() => p.processToString());
             }
@@ -228,7 +238,7 @@ The Lord is my shepherd";
             {
                 p.readString(tabSource);
                 p.sed("[\t]", ",", "g");
-                p.rowCsv(strict: false);
+                p.parseCsv(strict: false);
                 actual = p.processToString();
             }
             
@@ -239,21 +249,21 @@ The Lord is my shepherd";
         [Fact]
         public void lineToRowImproperState()
         {
-            Assert.Throws<IllegalStateException>(() => new Pnyx().rowCsv());
+            Assert.Throws<IllegalStateException>(() => new Pnyx().parseCsv());
 
             using (Pnyx p = new Pnyx())
             {
                 p.readString(PLANETS_GODS);
-                p.rowCsv();
-                Assert.Throws<IllegalStateException>(() => p.rowCsv());
+                p.parseCsv();
+                Assert.Throws<IllegalStateException>(() => p.parseCsv());
             }            
 
             using (Pnyx p = new Pnyx())
             {
                 p.readString(PLANETS_GODS);
-                p.rowCsv();
+                p.parseCsv();
                 p.writeStream(new MemoryStream());
-                Assert.Throws<IllegalStateException>(() => p.rowCsv());
+                Assert.Throws<IllegalStateException>(() => p.parseCsv());
             }            
         }
 
@@ -264,7 +274,7 @@ The Lord is my shepherd";
             using (Pnyx p = new Pnyx())
             {
                 p.readString(EARTH);
-                p.rowCsv();
+                p.parseCsv();
                 p.rowToLine();
                 p.sed(",", "\t", "g");
                 actual = p.processToString();
@@ -281,7 +291,7 @@ The Lord is my shepherd";
             using (Pnyx p = new Pnyx())
             {
                 p.readString(EARTH);
-                p.rowCsv();
+                p.parseCsv();
                 p.print("$3,$2,$1");
                 actual = p.processToString();
             }
@@ -312,7 +322,7 @@ The Lord is my shepherd";
             using (Pnyx p = new Pnyx())
             {
                 p.readString(EARTH);
-                p.rowCsv();
+                p.parseCsv();
                 p.columns(3,2,1);
                 actual = p.processToString();
             }
@@ -328,7 +338,7 @@ The Lord is my shepherd";
             using (Pnyx p = new Pnyx())
             {
                 p.readString(EARTH);
-                p.rowCsv();
+                p.parseCsv();
                 p.columnToLine(2);
                 actual = p.processToString();
             }
@@ -336,5 +346,36 @@ The Lord is my shepherd";
             const String expected = "Terra";
             Assert.Equal(expected, actual);
         }
+        
+        
+        [Fact]
+        public void tabInOutImplicit()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(ECONOMIC_FREEDOM);
+                p.parseTab();
+                actual = p.processToString();
+            }
+            
+            Assert.Equal(ECONOMIC_FREEDOM, actual);
+        }        
+
+        [Fact]
+        public void tabInOutExplicit()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(ECONOMIC_FREEDOM);
+                p.parseTab();
+                p.printTab();
+                actual = p.processToString();
+            }
+            
+            Assert.Equal(ECONOMIC_FREEDOM, actual);
+        }      
+        
     }
 }

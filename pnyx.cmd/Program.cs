@@ -16,7 +16,7 @@ namespace pnyx.cmd
 //                p.process();
 
                 p.read("c:/dev/pnyx.net/pnyx.net.test/files/csv/books.csv");
-                p.rowCsv();
+                p.parseCsv();
                 p.grep("dickens");
                 p.write("c:/dev/pnyx.net/pnyx.net.test/out/csv/dickens.csv");
                 p.process();                
