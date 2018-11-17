@@ -15,7 +15,6 @@ namespace pnyx.net.fluent
     public class Pnyx : IDisposable
     {
         private Stream start;
-        private Stream end;        
         private readonly ArrayList parts;
         private readonly List<IDisposable> resources;
         private IProcessor processor;
@@ -327,10 +326,8 @@ namespace pnyx.net.fluent
 
         private Pnyx setEnd(Stream output, Object destination = null)
         {
-            if (state == FluentState.New || state == FluentState.End)
+            if (state != FluentState.Line && state != FluentState.Row && state != FluentState.Start)
                 throw new IllegalStateException("Pnyx is not in Line, Row, or Start state: {0}", state.ToString());
-
-            end = output;
 
             IRowConverter endRowConverter = destination as IRowConverter;
             ILineProcessor lineDestination = destination as ILineProcessor;
@@ -352,22 +349,27 @@ namespace pnyx.net.fluent
                 if (rowDestination == null)
                     rowToLine();                    // converts to line, then falls through to (state == line)
                 else
-                    compile(rowDestination);
+                {
+                    parts.Add(rowDestination);
+                    state = FluentState.End;
+                }
             }
 
             if (state == FluentState.Line || state == FluentState.Start)
             {
-                lineDestination = lineDestination ?? new LineProcessorToStream(streamInformation, end);                
-                compile(lineDestination);
+                lineDestination = lineDestination ?? new LineProcessorToStream(streamInformation, output);                
+                parts.Add(lineDestination);
+                state = FluentState.End;
             }
             
+            resources.Add(output);        // marks for cleanup            
             return this;
         }
 
-        private void compile(Object destination)
-        {                     
-            Object last = destination; 
-            for (int i = parts.Count-1; i >= 0; i--)
+        public Pnyx compile()
+        {
+            Object last = parts[parts.Count - 1]; 
+            for (int i = parts.Count-2; i >= 0; i--)
             {
                 Object part = parts[i];
 
@@ -399,7 +401,8 @@ namespace pnyx.net.fluent
             else
                 throw new IllegalStateException("Unknown part {0}", last.GetType().Name);                        
             
-            state = FluentState.End;
+            state = FluentState.Compiled;
+            return this;
         }        
 
         public Pnyx write(String path)
@@ -431,7 +434,7 @@ namespace pnyx.net.fluent
                 else
                     writeStream(stream);
                 
-                processor.process();
+                process();
 
                 return streamInformation.encoding.GetString(stream.ToArray());
             }
@@ -439,15 +442,23 @@ namespace pnyx.net.fluent
 
         public Pnyx process()
         {
-            if (state != FluentState.End)
-                throw new IllegalStateException("Pnyx must be fully compiled");
-                
+            if (state == FluentState.End)
+                compile();
+            
+            if (state != FluentState.Compiled)
+                throw new IllegalStateException("Pnyx must have an end point before processing");
+                                        
             processor.process();
+            state = FluentState.Processed;
+
             return this;
         }
 
         public void Dispose()
         {
+            if (state == FluentState.Disposed)
+                return;
+            
             foreach (IDisposable resource in resources)
                 resource.Dispose();                                    
             resources.Clear();
@@ -456,9 +467,7 @@ namespace pnyx.net.fluent
                 start.Dispose();
             start = null;
 
-            if (end != null)
-                end.Dispose();
-            end = null;
+            state = FluentState.Disposed;
         }
     }
 }

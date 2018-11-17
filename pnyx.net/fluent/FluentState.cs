@@ -6,6 +6,9 @@ namespace pnyx.net.fluent
         Start,
         Line,
         Row,
-        End
+        End,
+        Compiled,
+        Processed,
+        Disposed
     }
 }
