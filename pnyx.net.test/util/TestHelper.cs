@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using Xunit;
 
 namespace pnyx.net.test.util
 {
@@ -91,6 +92,13 @@ namespace pnyx.net.test.util
                 try { if (sourceStream != null) sourceStream.Dispose(); } catch (Exception) { /*ignore*/ }
                 try { if (destStream != null) destStream.Dispose(); } catch (Exception) { /*ignore*/ }
             }
+        }
+
+        public static void assertArrayEquals<T>(T[] a, T[] b)
+        {
+            String aText = String.Join(",", a);
+            String bText = String.Join(",", b);
+            Assert.Equal(aText, bText);
         }
     }
 }

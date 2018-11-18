@@ -30,3 +30,4 @@ File parsing and transforming automation scripting platform, Native .net
 1. 2018-11-11: Fluent API
 1. 2018-11-16: Awk column selection, filtering
 1. 2018-11-16: Tab-Separated read, write
+1. 2018-11-17: Column specific operations

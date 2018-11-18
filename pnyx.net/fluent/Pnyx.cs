@@ -112,25 +112,13 @@ namespace pnyx.net.fluent
             return this;                
         }
 
-        public Pnyx columns(params int[] columnNumbers)
+        public Pnyx selectColumns(params int[] columnNumbers)
         {
-            if (columnNumbers.Length == 0)
-                throw new InvalidArgumentException("Must specify at least one ColumnNumber");
-                
-            int[] indexes = new int[columnNumbers.Length];
-            for (int i = 0; i < columnNumbers.Length; i++)
-            {
-                int columnNumber = columnNumbers[i];
-                if (columnNumber <= 0)
-                    throw new InvalidArgumentException("Invalid ColumnNumber {0}, ColumnNumbers start at 1", columnNumber);
-
-                indexes[i] = columnNumber - 1;
-            }
-            
+            int[] indexes = convertColumnNumbersToIndex(columnNumbers);            
             return rowTransformer(new Columns { indexes = indexes });
         }
         
-        public Pnyx columnToLine(int columnNumber)            // 1-based to be consistent with print and sed
+        public Pnyx printColumn(int columnNumber)            // 1-based to be consistent with print and sed
         {
             if (state == FluentState.Row)
             {
@@ -146,6 +134,36 @@ namespace pnyx.net.fluent
 
             return this;
         }
+                
+        public Pnyx withColumns(params int[] columnNumbers)
+        {
+            if (state != FluentState.Row)
+                throw new IllegalStateException("Pnyx is not in Row state: {0}", state.ToString());
+                
+            int[] indexes = convertColumnNumbersToIndex(columnNumbers);
+            parts.Add(new WithColumns { indexes = indexes });
+
+            return this;
+        }
+
+        private int[] convertColumnNumbersToIndex(int[] columnNumbers)
+        {
+            if (columnNumbers.Length == 0)
+                throw new InvalidArgumentException("Must specify at least one ColumnNumber");
+                
+            int[] indexes = new int[columnNumbers.Length];
+            for (int i = 0; i < columnNumbers.Length; i++)
+            {
+                int columnNumber = columnNumbers[i];
+                if (columnNumber <= 0)
+                    throw new InvalidArgumentException("Invalid ColumnNumber {0}, ColumnNumbers start at 1", columnNumber);
+
+                indexes[i] = columnNumber - 1;
+            }
+
+            return indexes;
+        }
+        
         
         public Pnyx parseCsv(bool strict = true)
         {
@@ -286,6 +304,14 @@ namespace pnyx.net.fluent
 
         public Pnyx rowFilter(IRowFilter transform)
         {
+            // Checks if WITH precedes command
+            WithColumns wc = parts.Count > 0 ? parts[parts.Count - 1] as WithColumns : null;
+            if (wc != null)
+            {
+                parts.RemoveAt(parts.Count - 1);                                        // removes off parts-stack                
+                return rowPart(new RowFilterWithColumnsProcessor { transform = transform, indexes = wc.indexes });
+            }                
+            
             return rowPart(new RowFilterProcessor { transform = transform });
         }
 
@@ -384,7 +410,7 @@ namespace pnyx.net.fluent
                     currentPart.setNext((ILineProcessor)last);
                 }
                 else
-                    throw new IllegalStateException("Unknown part {0}", part.GetType().Name);
+                    throw new IllegalStateException("Unknown part {0} should be consumed before compiling", part.GetType().Name);
 
                 last = part;                    
             }
@@ -399,7 +425,7 @@ namespace pnyx.net.fluent
                 processor = new StreamToLineProcessor(streamInformation, start, (ILineProcessor)last);
             }
             else
-                throw new IllegalStateException("Unknown part {0}", last.GetType().Name);                        
+                throw new IllegalStateException("Unknown part {0} should be consumed before compiling", last.GetType().Name);                        
             
             state = FluentState.Compiled;
             return this;

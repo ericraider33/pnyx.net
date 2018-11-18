@@ -35,8 +35,13 @@ Uranus,Uranus,""Father of the Titans""
 Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
 ";
         
+        private const String PLANETS_GODS_TITANS = 
+@"Cronus,Saturn,""Titan sky god, supreme ruler of the titans""
+Uranus,Uranus,""Father of the Titans""
+";
+        
         const String PLANETS_GODS_FORMAT_ISSUES = 
-            @"Aphrodite,Venus,Goddess of love and beauty
+@"Aphrodite,Venus,Goddess of love and beauty
 Ares,Mars,""Hated god ""of war
 Cronus,Saturn,""Titan sky god, supreme ruler of the titans""
 Hermes,Mercury,""Messenger of the gods, escort of souls to Hades""
@@ -323,7 +328,7 @@ The Lord is my shepherd";
             {
                 p.readString(EARTH);
                 p.parseCsv();
-                p.columns(3,2,1);
+                p.selectColumns(3,2,1);
                 actual = p.processToString();
             }
             
@@ -339,7 +344,7 @@ The Lord is my shepherd";
             {
                 p.readString(EARTH);
                 p.parseCsv();
-                p.columnToLine(2);
+                p.printColumn(2);
                 actual = p.processToString();
             }
             
@@ -377,5 +382,31 @@ The Lord is my shepherd";
             Assert.Equal(ECONOMIC_FREEDOM, actual);
         }      
         
+        [Fact]
+        public void withColumns()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(PLANETS_GODS);
+                p.parseCsv();
+                p.withColumns(3);
+                p.grep("titan");
+                actual = p.processToString();
+            }
+            
+            Assert.Equal(PLANETS_GODS_TITANS, actual);
+
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(PLANETS_GODS);
+                p.parseCsv();
+                p.withColumns(1,2);
+                p.grep("titan");
+                actual = p.processToString();
+            }
+            
+            Assert.Equal("", actual);
+        }                
     }
 }
