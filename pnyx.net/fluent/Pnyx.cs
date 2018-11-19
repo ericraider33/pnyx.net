@@ -8,7 +8,6 @@ using pnyx.net.impl;
 using pnyx.net.impl.columns;
 using pnyx.net.impl.sed;
 using pnyx.net.processors;
-using pnyx.net.processors.columns;
 using pnyx.net.shims;
 using pnyx.net.util;
 
@@ -137,13 +136,21 @@ namespace pnyx.net.fluent
             return this;
         }
                 
-        public Pnyx withColumns(params int[] columnNumbers)
+        public Pnyx withColumns(Action<Pnyx> block, params int[] columnNumbers)
         {
             if (state != FluentState.Row)
                 throw new IllegalStateException("Pnyx is not in Row state: {0}", state.ToString());
-                
+               
+            // Add modifier to parts
+            int partIndex = parts.Count;
             int[] indexes = convertColumnNumbersToIndex(columnNumbers);
             parts.Add(new WithColumns { indexes = indexes });
+            
+            // Runs block
+            block(this);
+            
+            // Removes modifier from parts
+            parts.RemoveAt(partIndex);
 
             return this;
         }
@@ -165,8 +172,7 @@ namespace pnyx.net.fluent
 
             return indexes;
         }
-        
-        
+                
         public Pnyx parseCsv(bool strict = true)
         {
             if (state == FluentState.Start)
@@ -232,6 +238,16 @@ namespace pnyx.net.fluent
 
         public Pnyx lineFilter(ILineFilter filter)
         {
+            // Process any modifiers
+            for (int i = parts.Count - 1; i >= 0; i--)
+            {
+                ILineFilterModifier modifier = parts[i] as ILineFilterModifier;
+                if (modifier == null)
+                    continue;
+
+                filter = modifier.modifyLineFilter(filter);                        // wraps filter according to active modifier
+            }
+            
             if (state == FluentState.Row)
             {
                 if (filter is IRowFilter)
@@ -245,6 +261,16 @@ namespace pnyx.net.fluent
         
         public Pnyx lineTransformer(ILineTransformer transform)
         {
+            // Process any modifiers
+            for (int i = parts.Count - 1; i >= 0; i--)
+            {
+                ILineTransformerModifier modifier = parts[i] as ILineTransformerModifier;
+                if (modifier == null)
+                    continue;
+
+                transform = modifier.modifyLineTransformer(transform);                        // wraps filter according to active modifier
+            }
+            
             if (state == FluentState.Row)
             {
                 if (transform is IRowTransformer)
@@ -304,28 +330,32 @@ namespace pnyx.net.fluent
                 throw new IllegalStateException("Pnyx is not in Line, Row, or Start state: {0}", state.ToString());
         }
 
-        public Pnyx rowFilter(IRowFilter transform)
+        public Pnyx rowFilter(IRowFilter rowFilter)
         {
-            // Checks if WITH precedes command
-            WithColumns wc = parts.Count > 0 ? parts[parts.Count - 1] as WithColumns : null;
-            if (wc != null)
+            // Process any modifiers
+            for (int i = parts.Count - 1; i >= 0; i--)
             {
-                parts.RemoveAt(parts.Count - 1);                                        // removes off parts-stack
-                transform = new RowFilterWithColumns(wc.indexes, transform);
-            }                
+                IRowFilterModifier modifier = parts[i] as IRowFilterModifier;
+                if (modifier == null)
+                    continue;
+
+                rowFilter = modifier.modifyRowFilter(rowFilter);                        // wraps filter according to active modifier
+            }
             
-            return rowPart(new RowFilterProcessor { transform = transform });
+            return rowPart(new RowFilterProcessor { transform = rowFilter });
         }
 
         public Pnyx rowTransformer(IRowTransformer transform)
         {
-            // Checks if WITH precedes command
-            WithColumns wc = parts.Count > 0 ? parts[parts.Count - 1] as WithColumns : null;
-            if (wc != null)
+            // Process any modifiers
+            for (int i = parts.Count - 1; i >= 0; i--)
             {
-                parts.RemoveAt(parts.Count - 1);                                        // removes off parts-stack
-                transform = new RowTransformerWithColumns(wc.indexes, transform);
-            }                
+                IRowTransformerModifer modifier = parts[i] as IRowTransformerModifer;
+                if (modifier == null)
+                    continue;
+
+                transform = modifier.modifyRowTransformer(transform);                  // wraps filter according to active modifier
+            }
             
             return rowPart(new RowTransformerProcessor { transform = transform });
         }
@@ -505,5 +535,39 @@ namespace pnyx.net.fluent
 
             state = FluentState.Disposed;
         }
+
+/*
+ Mothball for now
+        public Pnyx groupLineFilters(Action<Pnyx> pnyxToGroup)
+        {
+            bool isRow = state == FluentState.Row;
+            state = FluentState.Line;                                    // only accepts line-filters
+            
+            if (state != FluentState.Line && state != FluentState.Start)
+                throw new IllegalStateException("Pnyx is not in Line, Row, or Start state: {0}", state.ToString());
+
+            int before = parts.Count;
+            pnyxToGroup(this);
+            if (isRow)
+                state = FluentState.Row;
+            
+            if (state != FluentState.Line && state != FluentState.Row || parts.Count == before)
+                throw new IllegalStateException("groupLineFilters only supports LineFilters");
+
+            LineFilterGroup group = new LineFilterGroup();
+            int i = before;
+            while (i < parts.Count)
+            {
+                LineFilterProcessor part = parts[i] as LineFilterProcessor;                
+                if (part == null)
+                    throw new IllegalStateException("groupLineFilters only supports LineFilters");
+                
+                parts.RemoveAt(i);
+                group.filters.Add(part.transform);
+            }
+
+            return lineFilter(group);
+        }
+*/        
     }
 }

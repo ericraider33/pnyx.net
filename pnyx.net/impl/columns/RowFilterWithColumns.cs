@@ -1,7 +1,7 @@
 using System;
 using pnyx.net.api;
 
-namespace pnyx.net.processors.columns
+namespace pnyx.net.impl.columns
 {
     public class RowFilterWithColumns : IRowFilter
     {

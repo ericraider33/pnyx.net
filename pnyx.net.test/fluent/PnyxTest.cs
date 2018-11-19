@@ -351,8 +351,7 @@ The Lord is my shepherd";
             const String expected = "Terra";
             Assert.Equal(expected, actual);
         }
-        
-        
+                
         [Fact]
         public void tabInOutImplicit()
         {
@@ -390,8 +389,7 @@ The Lord is my shepherd";
             {
                 p.readString(PLANETS_GODS);
                 p.parseCsv();
-                p.withColumns(3);
-                p.grep("titan");
+                p.withColumns(pn => pn.grep("titan"), 3);
                 actual = p.processToString();
             }
             
@@ -401,8 +399,7 @@ The Lord is my shepherd";
             {
                 p.readString(PLANETS_GODS);
                 p.parseCsv();
-                p.withColumns(1,2);
-                p.grep("titan");
+                p.withColumns(pn => pn.grep("titan"), 1,2);
                 actual = p.processToString();
             }
             
@@ -417,8 +414,7 @@ The Lord is my shepherd";
             {
                 p.readString(EARTH);
                 p.parseCsv();
-                p.withColumns(3);
-                p.sed("t", "X", "gi");
+                p.withColumns(pn => pn.sed("t", "X", "gi"), 3);
                 actual = p.processToString();
             }
             
@@ -428,12 +424,36 @@ The Lord is my shepherd";
             {
                 p.readString(EARTH);
                 p.parseCsv();
-                p.withColumns(1,2);
-                p.sed("t", "X", "gi");
+                p.withColumns(pn => pn.sed("t", "X", "gi"), 1,2);                
                 actual = p.processToString();
             }
             
             Assert.Equal(@"Gaia,Xerra,""Mother goddess of the earth""", actual);
-        }                
+        }            
+        
+        [Fact]
+        public void withBoth()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(PLANETS_GODS);
+                p.parseCsv();
+                p.withColumns(sub =>
+                {
+                    sub.grep("titan");
+                    sub.sed("n", "X", "gi");
+                }, 3);
+                actual = p.processToString();
+            }
+            
+            // When grouped proper, 'n' will only be replaced in 3rd column
+            String expected = 
+@"Cronus,Saturn,""TitaX sky god, supreme ruler of the titaXs""
+Uranus,Uranus,""Father of the TitaXs""
+";            
+            Assert.Equal(expected, actual);
+        }   
+                                   
     }
 }
