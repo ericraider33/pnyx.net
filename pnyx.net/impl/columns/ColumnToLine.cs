@@ -1,7 +1,7 @@
 using System;
 using pnyx.net.processors;
 
-namespace pnyx.net.impl
+namespace pnyx.net.impl.columns
 {
     public class ColumnToLine : IRowProcessor, ILinePart
     {

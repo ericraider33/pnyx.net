@@ -1,9 +1,9 @@
 using System;
 using pnyx.net.api;
 
-namespace pnyx.net.impl
+namespace pnyx.net.impl.columns
 {
-    public class Columns : IRowTransformer
+    public class SelectColumns : IRowTransformer
     {
         public int[] indexes;                                // zero-based
         

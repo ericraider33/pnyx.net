@@ -383,7 +383,7 @@ The Lord is my shepherd";
         }      
         
         [Fact]
-        public void withColumns()
+        public void withColumnsFilter()
         {
             String actual;
             using (Pnyx p = new Pnyx())
@@ -407,6 +407,33 @@ The Lord is my shepherd";
             }
             
             Assert.Equal("", actual);
+        }                
+        
+        [Fact]
+        public void withColumnsTransformer()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(EARTH);
+                p.parseCsv();
+                p.withColumns(3);
+                p.sed("t", "X", "gi");
+                actual = p.processToString();
+            }
+            
+            Assert.Equal(@"Gaia,Terra,""MoXher goddess of Xhe earXh""", actual);
+
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(EARTH);
+                p.parseCsv();
+                p.withColumns(1,2);
+                p.sed("t", "X", "gi");
+                actual = p.processToString();
+            }
+            
+            Assert.Equal(@"Gaia,Xerra,""Mother goddess of the earth""", actual);
         }                
     }
 }

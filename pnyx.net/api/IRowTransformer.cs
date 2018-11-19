@@ -4,6 +4,6 @@ namespace pnyx.net.api
 {
     public interface IRowTransformer
     {
-        String[] transformRow(String[] values);
+        String[] transformRow(String[] row);
     }
 }

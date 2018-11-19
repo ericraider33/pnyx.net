@@ -5,8 +5,10 @@ using System.IO;
 using pnyx.net.api;
 using pnyx.net.errors;
 using pnyx.net.impl;
+using pnyx.net.impl.columns;
 using pnyx.net.impl.sed;
 using pnyx.net.processors;
+using pnyx.net.processors.columns;
 using pnyx.net.shims;
 using pnyx.net.util;
 
@@ -115,7 +117,7 @@ namespace pnyx.net.fluent
         public Pnyx selectColumns(params int[] columnNumbers)
         {
             int[] indexes = convertColumnNumbersToIndex(columnNumbers);            
-            return rowTransformer(new Columns { indexes = indexes });
+            return rowTransformer(new SelectColumns { indexes = indexes });
         }
         
         public Pnyx printColumn(int columnNumber)            // 1-based to be consistent with print and sed
@@ -308,8 +310,8 @@ namespace pnyx.net.fluent
             WithColumns wc = parts.Count > 0 ? parts[parts.Count - 1] as WithColumns : null;
             if (wc != null)
             {
-                parts.RemoveAt(parts.Count - 1);                                        // removes off parts-stack                
-                return rowPart(new RowFilterWithColumnsProcessor { transform = transform, indexes = wc.indexes });
+                parts.RemoveAt(parts.Count - 1);                                        // removes off parts-stack
+                transform = new RowFilterWithColumns(wc.indexes, transform);
             }                
             
             return rowPart(new RowFilterProcessor { transform = transform });
@@ -317,6 +319,14 @@ namespace pnyx.net.fluent
 
         public Pnyx rowTransformer(IRowTransformer transform)
         {
+            // Checks if WITH precedes command
+            WithColumns wc = parts.Count > 0 ? parts[parts.Count - 1] as WithColumns : null;
+            if (wc != null)
+            {
+                parts.RemoveAt(parts.Count - 1);                                        // removes off parts-stack
+                transform = new RowTransformerWithColumns(wc.indexes, transform);
+            }                
+            
             return rowPart(new RowTransformerProcessor { transform = transform });
         }
 
