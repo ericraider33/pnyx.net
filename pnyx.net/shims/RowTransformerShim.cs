@@ -13,14 +13,14 @@ namespace pnyx.net.shims
             string[] result = new string[row.Length];
             for (int i = 0; i < row.Length; i++)
             {
-                String value = lineTransformer.transformLine(row[i]);
-                if (value == null)
+                String column = lineTransformer.transformLine(row[i]);
+                if (column == null)
                 {
                     result[i] = "";
                 }
                 else
                 {
-                    result[i] = value;
+                    result[i] = column;
                     keep = true;
                 }
             }

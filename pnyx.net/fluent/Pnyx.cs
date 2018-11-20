@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
-using System.Runtime.InteropServices.WindowsRuntime;
 using pnyx.net.api;
 using pnyx.net.errors;
 using pnyx.net.impl;
@@ -282,7 +280,7 @@ namespace pnyx.net.fluent
                 if (transform is IRowBuffering)
                     return rowBuffering((IRowBuffering) transform);
                 else                        
-                    throw new NotImplementedException();                
+                    throw new IllegalStateException("Convert to Line before using lineBuffering");                
             }
             
             return linePart(new LineBufferingProcessor { transform = transform });
@@ -309,7 +307,7 @@ namespace pnyx.net.fluent
             if (state == FluentState.Line)
             {
                 if (rowConverter == null)
-                    throw new IllegalStateException("Specify a RowConverter to before adding Row parts");
+                    throw new IllegalStateException("Specify a RowConverter before adding Row parts");
                 
                 throw new NotImplementedException("Code LINE to ROW");
             }
@@ -363,9 +361,14 @@ namespace pnyx.net.fluent
             return lineBuffering(new SedLineNumber());
         }
 
-        public Pnyx sedAppend(String text)
+        public Pnyx sedAppendRow(String[] toAppend)
         {
-            return lineBuffering(new SedAppend { text = text });
+            return rowBuffering(new SedAppendRow { text = toAppend });
+        }
+
+        public Pnyx sedAppendLine(String text)
+        {
+            return lineBuffering(new SedAppendLine { text = text });            
         }
 
         public Pnyx sedInsert(String text)

@@ -2,7 +2,6 @@
 File parsing and transforming automation scripting platform, Native .net
 
 ## Roadmap
-1. Buffering for lines 'before' and 'after' filter match
 1. Boolean filters: Invert, And, Or, Xor
 1. Head, Tail
 1. Sort
@@ -32,3 +31,4 @@ File parsing and transforming automation scripting platform, Native .net
 1. 2018-11-16: Awk column selection, filtering
 1. 2018-11-16: Tab-Separated read, write
 1. 2018-11-17: Column specific operations
+1. 2018-11-20: Buffering for lines 'before' and 'after' filter match

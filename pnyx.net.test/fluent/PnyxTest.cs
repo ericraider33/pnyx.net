@@ -113,7 +113,7 @@ to the honour of God, the exaltation of the holy Church, and the better ordering
             {
                 p.streamInformation.setDefaultNewline(NewLineEnum.Windows);
                 p.readString(EARTH);
-                p.sedAppend("The Lord is my shepherd");
+                p.sedAppendLine("The Lord is my shepherd");
                 actual = p.processToString();
             }
 
@@ -199,14 +199,19 @@ The Lord is my shepherd";
         [Fact]
         public void rowBuffering()
         {
+            String actual;
             using (Pnyx p = new Pnyx())
             {
                 p.streamInformation.setDefaultNewline(NewLineEnum.Windows);
                 p.readString(EARTH);
                 p.parseCsv();
-                Assert.Throws<NotImplementedException>(() => p.sedAppend("The Lord is my shepherd"));
-//                Assert.Throws<NotImplementedException>(() => p.processToString());
+                p.sedAppendRow(new[] {"The Lord","is", "my shepherd"});
+                actual = p.processToString();
             }
+
+            const String expected = @"Gaia,Terra,""Mother goddess of the earth""
+""The Lord"",is,""my shepherd"""; 
+            Assert.Equal(expected, actual);
         }
 
         [Fact]

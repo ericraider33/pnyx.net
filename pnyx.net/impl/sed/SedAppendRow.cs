@@ -5,20 +5,20 @@ namespace pnyx.net.impl.sed
 {
     // https://linux.die.net/man/1/sed
     // http://www.grymoire.com/Unix/Sed.html#uh-0    
-    public class SedAppend : ILineBuffering
+    public class SedAppendRow : IRowBuffering
     {
-        public String text;
+        public String[] text;
         
-        public string[] bufferingLine(string line)
+        public string[][] bufferingRow(string[] row)
         {
-            return new string[]
+            return new string[][]
             {                
-                line,
+                row,
                 text
             };            
         }
 
-        public String[] endOfFile()
+        public string[][] endOfFile()
         {
             return null;
         }
