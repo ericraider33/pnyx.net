@@ -497,7 +497,7 @@ Uranus,Uranus,""Father of the TitaXs""
         }
 
         [Fact]
-        public void beforeAfter()
+        public void beforeAfterLine()
         {
             String actual;
             using (Pnyx p = new Pnyx())
@@ -508,11 +508,32 @@ Uranus,Uranus,""Father of the TitaXs""
             }
             
             const String expected =                 
-@"Cronus,Saturn,""Titan sky god, supreme ruler of the titans""
+                @"Cronus,Saturn,""Titan sky god, supreme ruler of the titans""
 Hermes,Mercury,""Messenger of the gods, escort of souls to Hades""
 Poseidon,Neptune,""God of the sea and earthquakes""
 ";                
             Assert.Equal(expected, actual);
         }
+
+        [Fact]
+        public void beforeAfterRow()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(PLANETS_GODS);
+                p.parseCsv();
+                p.beforeAfterFilter(1, 1, pn => pn.grep("mercury"));
+                actual = p.processToString();
+            }
+            
+            const String expected =                 
+                @"Cronus,Saturn,""Titan sky god, supreme ruler of the titans""
+Hermes,Mercury,""Messenger of the gods, escort of souls to Hades""
+Poseidon,Neptune,""God of the sea and earthquakes""
+";                
+            Assert.Equal(expected, actual);
+        }
+        
     }
 }

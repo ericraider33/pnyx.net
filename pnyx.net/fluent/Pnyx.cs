@@ -594,18 +594,17 @@ namespace pnyx.net.fluent
             {
                 RowFilterProcessor part = partRaw as RowFilterProcessor;                
                 if (part == null)
-                    throw new IllegalStateException("groupFilters only supports filters, but found processor of {0}", part.GetType().Name);
+                    throw new IllegalStateException("groupFilters only supports filters, but found processor of {0}", partRaw.GetType().Name);
 
-//                return rowBuffering(new BeforeAfterBuffering(before, after, null, processor.filter));
-                throw new NotImplementedException("Code ROW version");
+                return rowBuffering(new BeforeAfterRowBuffering(before, after, part.filter));
             }
             else
             {
                 LineFilterProcessor part = partRaw as LineFilterProcessor;                
-                if (partRaw == null)
-                    throw new IllegalStateException("groupFilters only supports filters, but found processor of {0}", part.GetType().Name);
+                if (part == null)
+                    throw new IllegalStateException("groupFilters only supports filters, but found processor of {0}", partRaw.GetType().Name);
                 
-                return lineBuffering(new BeforeAfterBuffering(before, after, part.filter, null));
+                return lineBuffering(new BeforeAfterLineBuffering(before, after, part.filter));
             }                       
         }
     }

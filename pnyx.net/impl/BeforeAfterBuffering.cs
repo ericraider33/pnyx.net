@@ -4,40 +4,85 @@ using pnyx.net.api;
 
 namespace pnyx.net.impl
 {
-    public class BeforeAfterBuffering : ILineBuffering
+    public class BeforeAfterLineBuffering : BeforeAfterBase<String>, ILineBuffering
     {
-        public int before;
-        public int after;
-        public ILineFilter lineFilter;
-        public IRowFilter rowFilter;
-
-        private String[] lineBuffer;
-        private String[][] rowBuffer;
-        private bool[] include;
-        private int lineNumber;
-        private readonly String[] resultLineBuffer = new string[1]; 
-        private readonly String[][] resultRowBuffer = new string[1][]; 
-
-        public BeforeAfterBuffering(int before, int after, ILineFilter lineFilter, IRowFilter rowFilter)
+        public ILineFilter lineFilter { get; }
+        
+        public BeforeAfterLineBuffering(int before, int after, ILineFilter lineFilter) : base(before, after)
         {
-            this.before = before;
-            this.after = after;
             this.lineFilter = lineFilter;
-            this.rowFilter = rowFilter;
-            
-            lineBuffer = new string[before+after+2];
-            rowBuffer = new string[before+after+2][];
-            include = new bool[before+after+2];
+        }
+
+        protected override bool shouldKeep(string source)
+        {
+            return lineFilter.shouldKeepLine(source);
         }
 
         public string[] bufferingLine(string line)
         {
+            return bufferingT(line);
+        }
+
+        public string[] endOfFile()
+        {
+            return endOfFileT();
+        }
+    }
+    
+    public class BeforeAfterRowBuffering : BeforeAfterBase<String[]>, IRowBuffering
+    {
+        public IRowFilter rowFilter { get; }
+        
+        public BeforeAfterRowBuffering(int before, int after, IRowFilter rowFilter) : base(before, after)
+        {
+            this.rowFilter = rowFilter;
+        }
+
+        protected override bool shouldKeep(string[] source)
+        {
+            return rowFilter.shouldKeepRow(source);
+        }
+
+        public string[][] bufferingRow(string[] row)
+        {
+            return bufferingT(row);
+        }
+
+        public string[][] endOfFile()
+        {
+            return endOfFileT();
+        }
+    }
+    
+    public abstract class BeforeAfterBase<T> where T : class
+    {
+        public int before { get; }
+        public int after { get; }
+
+        private T[] buffer;
+        private bool[] include;
+        private int lineNumber;
+        private readonly T[] resultBuffer = new T[1]; 
+
+        protected BeforeAfterBase(int before, int after)
+        {
+            this.before = before;
+            this.after = after;
+            
+            buffer = new T[before+after+2];
+            include = new bool[before+after+2];
+        }
+
+        protected abstract bool shouldKeep(T source);
+
+        public T[] bufferingT(T line)
+        {
             lineNumber++;
-            bool keep = lineFilter.shouldKeepLine(line);
+            bool keep = shouldKeep(line);
             updateLine(keep);
 
             int indexToSet = getIndex(lineNumber);
-            lineBuffer[indexToSet] = line;
+            buffer[indexToSet] = line;
 
             int lineToReturn = lineNumber - 1 - before;
             if (lineToReturn < 0)
@@ -48,8 +93,8 @@ namespace pnyx.net.impl
                 return null;
 
             include[indexToReturn] = false;                                // clears flag for record
-            resultLineBuffer[0] = lineBuffer[indexToReturn];
-            return resultLineBuffer;
+            resultBuffer[0] = buffer[indexToReturn];
+            return resultBuffer;
         }
 
         private void updateLine(bool keep)
@@ -78,14 +123,14 @@ namespace pnyx.net.impl
             return lineToFetch % include.Length;
         }
 
-        public string[] endOfFile()
+        protected T[] endOfFileT()
         {
-            List<String> final = new List<String>();
+            List<T> final = new List<T>();
             for (int lineToCheck = Math.Max(1, lineNumber - before); lineToCheck <= lineNumber; lineToCheck++)
             {
                 int index = getIndex(lineToCheck);
                 if (include[index])
-                    final.Add(lineBuffer[index]);
+                    final.Add(buffer[index]);
             }
 
             return final.ToArray();
