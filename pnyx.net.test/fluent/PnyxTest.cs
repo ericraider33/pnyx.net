@@ -11,7 +11,7 @@ namespace pnyx.net.test.fluent
     public class PnyxTest
     {
         private const String MAGNA_CARTA =
-@"KNOW THAT BEFORE GOD, for the health of our soul and those of our ancestors and heirs, 
+            @"KNOW THAT BEFORE GOD, for the health of our soul and those of our ancestors and heirs, 
 to the honour of God, the exaltation of the holy Church, and the better ordering of our
 kingdom, at the advice of our reverend fathers Stephen, archbishop of Canterbury, 
 primate of all England, and cardinal of the holy Roman Church, Henry archbishop of 
@@ -26,7 +26,7 @@ Matthew Fitz Herbert, Thomas Basset, Alan Basset, Philip Daubeny, Robert de Ropp
 John Marshal, John Fitz Hugh, and other loyal subjects:";
 
         private const String PLANETS_GODS =
-@"Aphrodite,Venus,""Goddess of love and beauty""
+            @"Aphrodite,Venus,""Goddess of love and beauty""
 Ares,Mars,""Hated god of war""
 Cronus,Saturn,""Titan sky god, supreme ruler of the titans""
 Hermes,Mercury,""Messenger of the gods, escort of souls to Hades""
@@ -34,32 +34,32 @@ Poseidon,Neptune,""God of the sea and earthquakes""
 Uranus,Uranus,""Father of the Titans""
 Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
 ";
-        
-        private const String PLANETS_GODS_TITANS = 
-@"Cronus,Saturn,""Titan sky god, supreme ruler of the titans""
+
+        private const String PLANETS_GODS_TITANS =
+            @"Cronus,Saturn,""Titan sky god, supreme ruler of the titans""
 Uranus,Uranus,""Father of the Titans""
 ";
-        
-        const String PLANETS_GODS_FORMAT_ISSUES = 
-@"Aphrodite,Venus,Goddess of love and beauty
+
+        const String PLANETS_GODS_FORMAT_ISSUES =
+            @"Aphrodite,Venus,Goddess of love and beauty
 Ares,Mars,""Hated god ""of war
 Cronus,Saturn,""Titan sky god, supreme ruler of the titans""
 Hermes,Mercury,""Messenger of the gods, escort of souls to Hades""
 Poseidon,Neptune,""God of the sea and earthquakes""
 Uranus,Uranus,""Father of the Titans""
 Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
-";        
+";
 
         private const String EARTH = @"Gaia,Terra,""Mother goddess of the earth""";
 
         private const String ECONOMIC_FREEDOM =
-@"1	Hong Kong	90.2
+            @"1	Hong Kong	90.2
 2	Singapore	88.8
 3	New Zealand	84.2
 4	Switzerland	81.7
 5	Australia	80.9
 ";
-        
+
         [Fact]
         public void inOut()
         {
@@ -69,10 +69,10 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
                 p.readString(MAGNA_CARTA);
                 actual = p.processToString();
             }
-            
+
             Assert.Equal(MAGNA_CARTA, actual);
         }
-        
+
         [Fact]
         public void lineFilter()
         {
@@ -85,8 +85,8 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
             }
 
             const String expected = @"KNOW THAT BEFORE GOD, for the health of our soul and those of our ancestors and heirs, 
-to the honour of God, the exaltation of the holy Church, and the better ordering of our";      
-            
+to the honour of God, the exaltation of the holy Church, and the better ordering of our";
+
             Assert.Equal(expected, actual);
         }
 
@@ -101,7 +101,7 @@ to the honour of God, the exaltation of the holy Church, and the better ordering
                 actual = p.processToString();
             }
 
-            const String expected = "Gaia\tTerra\t\"Mother goddess of the earth\"";                  
+            const String expected = "Gaia\tTerra\t\"Mother goddess of the earth\"";
             Assert.Equal(expected, actual);
         }
 
@@ -118,7 +118,7 @@ to the honour of God, the exaltation of the holy Church, and the better ordering
             }
 
             const String expected = @"Gaia,Terra,""Mother goddess of the earth""
-The Lord is my shepherd";                  
+The Lord is my shepherd";
             Assert.Equal(expected, actual);
         }
 
@@ -132,13 +132,13 @@ The Lord is my shepherd";
                 p.parseCsv();
                 actual = p.processToString();
             }
-            
+
             Assert.Equal(PLANETS_GODS, actual);
-        }        
+        }
 
         [Fact]
         public void csvInOutFixFormatting()
-        {           
+        {
             String actual;
             using (Pnyx p = new Pnyx())
             {
@@ -146,9 +146,9 @@ The Lord is my shepherd";
                 p.parseCsv(strict: false);
                 actual = p.processToString();
             }
-            
-            Assert.Equal(PLANETS_GODS, actual);            // verifies that output is formatted properly, even if input is loose
-        }        
+
+            Assert.Equal(PLANETS_GODS, actual); // verifies that output is formatted properly, even if input is loose
+        }
 
         [Fact]
         public void csvInOutVariant()
@@ -159,10 +159,10 @@ The Lord is my shepherd";
                 p.readString(PLANETS_GODS_FORMAT_ISSUES);
                 actual = p.processToString((pnyx, stream) => pnyx.writeCsv(stream, strict: false));
             }
-            
+
             Assert.Equal(PLANETS_GODS, actual);
-        }      
-        
+        }
+
         [Fact]
         public void rowFilter()
         {
@@ -176,7 +176,7 @@ The Lord is my shepherd";
             }
 
             const String expected = "Ares,Mars,\"Hated god of war\"\r\n";
-            
+
             Assert.Equal(expected, actual);
         }
 
@@ -192,7 +192,7 @@ The Lord is my shepherd";
                 actual = p.processToString();
             }
 
-            const String expected = "Gaia,Forma,\"Mother goddess of the earth\"";                  
+            const String expected = "Gaia,Forma,\"Mother goddess of the earth\"";
             Assert.Equal(expected, actual);
         }
 
@@ -204,7 +204,7 @@ The Lord is my shepherd";
                 p.streamInformation.setDefaultNewline(NewLineEnum.Windows);
                 p.readString(EARTH);
                 p.parseCsv();
-                Assert.Throws<NotImplementedException>(() => p.sedAppend("The Lord is my shepherd"));                
+                Assert.Throws<NotImplementedException>(() => p.sedAppend("The Lord is my shepherd"));
 //                Assert.Throws<NotImplementedException>(() => p.processToString());
             }
         }
@@ -226,11 +226,11 @@ The Lord is my shepherd";
             String actual;
             using (Pnyx p = new Pnyx())
             {
-                p.readString(PLANETS_GODS);                
+                p.readString(PLANETS_GODS);
                 Assert.Throws<IllegalStateException>(() => p.readString(PLANETS_GODS));
 //                actual = p.processToString();
             }
-            
+
 //            Assert.Equal(PLANETS_GODS + PLANETS_GODS, actual);
         }
 
@@ -246,7 +246,7 @@ The Lord is my shepherd";
                 p.parseCsv(strict: false);
                 actual = p.processToString();
             }
-            
+
             const String expected = @"""1) Be fruitful and multiply"",""2) and fill the earth and subdue it""";
             Assert.Equal(expected, actual);
         }
@@ -261,7 +261,7 @@ The Lord is my shepherd";
                 p.readString(PLANETS_GODS);
                 p.parseCsv();
                 Assert.Throws<IllegalStateException>(() => p.parseCsv());
-            }            
+            }
 
             using (Pnyx p = new Pnyx())
             {
@@ -269,7 +269,7 @@ The Lord is my shepherd";
                 p.parseCsv();
                 p.writeStream(new MemoryStream());
                 Assert.Throws<IllegalStateException>(() => p.parseCsv());
-            }            
+            }
         }
 
         [Fact]
@@ -284,9 +284,9 @@ The Lord is my shepherd";
                 p.sed(",", "\t", "g");
                 actual = p.processToString();
             }
-            
+
             const String expected = "Gaia\tTerra\t\"Mother goddess of the earth\"";
-            Assert.Equal(expected, actual);            
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
@@ -300,9 +300,9 @@ The Lord is my shepherd";
                 p.print("$3,$2,$1");
                 actual = p.processToString();
             }
-            
+
             const String expected = "Mother goddess of the earth,Terra,Gaia";
-            Assert.Equal(expected, actual);                        
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
@@ -315,9 +315,9 @@ The Lord is my shepherd";
                 p.print("$0 $0");
                 actual = p.processToString();
             }
-            
+
             const String expected = "Logic Logic";
-            Assert.Equal(expected, actual);                        
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
@@ -328,10 +328,10 @@ The Lord is my shepherd";
             {
                 p.readString(EARTH);
                 p.parseCsv();
-                p.selectColumns(3,2,1);
+                p.selectColumns(3, 2, 1);
                 actual = p.processToString();
             }
-            
+
             const String expected = @"""Mother goddess of the earth"",Terra,Gaia";
             Assert.Equal(expected, actual);
         }
@@ -347,11 +347,11 @@ The Lord is my shepherd";
                 p.printColumn(2);
                 actual = p.processToString();
             }
-            
+
             const String expected = "Terra";
             Assert.Equal(expected, actual);
         }
-                
+
         [Fact]
         public void tabInOutImplicit()
         {
@@ -362,9 +362,9 @@ The Lord is my shepherd";
                 p.parseTab();
                 actual = p.processToString();
             }
-            
+
             Assert.Equal(ECONOMIC_FREEDOM, actual);
-        }        
+        }
 
         [Fact]
         public void tabInOutExplicit()
@@ -377,10 +377,10 @@ The Lord is my shepherd";
                 p.printTab();
                 actual = p.processToString();
             }
-            
+
             Assert.Equal(ECONOMIC_FREEDOM, actual);
-        }      
-        
+        }
+
         [Fact]
         public void withColumnsFilter()
         {
@@ -392,20 +392,20 @@ The Lord is my shepherd";
                 p.withColumns(pn => pn.grep("titan"), 3);
                 actual = p.processToString();
             }
-            
+
             Assert.Equal(PLANETS_GODS_TITANS, actual);
 
             using (Pnyx p = new Pnyx())
             {
                 p.readString(PLANETS_GODS);
                 p.parseCsv();
-                p.withColumns(pn => pn.grep("titan"), 1,2);
+                p.withColumns(pn => pn.grep("titan"), 1, 2);
                 actual = p.processToString();
             }
-            
+
             Assert.Equal("", actual);
-        }                
-        
+        }
+
         [Fact]
         public void withColumnsTransformer()
         {
@@ -417,20 +417,20 @@ The Lord is my shepherd";
                 p.withColumns(pn => pn.sed("t", "X", "gi"), 3);
                 actual = p.processToString();
             }
-            
+
             Assert.Equal(@"Gaia,Terra,""MoXher goddess of Xhe earXh""", actual);
 
             using (Pnyx p = new Pnyx())
             {
                 p.readString(EARTH);
                 p.parseCsv();
-                p.withColumns(pn => pn.sed("t", "X", "gi"), 1,2);                
+                p.withColumns(pn => pn.sed("t", "X", "gi"), 1, 2);
                 actual = p.processToString();
             }
-            
+
             Assert.Equal(@"Gaia,Xerra,""Mother goddess of the earth""", actual);
-        }            
-        
+        }
+
         [Fact]
         public void withBoth()
         {
@@ -446,14 +446,73 @@ The Lord is my shepherd";
                 }, 3);
                 actual = p.processToString();
             }
-            
+
             // When grouped proper, 'n' will only be replaced in 3rd column
-            String expected = 
-@"Cronus,Saturn,""TitaX sky god, supreme ruler of the titaXs""
+            String expected =
+                @"Cronus,Saturn,""TitaX sky god, supreme ruler of the titaXs""
 Uranus,Uranus,""Father of the TitaXs""
-";            
+";
             Assert.Equal(expected, actual);
-        }   
-                                   
+        }
+
+        [Fact]
+        public void groupFilters()
+        {
+            String actual;
+
+            // Verify 0 works
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(EARTH);
+                p.groupFilters(pn => { });
+                actual = p.processToString();
+            }
+
+            Assert.Equal(EARTH, actual);
+
+            // Verify 1 works
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(PLANETS_GODS);
+                p.groupFilters(pn => pn.grep("titan"));
+                actual = p.processToString();
+            }
+
+            Assert.Equal(PLANETS_GODS_TITANS, actual);
+
+            // Verify X works
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(PLANETS_GODS);
+                p.groupFilters(pn =>
+                {
+                    pn.grep("ti");
+                    pn.grep("sky");
+                });
+                actual = p.processToString();
+            }
+
+            Assert.Equal(@"Cronus,Saturn,""Titan sky god, supreme ruler of the titans""
+", actual);
+        }
+
+        [Fact]
+        public void beforeAfter()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(PLANETS_GODS);
+                p.beforeAfterFilter(1, 1, pn => pn.grep("mercury"));
+                actual = p.processToString();
+            }
+            
+            const String expected =                 
+@"Cronus,Saturn,""Titan sky god, supreme ruler of the titans""
+Hermes,Mercury,""Messenger of the gods, escort of souls to Hades""
+Poseidon,Neptune,""God of the sea and earthquakes""
+";                
+            Assert.Equal(expected, actual);
+        }
     }
 }

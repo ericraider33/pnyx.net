@@ -4,12 +4,12 @@ namespace pnyx.net.processors
 {
     public class RowFilterProcessor : IRowPart, IRowProcessor
     {
-        public IRowFilter transform;
+        public IRowFilter filter;
         public IRowProcessor processor;
 
         public void processRow(string[] row)
         {
-            if (transform.shouldKeepRow(row))
+            if (filter.shouldKeepRow(row))
                 processor.processRow(row);
         }
 

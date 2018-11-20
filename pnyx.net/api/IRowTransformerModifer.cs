@@ -1,6 +1,6 @@
 namespace pnyx.net.api
 {
-    public interface IRowTransformerModifer
+    public interface IRowTransformerModifer : IModifier
     {
         IRowTransformer modifyRowTransformer(IRowTransformer rowTransformer);
     }

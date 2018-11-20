@@ -4,12 +4,12 @@ namespace pnyx.net.processors
 {
     public class LineFilterProcessor : ILinePart, ILineProcessor
     {
-        public ILineFilter transform;
+        public ILineFilter filter;
         public ILineProcessor processor;
 
         public void processLine(string line)
         {
-            if (transform.shouldKeepLine(line))
+            if (filter.shouldKeepLine(line))
                 processor.processLine(line);
         }
 

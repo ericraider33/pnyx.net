@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
+using System.Runtime.InteropServices.WindowsRuntime;
 using pnyx.net.api;
 using pnyx.net.errors;
 using pnyx.net.impl;
 using pnyx.net.impl.columns;
+using pnyx.net.impl.groups;
 using pnyx.net.impl.sed;
 using pnyx.net.processors;
 using pnyx.net.shims;
@@ -238,15 +241,10 @@ namespace pnyx.net.fluent
 
         public Pnyx lineFilter(ILineFilter filter)
         {
-            // Process any modifiers
-            for (int i = parts.Count - 1; i >= 0; i--)
-            {
-                ILineFilterModifier modifier = parts[i] as ILineFilterModifier;
-                if (modifier == null)
-                    continue;
-
+            // Process any modifier
+            ILineFilterModifier modifier = retrieveTopModifier<ILineFilterModifier>();
+            if (modifier != null)
                 filter = modifier.modifyLineFilter(filter);                        // wraps filter according to active modifier
-            }
             
             if (state == FluentState.Row)
             {
@@ -256,20 +254,15 @@ namespace pnyx.net.fluent
                     return rowFilter(new RowFilterShim { lineFilter = filter });                
             }
                 
-            return linePart(new LineFilterProcessor { transform = filter });
+            return linePart(new LineFilterProcessor { filter = filter });
         }
         
         public Pnyx lineTransformer(ILineTransformer transform)
         {
-            // Process any modifiers
-            for (int i = parts.Count - 1; i >= 0; i--)
-            {
-                ILineTransformerModifier modifier = parts[i] as ILineTransformerModifier;
-                if (modifier == null)
-                    continue;
-
-                transform = modifier.modifyLineTransformer(transform);                        // wraps filter according to active modifier
-            }
+            // Process any modifier
+            ILineTransformerModifier modifier = retrieveTopModifier<ILineTransformerModifier>();
+            if (modifier != null)
+                transform = modifier.modifyLineTransformer(transform);                        // wraps filter according to active modifier            
             
             if (state == FluentState.Row)
             {
@@ -332,30 +325,20 @@ namespace pnyx.net.fluent
 
         public Pnyx rowFilter(IRowFilter rowFilter)
         {
-            // Process any modifiers
-            for (int i = parts.Count - 1; i >= 0; i--)
-            {
-                IRowFilterModifier modifier = parts[i] as IRowFilterModifier;
-                if (modifier == null)
-                    continue;
-
+            // Process any modifier
+            IRowFilterModifier modifier = retrieveTopModifier<IRowFilterModifier>();
+            if (modifier != null)
                 rowFilter = modifier.modifyRowFilter(rowFilter);                        // wraps filter according to active modifier
-            }
-            
-            return rowPart(new RowFilterProcessor { transform = rowFilter });
+                        
+            return rowPart(new RowFilterProcessor { filter = rowFilter });
         }
 
         public Pnyx rowTransformer(IRowTransformer transform)
         {
-            // Process any modifiers
-            for (int i = parts.Count - 1; i >= 0; i--)
-            {
-                IRowTransformerModifer modifier = parts[i] as IRowTransformerModifer;
-                if (modifier == null)
-                    continue;
-
+            // Process any modifier
+            IRowTransformerModifer modifier = retrieveTopModifier<IRowTransformerModifer>();
+            if (modifier != null)
                 transform = modifier.modifyRowTransformer(transform);                  // wraps filter according to active modifier
-            }
             
             return rowPart(new RowTransformerProcessor { transform = transform });
         }
@@ -536,38 +519,94 @@ namespace pnyx.net.fluent
             state = FluentState.Disposed;
         }
 
-/*
- Mothball for now
-        public Pnyx groupLineFilters(Action<Pnyx> pnyxToGroup)
+        private ModifierType retrieveTopModifier<ModifierType>() where ModifierType : class, IModifier 
         {
-            bool isRow = state == FluentState.Row;
-            state = FluentState.Line;                                    // only accepts line-filters
+            // finds first modifier, scanning from end of parts
+            for (int i = parts.Count - 1; i >= 0; i--)
+            {
+                IModifier modifier = parts[i] as IModifier;
+                if (modifier == null)
+                    continue;
+
+                ModifierType result = modifier as ModifierType;
+                return result;
+            }
+
+            return null;
+        }
+
+        // groups 0,1, or more filters.  Allows 0 and 1 so that any variable number of filters are treated as 1
+        public Pnyx groupFilters(Action<Pnyx> pnyxToGroup)
+        {
+            FluentState current = state;
             
-            if (state != FluentState.Line && state != FluentState.Start)
+            if (state != FluentState.Line && state != FluentState.Row && state != FluentState.Start)
                 throw new IllegalStateException("Pnyx is not in Line, Row, or Start state: {0}", state.ToString());
 
             int before = parts.Count;
             pnyxToGroup(this);
-            if (isRow)
-                state = FluentState.Row;
             
-            if (state != FluentState.Line && state != FluentState.Row || parts.Count == before)
-                throw new IllegalStateException("groupLineFilters only supports LineFilters");
+            if (current != FluentState.Start && current != state)
+                throw new IllegalStateException("State changed to {0} during groupFilters operation, which is not permitted", state.ToString());
 
-            LineFilterGroup group = new LineFilterGroup();
-            int i = before;
-            while (i < parts.Count)
+            if (state == FluentState.Row)
             {
-                LineFilterProcessor part = parts[i] as LineFilterProcessor;                
-                if (part == null)
-                    throw new IllegalStateException("groupLineFilters only supports LineFilters");
+                RowFilterGroup group = new RowFilterGroup();
+                int i = before;
+                while (i < parts.Count)
+                {
+                    RowFilterProcessor part = parts[i] as RowFilterProcessor;                
+                    if (part == null)
+                        throw new IllegalStateException("groupFilters only supports filters, but found processor of {0}", part.GetType().Name);
                 
-                parts.RemoveAt(i);
-                group.filters.Add(part.transform);
-            }
+                    parts.RemoveAt(i);
+                    group.filters.Add(part.filter);
+                }
 
-            return lineFilter(group);
+                return rowFilter(group);                
+            }
+            else
+            {
+                LineFilterGroup group = new LineFilterGroup();
+                int i = before;
+                while (i < parts.Count)
+                {
+                    LineFilterProcessor part = parts[i] as LineFilterProcessor;                
+                    if (part == null)
+                        throw new IllegalStateException("groupFilters only supports filters, but found processor of {0}", part.GetType().Name);
+                
+                    parts.RemoveAt(i);
+                    group.filters.Add(part.filter);
+                }
+
+                return lineFilter(group);
+            }            
         }
-*/        
+
+        public Pnyx beforeAfterFilter(int before, int after, Action<Pnyx> pnyxToGroup)
+        {
+            groupFilters(pnyxToGroup);
+
+            Object partRaw = parts[parts.Count - 1];
+            parts.RemoveAt(parts.Count - 1);
+            
+            if (state == FluentState.Row)
+            {
+                RowFilterProcessor part = partRaw as RowFilterProcessor;                
+                if (part == null)
+                    throw new IllegalStateException("groupFilters only supports filters, but found processor of {0}", part.GetType().Name);
+
+//                return rowBuffering(new BeforeAfterBuffering(before, after, null, processor.filter));
+                throw new NotImplementedException("Code ROW version");
+            }
+            else
+            {
+                LineFilterProcessor part = partRaw as LineFilterProcessor;                
+                if (partRaw == null)
+                    throw new IllegalStateException("groupFilters only supports filters, but found processor of {0}", part.GetType().Name);
+                
+                return lineBuffering(new BeforeAfterBuffering(before, after, part.filter, null));
+            }                       
+        }
     }
 }
