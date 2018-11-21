@@ -2,11 +2,10 @@
 File parsing and transforming automation scripting platform, Native .net
 
 ## Roadmap
-1. Boolean filters: Invert, And, Or, Xor
 1. Head, Tail
-1. Sort
 1. Cat
 1. Tee
+1. Sort
 1. Chain Pnyx
 1. Command line interface (maybe YAML)
 1. Command line installers
@@ -32,3 +31,4 @@ File parsing and transforming automation scripting platform, Native .net
 1. 2018-11-16: Tab-Separated read, write
 1. 2018-11-17: Column specific operations
 1. 2018-11-20: Buffering for lines 'before' and 'after' filter match
+1. 2018-11-20: Boolean filters: Invert, And, Or, Xor

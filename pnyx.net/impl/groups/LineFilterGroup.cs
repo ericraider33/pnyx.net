@@ -7,7 +7,7 @@ namespace pnyx.net.impl.groups
     {
         public readonly List<ILineFilter> filters = new List<ILineFilter>();
         
-        public bool shouldKeepLine(string line)
+        public virtual bool shouldKeepLine(string line)
         {
             foreach (ILineFilter filter in filters)
                 if (!filter.shouldKeepLine(line))

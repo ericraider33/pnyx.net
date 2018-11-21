@@ -7,7 +7,7 @@ using pnyx.net.errors;
 using pnyx.net.processors;
 using pnyx.net.util;
 
-namespace pnyx.net.impl
+namespace pnyx.net.impl.csv
 {
     public class CsvStreamToRowProcessor : IRowSource, IDisposable
     {

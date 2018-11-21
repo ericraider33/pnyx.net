@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Runtime.CompilerServices;
 using pnyx.net.errors;
 using pnyx.net.fluent;
 using pnyx.net.util;
@@ -469,7 +468,7 @@ Uranus,Uranus,""Father of the TitaXs""
             using (Pnyx p = new Pnyx())
             {
                 p.readString(EARTH);
-                p.groupFilters(pn => { });
+                p.and(pn => { });
                 actual = p.processToString();
             }
 
@@ -479,7 +478,7 @@ Uranus,Uranus,""Father of the TitaXs""
             using (Pnyx p = new Pnyx())
             {
                 p.readString(PLANETS_GODS);
-                p.groupFilters(pn => pn.grep("titan"));
+                p.and(pn => pn.grep("titan"));
                 actual = p.processToString();
             }
 
@@ -489,7 +488,7 @@ Uranus,Uranus,""Father of the TitaXs""
             using (Pnyx p = new Pnyx())
             {
                 p.readString(PLANETS_GODS);
-                p.groupFilters(pn =>
+                p.and(pn =>
                 {
                     pn.grep("ti");
                     pn.grep("sky");
@@ -539,6 +538,62 @@ Poseidon,Neptune,""God of the sea and earthquakes""
 ";                
             Assert.Equal(expected, actual);
         }
-        
+
+        [Fact]
+        public void or()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(PLANETS_GODS);
+                p.or(pn =>
+                {
+                    pn.grep("Cronus");
+                    pn.grep("Uranus");
+                });
+                actual = p.processToString();
+            }
+            
+            Assert.Equal(PLANETS_GODS_TITANS, actual);            
+        }        
+
+        [Fact]
+        public void not()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(PLANETS_GODS);
+                p.not(pn =>
+                {
+                    pn.grep("god");
+                });
+                actual = p.processToString();
+            }
+
+            const String expected = @"Uranus,Uranus,""Father of the Titans""
+";
+            Assert.Equal(expected, actual);            
+        }        
+
+        [Fact]
+        public void xor()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(PLANETS_GODS);
+                p.xor(pn =>
+                {
+                    pn.grep("titan");
+                    pn.grep("Cronus");
+                });
+                actual = p.processToString();
+            }
+
+            const String expected = @"Uranus,Uranus,""Father of the Titans""
+";
+            Assert.Equal(expected, actual);            
+        }        
     }
 }

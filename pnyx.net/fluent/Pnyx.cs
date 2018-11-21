@@ -5,7 +5,9 @@ using System.IO;
 using pnyx.net.api;
 using pnyx.net.errors;
 using pnyx.net.impl;
+using pnyx.net.impl.bools;
 using pnyx.net.impl.columns;
+using pnyx.net.impl.csv;
 using pnyx.net.impl.groups;
 using pnyx.net.impl.sed;
 using pnyx.net.processors;
@@ -539,7 +541,10 @@ namespace pnyx.net.fluent
         }
 
         // groups 0,1, or more filters.  Allows 0 and 1 so that any variable number of filters are treated as 1
-        public Pnyx groupFilters(Action<Pnyx> pnyxToGroup)
+        private Pnyx groupFilters(Action<Pnyx> pnyxToGroup,
+            Func<IEnumerable<ILineFilter>, ILineFilter> lineFilterFactory,
+            Func<IEnumerable<IRowFilter>, IRowFilter> rowFilterFactory            
+            )
         {
             FluentState current = state;
             
@@ -554,41 +559,73 @@ namespace pnyx.net.fluent
 
             if (state == FluentState.Row)
             {
-                RowFilterGroup group = new RowFilterGroup();
+                List<IRowFilter> filters = new List<IRowFilter>();
                 int i = before;
                 while (i < parts.Count)
                 {
                     RowFilterProcessor part = parts[i] as RowFilterProcessor;                
                     if (part == null)
-                        throw new IllegalStateException("groupFilters only supports filters, but found processor of {0}", part.GetType().Name);
+                        throw new IllegalStateException("groupFilters only supports filters, but found processor of {0}", parts[i].GetType().Name);
                 
                     parts.RemoveAt(i);
-                    group.filters.Add(part.filter);
+                    filters.Add(part.filter);
                 }
-
-                return rowFilter(group);                
+                
+                return rowFilter(rowFilterFactory(filters));                
             }
             else
             {
-                LineFilterGroup group = new LineFilterGroup();
+                List<ILineFilter> filters = new List<ILineFilter>();
                 int i = before;
                 while (i < parts.Count)
                 {
                     LineFilterProcessor part = parts[i] as LineFilterProcessor;                
                     if (part == null)
-                        throw new IllegalStateException("groupFilters only supports filters, but found processor of {0}", part.GetType().Name);
+                        throw new IllegalStateException("groupFilters only supports filters, but found processor of {0}", parts[i].GetType().Name);
                 
                     parts.RemoveAt(i);
-                    group.filters.Add(part.filter);
+                    filters.Add(part.filter);
                 }
 
-                return lineFilter(group);
+                return lineFilter(lineFilterFactory(filters));
             }            
+        }
+
+        public Pnyx and(Action<Pnyx> pnyxToGroup)
+        {
+            return groupFilters(pnyxToGroup,
+                x => new AndLineFilter(x),
+                x => new AndRowFilter(x)
+            );
+        }
+
+        public Pnyx or(Action<Pnyx> pnyxToGroup)
+        {
+            return groupFilters(pnyxToGroup,
+                x => new OrLineFilter(x),
+                x => new OrRowFilter(x)
+            );
+        }
+
+        public Pnyx xor(Action<Pnyx> pnyxToGroup)
+        {
+            return groupFilters(pnyxToGroup,
+                x => new XorLineFilter(x),
+                x => new XorRowFilter(x)
+            );
+        }
+
+        public Pnyx not(Action<Pnyx> pnyxToGroup)
+        {
+            return groupFilters(pnyxToGroup,
+                x => new NotLineFilter(x),
+                x => new NotRowFilter(x)
+            );
         }
 
         public Pnyx beforeAfterFilter(int before, int after, Action<Pnyx> pnyxToGroup)
         {
-            groupFilters(pnyxToGroup);
+            and(pnyxToGroup);
 
             Object partRaw = parts[parts.Count - 1];
             parts.RemoveAt(parts.Count - 1);

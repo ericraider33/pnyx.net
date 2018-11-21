@@ -7,7 +7,7 @@ namespace pnyx.net.impl.groups
     {
         public readonly List<IRowFilter> filters = new List<IRowFilter>();
 
-        public bool shouldKeepRow(string[] rows)
+        public virtual bool shouldKeepRow(string[] rows)
         {
             foreach (IRowFilter filter in filters)
                 if (!filter.shouldKeepRow(rows))

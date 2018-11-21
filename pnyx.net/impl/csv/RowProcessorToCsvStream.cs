@@ -1,8 +1,9 @@
 using System;
 using System.IO;
+using pnyx.net.processors;
 using pnyx.net.util;
 
-namespace pnyx.net.processors
+namespace pnyx.net.impl.csv
 {
     public class RowToCsvStream : IRowProcessor, IDisposable
     {

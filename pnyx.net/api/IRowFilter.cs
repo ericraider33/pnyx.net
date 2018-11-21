@@ -4,6 +4,6 @@ namespace pnyx.net.api
 {
     public interface IRowFilter
     {
-        bool shouldKeepRow(String[] values);
+        bool shouldKeepRow(String[] row);
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using pnyx.net.impl;
+using pnyx.net.impl.csv;
 using Xunit;
 
 namespace pnyx.net.test.impl
