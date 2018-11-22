@@ -595,5 +595,27 @@ Poseidon,Neptune,""God of the sea and earthquakes""
 ";
             Assert.Equal(expected, actual);            
         }        
+
+        [Fact]
+        public void catLine()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.cat(pn =>
+                {
+                    pn.readString(EARTH);
+                    pn.readString(EARTH);                    
+                });
+                actual = p.processToString();
+            }
+
+            const String expected =
+@"Gaia,Terra,""Mother goddess of the earth""
+Gaia,Terra,""Mother goddess of the earth""";
+            
+            Assert.Equal(expected, actual);
+        }
+        
     }
 }

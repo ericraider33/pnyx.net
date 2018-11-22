@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using pnyx.net.errors;
 using pnyx.net.impl.csv;
+using pnyx.net.processors.readers;
 using pnyx.net.test.processors;
 using pnyx.net.test.util;
 using pnyx.net.util;
@@ -65,31 +66,27 @@ namespace pnyx.net.test.impl
 
         private List<String[]> parseRows(String source, Action<CsvStreamToRowProcessor> callback = null)
         {
-            MemoryStream stream = new MemoryStream();
-            StreamWriter writer = new StreamWriter(stream);
-
             StreamInformation si = new StreamInformation();
-            CaptureRowProcessor capture = new CaptureRowProcessor();
             CsvStreamToRowProcessor csvProcess = new CsvStreamToRowProcessor();
-            csvProcess.setSource(si, stream, capture);
 
+            StringStreamFactory wrapper = new StringStreamFactory(source);
+            csvProcess.setSource(si, wrapper);
+            
+            CaptureRowProcessor capture = new CaptureRowProcessor();
+            csvProcess.setNext(capture);
+            
             if (callback != null)
                 callback(csvProcess);
             
             try
             {
-                writer.Write(source);
-                writer.Flush();
-                stream.Position = 0;
-
                 csvProcess.process();
                 return capture.rows;
             }
             finally
             {
-                try { writer.Dispose(); } catch (Exception) { }
+                try { wrapper.Dispose(); } catch (Exception) { }
                 try { csvProcess.Dispose(); } catch (Exception) { }
-                try { stream.Dispose(); } catch (Exception) { }
             }
         }
         

@@ -14,12 +14,12 @@ namespace pnyx.net.impl.csv
         public CsvRowConverter rowConverter { get; private set; }
         public StreamReader reader { get; private set; }
         public IRowProcessor rowProcessor { get; private set; }
-        public StreamInformation streamInformation { get; private set; }
+        public StreamInformation streamInformation { get; private set; }        
+        public IStreamFactory streamFactory { get; private set; }
         
         private readonly StringBuilder stringBuilder = new StringBuilder();
         private readonly List<String> row = new List<String>();
         private bool endOfFile;
-
 
         public CsvStreamToRowProcessor()
         {
@@ -38,16 +38,19 @@ namespace pnyx.net.impl.csv
 
         public void process()
         {
+            Stream stream = streamFactory.openStream();
+            reader = new StreamReader(stream, Encoding.ASCII, true);
+            
             endOfFile = false;
-            int rowNumber = 0;
             String[] current;
-            while ((current = readRow(rowNumber))!= null)
+            while ((current = readRow(streamInformation.lineNumber))!= null)
             {
-                rowNumber++;
+                streamInformation.lineNumber++;
                 rowProcessor.processRow(current);
             }
 
             rowProcessor.endOfFile();
+            streamFactory.closeStream();
         }
                 
         private enum  CsvState { StartOfLine, Quoted, Data, Seeking }
@@ -195,11 +198,15 @@ namespace pnyx.net.impl.csv
             reader = null;
         }
 
-        public void setSource(StreamInformation streamInformation, Stream stream, IRowProcessor rowProcessor)
+        public void setSource(StreamInformation streamInformation, IStreamFactory streamFactory)
         {
             this.streamInformation = streamInformation;
-            reader = new StreamReader(stream, streamInformation.defaultEncoding, true);
-            this.rowProcessor = rowProcessor;
+            this.streamFactory = streamFactory;
+        }
+
+        public void setNext(IRowProcessor next)
+        {
+            rowProcessor = next;
         }
     }
 }

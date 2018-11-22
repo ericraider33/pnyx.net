@@ -18,6 +18,7 @@ File parsing and transforming automation scripting platform, Native .net
 ## Distance Roadmap
 1. Sed duplication
 1. Port to Python, Javascript, and Java
+1. Support character transform
 
 ## Done
 1. 2018-09-08: Basic API

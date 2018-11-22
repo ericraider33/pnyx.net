@@ -10,6 +10,7 @@ namespace pnyx.net.util
         public bool endsWithNewLine;
         public Encoding defaultEncoding;
         public String defaultNewline;
+        public int lineNumber = 0;
 
         public StreamInformation()
         {

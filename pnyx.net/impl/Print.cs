@@ -5,7 +5,7 @@ using pnyx.net.processors;
 
 namespace pnyx.net.impl
 {
-    public class Print : IRowProcessor, ILinePart
+    public class Print : IRowProcessor, ILinePart, ILineProcessor
     {
         public String format;
         public ILineProcessor processor;

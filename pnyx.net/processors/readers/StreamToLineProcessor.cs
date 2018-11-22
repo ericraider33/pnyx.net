@@ -3,32 +3,35 @@ using System.IO;
 using System.Text;
 using pnyx.net.util;
 
-namespace pnyx.net.processors
+namespace pnyx.net.processors.readers
 {
-    public class StreamToLineProcessor : IProcessor, IDisposable
+    public class StreamToLineProcessor : IProcessor, IDisposable, ILinePart
     {
-        public StreamReader reader { get; private set; }
-        public ILineProcessor lineProcessor;
-        public readonly StreamInformation streamInformation;
+        public StreamReader reader { get; protected set; }
+        public StreamInformation streamInformation { get; protected set; }
+        public ILineProcessor lineProcessor { get; protected set; }
         
         private readonly StringBuilder stringBuilder = new StringBuilder();
         private bool endOfFile;
+
+        public StreamToLineProcessor()
+        {            
+        }
         
         public StreamToLineProcessor(StreamInformation streamInformation, Stream stream, ILineProcessor lineProcessor)
         {
             this.streamInformation = streamInformation;
             reader = new StreamReader(stream, Encoding.ASCII, true);
             this.lineProcessor = lineProcessor;
-        }
+        }                
 
-        public void process()
+        public virtual void process()
         {
             endOfFile = false;
-            int lineNumber = 0;
             String line;
-            while ((line = readLine(lineNumber))!= null)
+            while ((line = readLine(streamInformation.lineNumber))!= null)
             {
-                lineNumber++;
+                streamInformation.lineNumber++;
                 lineProcessor.processLine(line);
             }
 
@@ -95,6 +98,11 @@ namespace pnyx.net.processors
                 reader.Dispose();
             
             reader = null;
+        }
+
+        public void setNext(ILineProcessor next)
+        {
+            lineProcessor = next;
         }
     }
 }

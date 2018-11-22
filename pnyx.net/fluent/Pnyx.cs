@@ -2,15 +2,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using pnyx.net.api;
 using pnyx.net.errors;
 using pnyx.net.impl;
 using pnyx.net.impl.bools;
 using pnyx.net.impl.columns;
 using pnyx.net.impl.csv;
-using pnyx.net.impl.groups;
 using pnyx.net.impl.sed;
 using pnyx.net.processors;
+using pnyx.net.processors.readers;
 using pnyx.net.shims;
 using pnyx.net.util;
 
@@ -18,11 +20,9 @@ namespace pnyx.net.fluent
 {
     public class Pnyx : IDisposable
     {
-        private Stream start;
         private readonly ArrayList parts;
         private readonly List<IDisposable> resources;
         private IProcessor processor;
-        private IRowSource rowSource;
         private IRowConverter rowConverter;
         private FluentState state { get; set; }
         public StreamInformation streamInformation { get; private set; }
@@ -34,38 +34,38 @@ namespace pnyx.net.fluent
             resources = new List<IDisposable>();
         }
 
-        private void setStart(Stream start)
+        public Pnyx readStreamFactory(IStreamFactory streamFactory)
         {
+            StreamFactoryToLineProcessor toAdd = new StreamFactoryToLineProcessor(streamInformation, streamFactory);
+            
+            CatModifier cat = retrieveTopModifier<CatModifier>();
+            if (state == FluentState.Start && cat != null)                
+            {
+                cat.processSequence.sequence.Add(toAdd);
+                return this;
+            }
+            
             if (state != FluentState.New)
                 throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
 
-            this.start = start;
+            parts.Add(new StreamFactoryToLineProcessor(streamInformation, streamFactory));
             state = FluentState.Start;
+            return this;
         }
 
         public Pnyx read(String path)
         {
-            setStart(new FileStream(path, FileMode.Open, FileAccess.Read));
-            return this;
+            return readStreamFactory(new FileStreamFactory(path));
         }
 
         public Pnyx readStream(Stream input)
-        {
-            setStart(input);
-            return this;
+        {            
+            return readStreamFactory(new GenericStreamFactory(input));
         }
 
         public Pnyx readString(String source)
         {
-            MemoryStream stream = new MemoryStream();
-            StreamWriter writer = new StreamWriter(stream);
-
-            writer.Write(source);
-            writer.Flush();
-            stream.Position = 0;
-
-            setStart(stream);
-            return this;
+            return readStreamFactory(new StringStreamFactory(source));
         }
 
         public Pnyx lineToRow(IRowConverter converter)
@@ -178,13 +178,16 @@ namespace pnyx.net.fluent
                 
         public Pnyx parseCsv(bool strict = true)
         {
-            if (state == FluentState.Start)
+            ILineSource lineSource = (parts.Count == 0 ? null : parts[parts.Count-1]) as ILineSource;
+            if (state == FluentState.Start && lineSource != null)
             {
                 CsvStreamToRowProcessor csv = new CsvStreamToRowProcessor();
                 csv.setStrict(strict);
-                rowSource = csv;
+                csv.setSource(streamInformation, lineSource.streamFactory);
                 rowConverter = csv.getRowConverter();
-                state = FluentState.Row;
+
+                parts[parts.Count - 1] = csv;
+                state = FluentState.Row;                
             }
             else if (state == FluentState.Line)
             {
@@ -416,12 +419,15 @@ namespace pnyx.net.fluent
                 state = FluentState.End;
             }
             
-            resources.Add(output);        // marks for cleanup            
             return this;
         }
 
         public Pnyx compile()
         {
+            foreach (Object part in parts)
+                if (part is IDisposable)
+                    resources.Add((IDisposable)part);
+            
             Object last = parts[parts.Count - 1]; 
             for (int i = parts.Count-2; i >= 0; i--)
             {
@@ -442,18 +448,8 @@ namespace pnyx.net.fluent
 
                 last = part;                    
             }
-                        
-            if (rowSource != null)
-            {
-                rowSource.setSource(streamInformation, start, (IRowProcessor)last);
-                processor = rowSource;
-            }
-            else if (last is ILineProcessor)
-            {
-                processor = new StreamToLineProcessor(streamInformation, start, (ILineProcessor)last);
-            }
-            else
-                throw new IllegalStateException("Unknown part {0} should be consumed before compiling", last.GetType().Name);                        
+
+            processor = (IProcessor) parts[0];
             
             state = FluentState.Compiled;
             return this;
@@ -516,10 +512,6 @@ namespace pnyx.net.fluent
             foreach (IDisposable resource in resources)
                 resource.Dispose();                                    
             resources.Clear();
-            
-            if (start != null)
-                start.Dispose();
-            start = null;
 
             state = FluentState.Disposed;
         }
@@ -646,6 +638,28 @@ namespace pnyx.net.fluent
                 
                 return lineBuffering(new BeforeAfterLineBuffering(before, after, part.filter));
             }                       
+        }
+
+        public Pnyx cat(Action<Pnyx> pnyxToGroup)
+        {
+            if (state != FluentState.New)
+                throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
+
+            CatModifier cat = new CatModifier();
+            int indexToRemove = parts.Count;
+            parts.Add(cat);
+            state = FluentState.Start;
+            
+            // Runs actions for grouping
+            pnyxToGroup(this);
+
+            if (state != FluentState.Start && state != FluentState.New || parts.Count != indexToRemove+1)
+                throw new IllegalStateException("cat only supports read actions");
+            
+            parts.RemoveAt(indexToRemove);
+            parts.Add(cat.processSequence);
+
+            return this;
         }
     }
 }
