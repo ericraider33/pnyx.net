@@ -41,7 +41,7 @@ namespace pnyx.net.fluent
             if (state != FluentState.New && state != FluentState.Start)
                 throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
 
-            parts.Add(new StreamFactoryToLineProcessor(streamInformation, streamFactory));
+            parts.Add(new StreamToLineProcessor(streamInformation, streamFactory));
             state = FluentState.Start;
             return this;
         }

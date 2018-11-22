@@ -1,12 +1,14 @@
 using System;
 using System.IO;
 using System.Text;
+using pnyx.net.api;
 using pnyx.net.util;
 
 namespace pnyx.net.processors.readers
 {
-    public class StreamToLineProcessor : IProcessor, IDisposable, ILinePart
+    public class StreamToLineProcessor : IProcessor, IDisposable, ILinePart, ILineSource
     {
+        public IStreamFactory streamFactory { get; protected set; }        
         public StreamReader reader { get; protected set; }
         public StreamInformation streamInformation { get; protected set; }
         public ILineProcessor lineProcessor { get; protected set; }
@@ -14,19 +16,23 @@ namespace pnyx.net.processors.readers
         private readonly StringBuilder stringBuilder = new StringBuilder();
         private bool endOfFile;
 
-        public StreamToLineProcessor()
-        {            
-        }
-        
-        public StreamToLineProcessor(StreamInformation streamInformation, Stream stream, ILineProcessor lineProcessor)
+        public StreamToLineProcessor(StreamInformation streamInformation, IStreamFactory streamFactory)
         {
             this.streamInformation = streamInformation;
-            reader = new StreamReader(stream, Encoding.ASCII, true);
-            this.lineProcessor = lineProcessor;
+            this.streamFactory = streamFactory;
+        }
+                
+        public StreamToLineProcessor(StreamInformation streamInformation, Stream stream)
+        {
+            this.streamInformation = streamInformation;
+            streamFactory = new GenericStreamFactory(stream);
         }                
 
         public virtual void process()
         {
+            Stream stream = streamFactory.openStream();
+            reader = new StreamReader(stream, streamInformation.defaultEncoding, true);
+            
             endOfFile = false;
             String line;
             while ((line = readLine(streamInformation.lineNumber))!= null)
@@ -36,6 +42,7 @@ namespace pnyx.net.processors.readers
             }
 
             lineProcessor.endOfFile();
+            streamFactory.closeStream();            
         }
         
         protected virtual string readLine(int lineNumber)
