@@ -4,30 +4,30 @@ namespace pnyx.net.processors
 {
     public class RowProcessorSequence : IRowPart, IProcessor
     {
-        public readonly List<IProcessor> sequence = new List<IProcessor>();
-        public IRowProcessor rowProcessor { get; private set; }
+        public readonly List<IProcessor> processors = new List<IProcessor>();
+        public IRowProcessor next { get; private set; }
 
         private int index;
         
         public void setNext(IRowProcessor next)
         {
-            rowProcessor = next;
+            this.next = next;
         }
 
         public void process()
         {
-            RowProcessorCollector collector = new RowProcessorCollector(rowProcessor);
-            foreach (IRowPart part in sequence)
+            RowProcessorCollector collector = new RowProcessorCollector(next);
+            foreach (IRowPart part in processors)
                 part.setNext(collector);
             
-            while (index < sequence.Count)
+            while (index < processors.Count)
             {
-                IProcessor next = sequence[index];                
-                next.process();                
+                IProcessor current = processors[index];                
+                current.process();                
                 index++;
             }
             
-            rowProcessor.endOfFile();
+            next.endOfFile();
         }
 
         private class RowProcessorCollector : IRowProcessor

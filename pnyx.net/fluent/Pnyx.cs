@@ -2,8 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading;
 using pnyx.net.api;
 using pnyx.net.errors;
 using pnyx.net.impl;
@@ -36,16 +34,11 @@ namespace pnyx.net.fluent
 
         public Pnyx readStreamFactory(IStreamFactory streamFactory)
         {
-            StreamFactoryToLineProcessor toAdd = new StreamFactoryToLineProcessor(streamInformation, streamFactory);
+            CatModifier cat = retrieveModifier<CatModifier>(stopAtFirstModifier: false);
+            if (state == FluentState.Start && cat == null)
+                throw new IllegalStateException("Use cat method to read from multiple sources");
             
-            CatModifier cat = retrieveTopModifier<CatModifier>();
-            if (state == FluentState.Start && cat != null)                
-            {
-                cat.processSequence.sequence.Add(toAdd);
-                return this;
-            }
-            
-            if (state != FluentState.New)
+            if (state != FluentState.New && state != FluentState.Start)
                 throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
 
             parts.Add(new StreamFactoryToLineProcessor(streamInformation, streamFactory));
@@ -68,6 +61,43 @@ namespace pnyx.net.fluent
             return readStreamFactory(new StringStreamFactory(source));
         }
 
+        public Pnyx cat(Action<Pnyx> pnyxToGroup)
+        {
+            if (state != FluentState.New)
+                throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
+
+            CatModifier cat = new CatModifier();
+            int indexToReplace = parts.Count;
+            parts.Add(cat);
+            state = FluentState.Start;
+            
+            // Runs actions for grouping
+            pnyxToGroup(this);
+
+            if (state == FluentState.New || state == FluentState.Start)
+            {
+                LineProcessorSequence lpSequence = new LineProcessorSequence();
+                for (int i = indexToReplace+1; i < parts.Count;)
+                {
+                    IProcessor subProcessor = (IProcessor)parts[i];
+                    if (!(subProcessor is ILinePart))
+                        throw new IllegalStateException("Processor isn't compatible with sequenced line processing: {0}", subProcessor.GetType().Name);
+                    
+                    parts.RemoveAt(i);
+                    lpSequence.processors.Add(subProcessor);
+                }
+                
+                parts[indexToReplace] = lpSequence;            // replace CatModifier with LineSequenceProcessor
+                state = FluentState.Line;
+            }
+            else if (state == FluentState.Row)
+            {
+                throw new NotImplementedException();
+            }
+
+            return this;
+        }        
+        
         public Pnyx lineToRow(IRowConverter converter)
         {
             if (state == FluentState.Line || state == FluentState.Start)
@@ -245,7 +275,7 @@ namespace pnyx.net.fluent
         public Pnyx lineFilter(ILineFilter filter)
         {
             // Process any modifier
-            ILineFilterModifier modifier = retrieveTopModifier<ILineFilterModifier>();
+            ILineFilterModifier modifier = retrieveModifier<ILineFilterModifier>();
             if (modifier != null)
                 filter = modifier.modifyLineFilter(filter);                        // wraps filter according to active modifier
             
@@ -263,7 +293,7 @@ namespace pnyx.net.fluent
         public Pnyx lineTransformer(ILineTransformer transform)
         {
             // Process any modifier
-            ILineTransformerModifier modifier = retrieveTopModifier<ILineTransformerModifier>();
+            ILineTransformerModifier modifier = retrieveModifier<ILineTransformerModifier>();
             if (modifier != null)
                 transform = modifier.modifyLineTransformer(transform);                        // wraps filter according to active modifier            
             
@@ -329,7 +359,7 @@ namespace pnyx.net.fluent
         public Pnyx rowFilter(IRowFilter rowFilter)
         {
             // Process any modifier
-            IRowFilterModifier modifier = retrieveTopModifier<IRowFilterModifier>();
+            IRowFilterModifier modifier = retrieveModifier<IRowFilterModifier>();
             if (modifier != null)
                 rowFilter = modifier.modifyRowFilter(rowFilter);                        // wraps filter according to active modifier
                         
@@ -339,7 +369,7 @@ namespace pnyx.net.fluent
         public Pnyx rowTransformer(IRowTransformer transform)
         {
             // Process any modifier
-            IRowTransformerModifer modifier = retrieveTopModifier<IRowTransformerModifer>();
+            IRowTransformerModifer modifier = retrieveModifier<IRowTransformerModifer>();
             if (modifier != null)
                 transform = modifier.modifyRowTransformer(transform);                  // wraps filter according to active modifier
             
@@ -516,7 +546,7 @@ namespace pnyx.net.fluent
             state = FluentState.Disposed;
         }
 
-        private ModifierType retrieveTopModifier<ModifierType>() where ModifierType : class, IModifier 
+        private ModifierType retrieveModifier<ModifierType>(bool stopAtFirstModifier = true) where ModifierType : class, IModifier 
         {
             // finds first modifier, scanning from end of parts
             for (int i = parts.Count - 1; i >= 0; i--)
@@ -526,7 +556,8 @@ namespace pnyx.net.fluent
                     continue;
 
                 ModifierType result = modifier as ModifierType;
-                return result;
+                if (stopAtFirstModifier || result != null)                
+                    return result;
             }
 
             return null;
@@ -638,28 +669,6 @@ namespace pnyx.net.fluent
                 
                 return lineBuffering(new BeforeAfterLineBuffering(before, after, part.filter));
             }                       
-        }
-
-        public Pnyx cat(Action<Pnyx> pnyxToGroup)
-        {
-            if (state != FluentState.New)
-                throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
-
-            CatModifier cat = new CatModifier();
-            int indexToRemove = parts.Count;
-            parts.Add(cat);
-            state = FluentState.Start;
-            
-            // Runs actions for grouping
-            pnyxToGroup(this);
-
-            if (state != FluentState.Start && state != FluentState.New || parts.Count != indexToRemove+1)
-                throw new IllegalStateException("cat only supports read actions");
-            
-            parts.RemoveAt(indexToRemove);
-            parts.Add(cat.processSequence);
-
-            return this;
         }
     }
 }
