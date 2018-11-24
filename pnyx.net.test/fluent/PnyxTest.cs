@@ -163,6 +163,19 @@ The Lord is my shepherd";
         }
 
         [Fact]
+        public void asCsv()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.asCsv(pn => pn.readString(PLANETS_GODS_FORMAT_ISSUES), strict: false);                
+                actual = p.processToString();
+            }
+
+            Assert.Equal(PLANETS_GODS, actual);
+        }
+        
+        [Fact]
         public void rowFilter()
         {
             String actual;
@@ -623,10 +636,13 @@ Gaia,Terra,""Mother goddess of the earth""";
             String actual;
             using (Pnyx p = new Pnyx())
             {
-                p.cat(pn =>
+                p.cat(p2 =>
                 {
-                    pn.readString(EARTH);
-                    pn.parseCsv();
+                    p2.asCsv(p3 =>
+                    {
+                        p3.readString(EARTH);
+                        p3.readString(EARTH);
+                    });
                 });
                 actual = p.processToString();
             }

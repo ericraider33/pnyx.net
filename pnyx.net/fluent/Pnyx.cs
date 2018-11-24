@@ -41,7 +41,20 @@ namespace pnyx.net.fluent
             if (state != FluentState.New && state != FluentState.Start)
                 throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
 
-            parts.Add(new StreamToLineProcessor(streamInformation, streamFactory));
+            // Builds processor
+            IStreamFactoryModifier streamModifier = retrieveModifier<IStreamFactoryModifier>();
+            IProcessor readProcessor;
+            if (streamModifier != null)
+                readProcessor = streamModifier.buildProcessor(streamInformation, streamFactory);
+            else
+                readProcessor = new StreamToLineProcessor(streamInformation, streamFactory);
+
+            // Check if processor is a row-source
+            IRowSource rowSource = readProcessor as IRowSource;
+            if (rowSource != null)
+                rowConverter = rowSource.getRowConverter();
+            
+            parts.Add(readProcessor);
             state = FluentState.Start;
             return this;
         }
@@ -92,11 +105,41 @@ namespace pnyx.net.fluent
             }
             else if (state == FluentState.Row)
             {
-                throw new NotImplementedException();
+                RowProcessorSequence rpSequence = new RowProcessorSequence();
+                for (int i = indexToReplace+1; i < parts.Count;)
+                {
+                    IProcessor subProcessor = (IProcessor)parts[i];
+                    if (!(subProcessor is IRowPart))
+                        throw new IllegalStateException("Processor isn't compatible with sequenced row processing: {0}", subProcessor.GetType().Name);
+                    
+                    parts.RemoveAt(i);
+                    rpSequence.processors.Add(subProcessor);
+                }
+                
+                parts[indexToReplace] = rpSequence;            // replace CatModifier with LineSequenceProcessor
             }
 
             return this;
-        }        
+        }
+
+        public Pnyx asCsv(Action<Pnyx> pnyxToWrap, bool strict = true)
+        {
+            if (state != FluentState.New && state != FluentState.Start)
+                throw new IllegalStateException("Pnyx is not in New,Start state: {0}", state.ToString());
+
+            int indexModifier = parts.Count;
+            parts.Add(new CsvModifer { strict = strict });
+
+            pnyxToWrap(this);
+
+            if (state != FluentState.Start)
+                throw new IllegalStateException("CSV modifier only accepts allows reads: {0}", state.ToString());
+
+            state = FluentState.Row;
+            parts.RemoveAt(indexModifier);
+            
+            return this;
+        }
         
         public Pnyx lineToRow(IRowConverter converter)
         {
