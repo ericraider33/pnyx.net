@@ -4,7 +4,7 @@ using System.Text;
 using pnyx.net.api;
 using pnyx.net.util;
 
-namespace pnyx.net.processors.readers
+namespace pnyx.net.processors.sources
 {
     public class StreamToLineProcessor : IProcessor, IDisposable, ILinePart, ILineSource
     {
@@ -35,11 +35,14 @@ namespace pnyx.net.processors.readers
             
             endOfFile = false;
             String line;
-            while ((line = readLine(streamInformation.lineNumber))!= null)
+            while ((line = readLine(streamInformation.lineNumber))!= null && streamInformation.active)
             {
                 streamInformation.lineNumber++;
                 lineProcessor.processLine(line);
             }
+
+            if (!streamInformation.active)
+                streamInformation.endsWithNewLine = line != null;
 
             lineProcessor.endOfFile();
             streamFactory.closeStream();            

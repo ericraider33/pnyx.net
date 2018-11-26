@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using pnyx.net.errors;
 using pnyx.net.impl.csv;
-using pnyx.net.processors.readers;
+using pnyx.net.processors.sources;
 using pnyx.net.test.processors;
 using pnyx.net.test.util;
 using pnyx.net.util;

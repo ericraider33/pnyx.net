@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using pnyx.net.api;
 
-namespace pnyx.net.processors.readers
+namespace pnyx.net.processors.sources
 {
     public class GenericStreamFactory : IStreamFactory, IDisposable
     {

@@ -10,7 +10,7 @@ using pnyx.net.impl.columns;
 using pnyx.net.impl.csv;
 using pnyx.net.impl.sed;
 using pnyx.net.processors;
-using pnyx.net.processors.readers;
+using pnyx.net.processors.sources;
 using pnyx.net.shims;
 using pnyx.net.util;
 
@@ -89,7 +89,7 @@ namespace pnyx.net.fluent
 
             if (state == FluentState.New || state == FluentState.Start)
             {
-                LineProcessorSequence lpSequence = new LineProcessorSequence();
+                LineProcessorSequence lpSequence = new LineProcessorSequence(streamInformation);
                 for (int i = indexToReplace+1; i < parts.Count;)
                 {
                     IProcessor subProcessor = (IProcessor)parts[i];
@@ -105,7 +105,7 @@ namespace pnyx.net.fluent
             }
             else if (state == FluentState.Row)
             {
-                RowProcessorSequence rpSequence = new RowProcessorSequence();
+                RowProcessorSequence rpSequence = new RowProcessorSequence(streamInformation);
                 for (int i = indexToReplace+1; i < parts.Count;)
                 {
                     IProcessor subProcessor = (IProcessor)parts[i];
@@ -139,6 +139,19 @@ namespace pnyx.net.fluent
             parts.RemoveAt(indexModifier);
             
             return this;
+        }
+
+        public Pnyx head(int limit = 1)
+        {
+            if (limit < 1)
+                throw new InvalidArgumentException("Head limit must be greater than zero");
+
+            if (state == FluentState.Start || state == FluentState.Line)
+                return lineFilter(new HeadFilter(streamInformation, limit));
+            else if (state == FluentState.Row)
+                return rowFilter(new HeadFilter(streamInformation, limit));
+            else
+                throw new IllegalStateException("Pnyx is not in Line,Row,Start state: {0}", state.ToString());
         }
         
         public Pnyx lineToRow(IRowConverter converter)

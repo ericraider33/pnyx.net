@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using pnyx.net.util;
 
-namespace pnyx.net.processors
+namespace pnyx.net.processors.sources
 {
     public class RowProcessorSequence : IRowPart, IProcessor
     {
@@ -8,7 +9,13 @@ namespace pnyx.net.processors
         public IRowProcessor next { get; private set; }
 
         private int index;
-        
+        private StreamInformation streamInformation;
+
+        public RowProcessorSequence(StreamInformation streamInformation)
+        {
+            this.streamInformation = streamInformation;
+        }
+
         public void setNext(IRowProcessor next)
         {
             this.next = next;
@@ -20,7 +27,7 @@ namespace pnyx.net.processors
             foreach (IRowPart part in processors)
                 part.setNext(collector);
             
-            while (index < processors.Count)
+            while (index < processors.Count && streamInformation.active)
             {
                 IProcessor current = processors[index];                
                 current.process();                

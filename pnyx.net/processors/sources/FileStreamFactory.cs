@@ -1,7 +1,8 @@
 using System;
 using System.IO;
+using pnyx.net.api;
 
-namespace pnyx.net.api
+namespace pnyx.net.processors.sources
 {
     public class FileStreamFactory : IStreamFactory, IDisposable
     {

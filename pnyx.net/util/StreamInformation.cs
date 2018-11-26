@@ -11,6 +11,7 @@ namespace pnyx.net.util
         public Encoding defaultEncoding;
         public String defaultNewline;
         public int lineNumber = 0;
+        public bool active = true;        
 
         public StreamInformation()
         {

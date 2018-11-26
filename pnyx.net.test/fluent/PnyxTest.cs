@@ -653,6 +653,43 @@ Gaia,Terra,""Mother goddess of the earth""";
             
             Assert.Equal(expected, actual);
         }
-        
+
+        [Fact]
+        public void headLine()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(MAGNA_CARTA);
+                p.head(2);
+                actual = p.processToString();
+            }
+
+            const String expected =
+                @"KNOW THAT BEFORE GOD, for the health of our soul and those of our ancestors and heirs, 
+to the honour of God, the exaltation of the holy Church, and the better ordering of our
+";
+            
+            Assert.Equal(expected, actual);                       
+        }
+
+        [Fact]
+        public void headRow()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(PLANETS_GODS);
+                p.parseCsv();
+                p.head(2);
+                actual = p.processToString();
+            }
+
+            const String expected =
+@"Aphrodite,Venus,""Goddess of love and beauty""
+Ares,Mars,""Hated god of war""
+"; 
+            Assert.Equal(expected, actual);                       
+        }
     }
 }
