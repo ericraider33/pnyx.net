@@ -9,6 +9,7 @@ namespace pnyx.net.util
         public String newLine;
         public bool endsWithNewLine;
         public Encoding defaultEncoding;
+        public bool detectEncodingFromByteOrderMarks = true;
         public String defaultNewline;
         public int lineNumber = 0;
         public bool active = true;        

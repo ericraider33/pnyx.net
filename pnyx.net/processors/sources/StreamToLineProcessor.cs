@@ -31,7 +31,7 @@ namespace pnyx.net.processors.sources
         public virtual void process()
         {
             Stream stream = streamFactory.openStream();
-            reader = new StreamReader(stream, streamInformation.defaultEncoding, true);
+            reader = new StreamReader(stream, streamInformation.defaultEncoding, streamInformation.detectEncodingFromByteOrderMarks);
             
             endOfFile = false;
             String line;
@@ -105,9 +105,12 @@ namespace pnyx.net.processors.sources
         public void Dispose()
         {
             if (reader != null)                    
-                reader.Dispose();
-            
+                reader.Dispose();            
             reader = null;
+            
+            if (streamFactory != null && streamFactory is IDisposable)
+                ((IDisposable)streamFactory).Dispose();
+            streamFactory = null;
         }
 
         public void setNext(ILineProcessor next)

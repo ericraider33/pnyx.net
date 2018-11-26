@@ -39,7 +39,7 @@ namespace pnyx.net.impl.csv
         public void process()
         {
             Stream stream = streamFactory.openStream();
-            reader = new StreamReader(stream, Encoding.ASCII, true);
+            reader = new StreamReader(stream, streamInformation.defaultEncoding, streamInformation.detectEncodingFromByteOrderMarks);
             
             endOfFile = false;
             String[] current;

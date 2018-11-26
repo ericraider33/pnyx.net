@@ -691,5 +691,42 @@ Ares,Mars,""Hated god of war""
 "; 
             Assert.Equal(expected, actual);                       
         }
+
+        [Fact]
+        public void tailLine()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.tail(2);
+                p.readString(MAGNA_CARTA);
+                actual = p.processToString();
+            }
+
+            const String expected =
+                @"Matthew Fitz Herbert, Thomas Basset, Alan Basset, Philip Daubeny, Robert de Roppeley,
+John Marshal, John Fitz Hugh, and other loyal subjects:";
+            
+            Assert.Equal(expected, actual);                       
+        }
+
+        [Fact]
+        public void tailRow()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.tail(2);
+                p.readString(PLANETS_GODS);
+                p.parseCsv();
+                actual = p.processToString();
+            }
+
+            const String expected =
+                @"Uranus,Uranus,""Father of the Titans""
+Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
+"; 
+            Assert.Equal(expected, actual);                       
+        }
     }
 }

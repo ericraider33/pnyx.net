@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using pnyx.net.api;
@@ -41,6 +42,11 @@ namespace pnyx.net.fluent
             if (state != FluentState.New && state != FluentState.Start)
                 throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
 
+            // Check for wrapper
+            IStreamFactoryWrapper wrapper = retrieveModifier<IStreamFactoryWrapper>(consume: true);
+            if (wrapper != null)
+                streamFactory = wrapper.wrapStreamFactory(streamFactory);
+            
             // Builds processor
             IStreamFactoryModifier streamModifier = retrieveModifier<IStreamFactoryModifier>();
             IProcessor readProcessor;
@@ -152,6 +158,18 @@ namespace pnyx.net.fluent
                 return rowFilter(new HeadFilter(streamInformation, limit));
             else
                 throw new IllegalStateException("Pnyx is not in Line,Row,Start state: {0}", state.ToString());
+        }
+
+        public Pnyx tail(int limit = 1)
+        {
+            if (limit < 1)
+                throw new InvalidArgumentException("Head limit must be greater than zero");
+
+            if (state != FluentState.New && state != FluentState.Start)
+                throw new IllegalStateException("Pnyx is not in New,Start state: {0}", state.ToString());
+
+            parts.Add(new TailModifier(limit, streamInformation));
+            return this;
         }
         
         public Pnyx lineToRow(IRowConverter converter)
@@ -602,7 +620,8 @@ namespace pnyx.net.fluent
             state = FluentState.Disposed;
         }
 
-        private ModifierType retrieveModifier<ModifierType>(bool stopAtFirstModifier = true) where ModifierType : class, IModifier 
+        private ModifierType retrieveModifier<ModifierType>(bool stopAtFirstModifier = true, bool consume = false) 
+            where ModifierType : class, IModifier 
         {
             // finds first modifier, scanning from end of parts
             for (int i = parts.Count - 1; i >= 0; i--)
@@ -612,8 +631,13 @@ namespace pnyx.net.fluent
                     continue;
 
                 ModifierType result = modifier as ModifierType;
-                if (stopAtFirstModifier || result != null)                
+                if (stopAtFirstModifier || result != null)
+                {
+                    if (consume && result != null)
+                        parts.RemoveAt(i);
+                    
                     return result;
+                }
             }
 
             return null;

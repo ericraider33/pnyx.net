@@ -2,7 +2,6 @@
 File parsing and transforming automation scripting platform, Native .net
 
 ## Roadmap
-1. Head, Tail
 1. Tee
 1. Sort
 1. Chain Pnyx
@@ -33,3 +32,4 @@ File parsing and transforming automation scripting platform, Native .net
 1. 2018-11-20: Buffering for lines 'before' and 'after' filter match
 1. 2018-11-20: Boolean filters: Invert, And, Or, Xor
 1. 2018-11-24: Cat, both row and line
+1. 2018-11-25: Head, Tail
