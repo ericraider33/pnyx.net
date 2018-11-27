@@ -108,6 +108,11 @@ namespace pnyx.net.fluent
             return readStreamFactory(new StringStreamFactory(source));
         }
 
+        public Pnyx readStdin()
+        {
+            return readStream(Console.OpenStandardInput());
+        }
+
         public Pnyx cat(Action<Pnyx> pnyxToGroup)
         {
             if (state != FluentState.New)
@@ -246,6 +251,25 @@ namespace pnyx.net.fluent
                 throw new IllegalStateException("Pnyx is not in Row,Line or Start state: {0}", state.ToString());
 
             return this;                
+        }
+
+        public Pnyx columnDefinition(int? limit = null, bool maxWidth = false, bool hasHeaderRow = false)
+        {
+            ColumnDefinition buffering = new ColumnDefinition(streamInformation);
+            if (limit.HasValue)
+                buffering.limit = limit.Value;
+
+            ColumnDefinition.Flags flag = ColumnDefinition.Flags.None;
+            if (hasHeaderRow) flag |= ColumnDefinition.Flags.Header;
+            if (maxWidth) flag |= ColumnDefinition.Flags.MaxWidth;
+            buffering.flag = flag;
+
+            return rowBuffering(buffering);
+        }
+
+        public Pnyx swapColumnsAndRows()
+        {
+            return rowBuffering(new SwapColumnsAndRows());
         }
 
         public Pnyx selectColumns(params int[] columnNumbers)
@@ -615,6 +639,11 @@ namespace pnyx.net.fluent
         public Pnyx writeCsv(Stream stream, bool strict = true)
         {
             return setEnd(stream, new CsvRowConverter().setStrict(strict));            
+        }
+
+        public Pnyx writeStdout()
+        {
+            return setEnd(Console.OpenStandardOutput());
         }
 
         public Pnyx captureText(StringBuilder builder)

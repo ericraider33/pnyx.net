@@ -15,11 +15,18 @@ namespace pnyx.cmd
 //                p.write("c:/dev/ee1.txt");
 //                p.process();
 
-                p.read("c:/dev/pnyx.net/pnyx.net.test/files/csv/books.csv");
-                p.parseCsv();
-                p.grep("dickens");
-                p.write("c:/dev/pnyx.net/pnyx.net.test/out/csv/dickens.csv");
-                p.process();                
+//                p.read("c:/dev/pnyx.net/pnyx.net.test/files/csv/books.csv");
+//                p.parseCsv();
+//                p.grep("dickens");
+//                p.write("c:/dev/pnyx.net/pnyx.net.test/out/csv/dickens.csv");
+//                p.process();
+
+                p.read("C:/dev/asclepius/prod_import/Medicare_Provider_Util_Payment_PUF_CY2016.txt");
+                p.parseTab();
+                p.columnDefinition(hasHeaderRow: true, maxWidth: true);
+                p.swapColumnsAndRows();
+                p.writeStdout();
+                p.process();
             }
            
            /* 

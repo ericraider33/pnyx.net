@@ -1,0 +1,88 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using pnyx.net.api;
+using pnyx.net.util;
+
+namespace pnyx.net.impl.columns
+{
+    public class ColumnInformation
+    {
+        public String header;
+        public int maxWidth; 
+    }
+    
+    public class ColumnDefinition : IRowBuffering
+    {
+        [Flags]
+        public enum Flags
+        {
+            None = 0,
+            MaxWidth = 1,
+            Header = 2
+        }
+        
+        public StreamInformation streamInformation { get; private set; }
+        public int limit;
+        public Flags flag;
+        
+        private int lineNumber;
+        private List<ColumnInformation> infoList = new List<ColumnInformation>();
+
+        public ColumnDefinition(StreamInformation streamInformation)
+        {
+            this.streamInformation = streamInformation;
+            limit = Int32.MaxValue;
+            flag = Flags.MaxWidth;
+        }
+
+        public string[][] bufferingRow(string[] row)
+        {
+            lineNumber++;
+
+            for (int i = infoList.Count; i < row.Length; i++)
+                infoList.Add(new ColumnInformation());
+                
+            for (int i = 0; i < row.Length; i++)
+            {
+                String column = row[i];
+                ColumnInformation info = infoList[i];
+
+                if (lineNumber == 1 && flag.HasFlag(Flags.Header))
+                {
+                    info.header = column;
+                    continue;
+                }
+                
+                if (flag.HasFlag(Flags.MaxWidth))
+                    info.maxWidth = Math.Max(info.maxWidth, column.Length);
+            }
+            
+            if (lineNumber >= limit)
+                streamInformation.active = false;
+
+            return null;
+        }
+
+        public string[][] endOfFile()
+        {
+            List<String[]> result = new List<string[]>();
+
+            if (flag.HasFlag(Flags.Header))
+                result.Add(buildOutput("Header", list => list.Select(ci => ci.header)));
+
+            if (flag.HasFlag(Flags.MaxWidth))
+                result.Add(buildOutput("MaxWidth", list => list.Select(ci => ci.maxWidth.ToString())));
+            
+            return result.ToArray();
+        }
+
+        private String[] buildOutput(String title, Func<List<ColumnInformation>, IEnumerable<String>> action)
+        {
+            List<String> row = new List<String>(infoList.Count + 1);
+            row.Add(title);
+            row.AddRange(action(infoList));
+            return row.ToArray();            
+        }
+    }
+}
