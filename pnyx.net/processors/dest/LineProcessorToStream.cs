@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using pnyx.net.util;
 
-namespace pnyx.net.processors
+namespace pnyx.net.processors.dest
 {
     public class LineProcessorToStream : ILineProcessor, IDisposable
     {

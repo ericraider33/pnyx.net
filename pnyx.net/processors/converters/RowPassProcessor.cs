@@ -1,16 +1,12 @@
-using pnyx.net.api;
-
-namespace pnyx.net.processors
+namespace pnyx.net.processors.converters
 {
-    public class RowFilterProcessor : IRowPart, IRowProcessor
+    public class RowPassProcessor : IRowProcessor, IRowPart
     {
-        public IRowFilter filter;
         public IRowProcessor processor;
-
+        
         public void processRow(string[] row)
         {
-            if (filter.shouldKeepRow(row))
-                processor.processRow(row);
+            processor.processRow(row);
         }
 
         public void endOfFile()
@@ -21,6 +17,6 @@ namespace pnyx.net.processors
         public void setNext(IRowProcessor next)
         {
             processor = next;
-        }        
+        }
     }
 }

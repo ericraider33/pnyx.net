@@ -1,19 +1,9 @@
-using System;
-using pnyx.net.api;
-
-namespace pnyx.net.processors
+namespace pnyx.net.processors.converters
 {
-    public class RowToLineProcessor : IRowProcessor, ILinePart
+    public class LinePassProcessor : ILineProcessor, ILinePart
     {
-        public IRowConverter rowConverter;
         public ILineProcessor processor;
         
-        public void processRow(string[] row)
-        {
-            String line = rowConverter.rowToLine(row);
-            processor.processLine(line);
-        }
-
         public void processLine(string line)
         {
             processor.processLine(line);

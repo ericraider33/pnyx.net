@@ -1,6 +1,6 @@
 using pnyx.net.api;
 
-namespace pnyx.net.processors
+namespace pnyx.net.processors.rows
 {
     public class RowTransformerProcessor : IRowPart, IRowProcessor
     {

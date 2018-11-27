@@ -1,7 +1,7 @@
 using System;
 using pnyx.net.api;
 
-namespace pnyx.net.processors
+namespace pnyx.net.processors.lines
 {
     public class LineBufferingProcessor : ILinePart, ILineProcessor
     {

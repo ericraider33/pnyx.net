@@ -8,6 +8,7 @@ namespace pnyx.net.fluent
         Row,
         End,
         Compiled,
+        CompiledServile, 
         Processed,
         Disposed
     }

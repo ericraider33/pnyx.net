@@ -2,9 +2,7 @@
 File parsing and transforming automation scripting platform, Native .net
 
 ## Roadmap
-1. Tee
 1. Sort
-1. Chain Pnyx
 1. Command line interface (maybe YAML)
 1. Command line installers
 1. Build website for library, API, command line
@@ -33,3 +31,5 @@ File parsing and transforming automation scripting platform, Native .net
 1. 2018-11-20: Boolean filters: Invert, And, Or, Xor
 1. 2018-11-24: Cat, both row and line
 1. 2018-11-25: Head, Tail
+1. 2018-11-26: Tee
+1. 2018-11-26: Chain Pnyx, CompiledServile state

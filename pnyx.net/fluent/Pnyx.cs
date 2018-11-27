@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using pnyx.net.api;
 using pnyx.net.errors;
 using pnyx.net.impl;
@@ -11,6 +12,10 @@ using pnyx.net.impl.columns;
 using pnyx.net.impl.csv;
 using pnyx.net.impl.sed;
 using pnyx.net.processors;
+using pnyx.net.processors.converters;
+using pnyx.net.processors.dest;
+using pnyx.net.processors.lines;
+using pnyx.net.processors.rows;
 using pnyx.net.processors.sources;
 using pnyx.net.shims;
 using pnyx.net.util;
@@ -23,7 +28,7 @@ namespace pnyx.net.fluent
         private readonly List<IDisposable> resources;
         private IProcessor processor;
         private IRowConverter rowConverter;
-        private FluentState state { get; set; }
+        public FluentState state { get; private set; }
         public StreamInformation streamInformation { get; private set; }
             
         public Pnyx()
@@ -31,6 +36,29 @@ namespace pnyx.net.fluent
             streamInformation = new StreamInformation();
             parts = new ArrayList();
             resources = new List<IDisposable>();
+        }
+
+        public Pnyx startLine(ILinePart lineProcessor)
+        {
+            if (state != FluentState.New || parts.Count > 0)
+                throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
+            
+            parts.Add(lineProcessor);
+            state = FluentState.Line;
+            
+            return this;
+        }
+
+        public Pnyx startRow(IRowPart rowProcessor, IRowConverter rowConverter)
+        {
+            if (state != FluentState.New || parts.Count > 0)
+                throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
+            
+            parts.Add(rowProcessor);
+            this.rowConverter = rowConverter;
+            state = FluentState.Row;
+            
+            return this;            
         }
 
         public Pnyx readStreamFactory(IStreamFactory streamFactory)
@@ -485,6 +513,49 @@ namespace pnyx.net.fluent
             return lineBuffering(new SedInsert { text = text });
         }
 
+        public Pnyx compile()
+        {
+            if (state == FluentState.Compiled || state == FluentState.CompiledServile)
+                return this;
+            
+            if (state != FluentState.End)
+                throw new IllegalStateException("Pnyx is not in End state: {0}", state.ToString());
+            
+            foreach (Object part in parts)
+                if (part is IDisposable)
+                    resources.Add((IDisposable)part);
+            
+            Object last = parts[parts.Count - 1]; 
+            for (int i = parts.Count-2; i >= 0; i--)
+            {
+                Object part = parts[i];
+
+                if (part is IRowPart)
+                {
+                    IRowPart currentPart = (IRowPart)part;
+                    currentPart.setNext((IRowProcessor)last);
+                }
+                else if (part is ILinePart)
+                {
+                    ILinePart currentPart = (ILinePart)part;
+                    currentPart.setNext((ILineProcessor)last);
+                }
+                else
+                    throw new IllegalStateException("Unknown part {0} should be consumed before compiling", part.GetType().Name);
+
+                last = part;                    
+            }
+
+            processor = parts[0] as IProcessor;
+
+            if (processor == null)
+                state = FluentState.CompiledServile;         // first part is dependent upon another source (like a Tee from another Pnyx)
+            else
+                state = FluentState.Compiled;
+            
+            return this;
+        }      
+        
         private Pnyx setEnd(Stream output, Object destination = null)
         {
             if (state != FluentState.Line && state != FluentState.Row && state != FluentState.Start)
@@ -526,39 +597,6 @@ namespace pnyx.net.fluent
             return this;
         }
 
-        public Pnyx compile()
-        {
-            foreach (Object part in parts)
-                if (part is IDisposable)
-                    resources.Add((IDisposable)part);
-            
-            Object last = parts[parts.Count - 1]; 
-            for (int i = parts.Count-2; i >= 0; i--)
-            {
-                Object part = parts[i];
-
-                if (part is IRowPart)
-                {
-                    IRowPart currentPart = (IRowPart)part;
-                    currentPart.setNext((IRowProcessor)last);
-                }
-                else if (part is ILinePart)
-                {
-                    ILinePart currentPart = (ILinePart)part;
-                    currentPart.setNext((ILineProcessor)last);
-                }
-                else
-                    throw new IllegalStateException("Unknown part {0} should be consumed before compiling", part.GetType().Name);
-
-                last = part;                    
-            }
-
-            processor = (IProcessor) parts[0];
-            
-            state = FluentState.Compiled;
-            return this;
-        }        
-
         public Pnyx write(String path)
         {
             return setEnd(new FileStream(path, FileMode.Create, FileAccess.Write));
@@ -579,6 +617,37 @@ namespace pnyx.net.fluent
             return setEnd(stream, new CsvRowConverter().setStrict(strict));            
         }
 
+        public Pnyx captureText(StringBuilder builder)
+        {
+            return setEnd(null, new CaptureText(streamInformation, builder));
+        }
+
+        public Pnyx tee(Action<Pnyx> teeCommand)
+        {
+            Pnyx teePnyx = new Pnyx();
+            teePnyx.streamInformation = streamInformation;                    // shares source's stream-info
+            
+            if (state == FluentState.Start || state == FluentState.Line)
+            {
+                LinePassProcessor teePass = new LinePassProcessor();
+                teePnyx.startLine(teePass);
+                linePart(new LineTeeProcessor(teePass));
+            }
+            else if (state == FluentState.Row)
+            {
+                RowPassProcessor teePass = new RowPassProcessor();
+                teePnyx.startRow(teePass, rowConverter);
+                rowPart(new RowTeeProcessor(teePass));
+            }
+            else
+                throw new IllegalStateException("Pnyx is not in Line, Row, or Start state: {0}", state.ToString());
+
+            teeCommand(teePnyx);
+            teePnyx.compile();
+            resources.Add(teePnyx);
+            return this;
+        }
+        
         public String processToString(Action<Pnyx,Stream> writeAction = null)
         {
             using (MemoryStream stream = new MemoryStream())
@@ -598,6 +667,9 @@ namespace pnyx.net.fluent
         {
             if (state == FluentState.End)
                 compile();
+            
+            if (state == FluentState.CompiledServile)
+                throw new IllegalStateException("Pnyx is servile to another Pnyx");
             
             if (state != FluentState.Compiled)
                 throw new IllegalStateException("Pnyx must have an end point before processing");

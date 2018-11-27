@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using pnyx.net.errors;
 using pnyx.net.fluent;
 using pnyx.net.util;
@@ -727,6 +728,77 @@ John Marshal, John Fitz Hugh, and other loyal subjects:";
 Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
 "; 
             Assert.Equal(expected, actual);                       
+        }
+
+        [Fact]
+        public void teeLine()
+        {
+            StringBuilder capture = new StringBuilder();
+            String actualA;
+
+            Pnyx p = new Pnyx();
+            Pnyx teeP = null;
+            using (p)
+            {
+                p.readString(PLANETS_GODS_TITANS);
+                p.tee(pn =>
+                {
+                    teeP = pn;
+                    pn.captureText(capture);
+                });
+                actualA = p.processToString();
+            }
+            String actualB = capture.ToString();
+            
+            Assert.Equal(actualA, PLANETS_GODS_TITANS);
+            Assert.Equal(actualB, PLANETS_GODS_TITANS);
+            Assert.Equal(FluentState.Disposed, p.state);
+            Assert.Equal(FluentState.Disposed, teeP.state);
+        }
+
+        [Fact]
+        public void teeRow()
+        {
+            MemoryStream capture = new MemoryStream();
+            String actualA;
+
+            Pnyx p = new Pnyx();
+            Pnyx teeP = null;
+            using (p)
+            {
+                p.readString(PLANETS_GODS_FORMAT_ISSUES);
+                p.parseCsv(strict: false);
+                p.tee(pn =>
+                {
+                    teeP = pn;
+                    pn.writeStream(capture);
+                });
+                actualA = p.processToString();
+            }
+            String actualB = p.streamInformation.encoding.GetString(capture.ToArray());
+            
+            Assert.Equal(actualA, PLANETS_GODS);
+            Assert.Equal(actualB, PLANETS_GODS);
+            Assert.Equal(FluentState.Disposed, p.state);
+            Assert.Equal(FluentState.Disposed, teeP.state);
+        }
+
+        [Fact]
+        public void teeServile()
+        {
+            MemoryStream capture = new MemoryStream();
+
+            Pnyx teeP = null;            
+            Pnyx p = new Pnyx();
+            p.readString(PLANETS_GODS_TITANS);
+            p.tee(pn =>
+            {
+                teeP = pn;
+                pn.writeStream(capture);
+            });
+            
+            Assert.Equal(FluentState.CompiledServile, teeP.state);
+            Assert.Throws<IllegalStateException>(() => teeP.process());            
         }
     }
 }

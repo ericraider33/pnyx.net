@@ -1,6 +1,6 @@
 using System;
 
-namespace pnyx.net.processors
+namespace pnyx.net.processors.lines
 {
     public class LineTransformerFuncProcessor : ILinePart, ILineProcessor
     {

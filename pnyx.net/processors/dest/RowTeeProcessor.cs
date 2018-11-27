@@ -1,27 +1,25 @@
-using System;
-using pnyx.net.api;
-
-namespace pnyx.net.processors
+namespace pnyx.net.processors.dest
 {
-    public class LineToRowProcessor : ILineProcessor, IRowPart
+    public class RowTeeProcessor : IRowProcessor, IRowPart
     {
-        public IRowConverter rowConverter;
         public IRowProcessor processor;
-        
-        public void processLine(string line)
+        public IRowProcessor tee { get; private set; }
+
+        public RowTeeProcessor(IRowProcessor tee)
         {
-            String[] row = rowConverter.lineToRow(line);
-            processor.processRow(row);
+            this.tee = tee;
         }
 
         public void processRow(string[] row)
         {
             processor.processRow(row);
+            tee.processRow(row);
         }
 
         public void endOfFile()
         {
             processor.endOfFile();
+            tee.endOfFile();
         }
 
         public void setNext(IRowProcessor next)
