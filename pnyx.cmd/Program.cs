@@ -1,5 +1,6 @@
 ﻿using System;
 using pnyx.net.fluent;
+using pnyx.net.impl;
 
 namespace pnyx.cmd
 {
@@ -22,8 +23,9 @@ namespace pnyx.cmd
 //                p.process();
 
                 p.read("C:/dev/asclepius/prod_import/Medicare_Provider_Util_Payment_PUF_CY2016.txt");
+                p.lineFilter(new LineNumberSkip(2));
                 p.parseTab();
-                p.columnDefinition(hasHeaderRow: true, maxWidth: true);
+                p.columnDefinition(hasHeaderRow: true, nullable: true);
                 p.swapColumnsAndRows();
                 p.writeStdout();
                 p.process();

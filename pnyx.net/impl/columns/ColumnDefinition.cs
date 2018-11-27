@@ -9,7 +9,14 @@ namespace pnyx.net.impl.columns
     public class ColumnInformation
     {
         public String header;
-        public int maxWidth; 
+        public int maxWidth;
+        public int minWidth;
+        public bool nullable;
+
+        public ColumnInformation()
+        {
+            minWidth = Int32.MaxValue;   
+        }
     }
     
     public class ColumnDefinition : IRowBuffering
@@ -19,7 +26,9 @@ namespace pnyx.net.impl.columns
         {
             None = 0,
             MaxWidth = 1,
-            Header = 2
+            MinWidth = 2,
+            Nullable = 4,
+            Header = 8
         }
         
         public StreamInformation streamInformation { get; private set; }
@@ -56,6 +65,9 @@ namespace pnyx.net.impl.columns
                 
                 if (flag.HasFlag(Flags.MaxWidth))
                     info.maxWidth = Math.Max(info.maxWidth, column.Length);
+
+                if (flag.HasFlag(Flags.Nullable) || flag.HasFlag(Flags.MinWidth))
+                    info.minWidth = Math.Min(info.minWidth, column.Length);
             }
             
             if (lineNumber >= limit)
@@ -71,8 +83,14 @@ namespace pnyx.net.impl.columns
             if (flag.HasFlag(Flags.Header))
                 result.Add(buildOutput("Header", list => list.Select(ci => ci.header)));
 
+            if (flag.HasFlag(Flags.MinWidth))
+                result.Add(buildOutput("MinWidth", list => list.Select(ci => ci.minWidth.ToString())));
+
             if (flag.HasFlag(Flags.MaxWidth))
                 result.Add(buildOutput("MaxWidth", list => list.Select(ci => ci.maxWidth.ToString())));
+
+            if (flag.HasFlag(Flags.Nullable))
+                result.Add(buildOutput("Nullable", list => list.Select(ci => ci.minWidth > 0 ? "not null" : "null")));
             
             return result.ToArray();
         }

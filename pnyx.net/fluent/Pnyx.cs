@@ -253,7 +253,7 @@ namespace pnyx.net.fluent
             return this;                
         }
 
-        public Pnyx columnDefinition(int? limit = null, bool maxWidth = false, bool hasHeaderRow = false)
+        public Pnyx columnDefinition(int? limit = null, bool maxWidth = false, bool hasHeaderRow = false, bool minWidth = false, bool nullable = false)
         {
             ColumnDefinition buffering = new ColumnDefinition(streamInformation);
             if (limit.HasValue)
@@ -262,6 +262,8 @@ namespace pnyx.net.fluent
             ColumnDefinition.Flags flag = ColumnDefinition.Flags.None;
             if (hasHeaderRow) flag |= ColumnDefinition.Flags.Header;
             if (maxWidth) flag |= ColumnDefinition.Flags.MaxWidth;
+            if (minWidth) flag |= ColumnDefinition.Flags.MinWidth;
+            if (nullable) flag |= ColumnDefinition.Flags.Nullable;
             buffering.flag = flag;
 
             return rowBuffering(buffering);
