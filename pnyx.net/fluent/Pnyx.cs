@@ -450,19 +450,13 @@ namespace pnyx.net.fluent
         }             
         
         public Pnyx lineFilter(Func<String, bool> filter)
-        {            
-            if (state == FluentState.Row)
-                return rowFilter(new RowFilterFuncShim { lineFilter = filter });
-
-            return linePart(new LineFilterFuncProcessor { transform = filter });
+        {
+            return lineFilter(new LineFilterFunc { lineFilterFunc = filter });
         }
         
         public Pnyx lineTransformer(Func<String, String> transform)
         {
-            if (state == FluentState.Row)
-                return rowTransformer(new RowTransformerFuncShim { lineTransformer = transform });                
-
-            return linePart(new LineTransformerFuncProcessor { transform = transform });
+            return lineTransformer(new LineTransformerFunc { lineTransformerFunc = transform });
         }           
         
         public Pnyx rowPart(IRowPart rowPart)
@@ -492,7 +486,7 @@ namespace pnyx.net.fluent
                 rowFilter = modifier.modifyRowFilter(rowFilter);                        // wraps filter according to active modifier
                         
             return rowPart(new RowFilterProcessor { filter = rowFilter });
-        }
+        }       
 
         public Pnyx rowTransformer(IRowTransformer transform)
         {
@@ -503,7 +497,17 @@ namespace pnyx.net.fluent
             
             return rowPart(new RowTransformerProcessor { transform = transform });
         }
-
+        
+        public Pnyx rowFilter(Func<String[], bool> filter)
+        {
+            return rowFilter(new RowFilterFunc { rowFilterFunc = filter });
+        }
+        
+        public Pnyx rowTransformer(Func<String[], String[]> transform)
+        {
+            return rowTransformer(new RowTransformerFunc { rowTransformerFunc = transform });
+        }           
+        
         public Pnyx rowBuffering(IRowBuffering transform)
         {
             return rowPart(new RowBufferingProcessor { transform = transform });

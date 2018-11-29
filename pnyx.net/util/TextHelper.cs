@@ -717,5 +717,40 @@ namespace pnyx.net.util
             return counts;
         }
 
+        public static String enocdeSqlValue(String source, bool quote = true, bool inculdePatternMatching = false, bool encodeNull = true)
+        {
+            if (encodeNull && source == null)
+                return "null";
+
+            source = source ?? "";
+
+            StringBuilder result = new StringBuilder(source.Length * 2);
+            if (quote)
+                result.Append('\'');
+
+            foreach (Char c in source)
+            {
+                switch (c)
+                {
+                    case '\0':  result.Append("\\0");   break;
+                    case '\'':  result.Append("\\'");   break;
+                    case '"':  result.Append("\\\"");   break;
+                    case '\b':  result.Append("\\b");   break;
+                    case '\n':  result.Append("\\n");   break;
+                    case '\r':  result.Append("\\r");   break;
+                    case '\t':  result.Append("\\t");   break;
+                    case '\u001A': result.Append("\\z"); break;
+                    case '\\':  result.Append("\\\\");   break;
+                    case '%':   result.Append(inculdePatternMatching ? "\\%" : "%");   break;
+                    case '_':  result.Append(inculdePatternMatching ? "\\_": "_");   break;
+                    default:    result.Append(c);       break;
+                }
+            }
+            if (quote)
+                result.Append('\'');
+            
+            return result.ToString();
+        }
+
     }
 }

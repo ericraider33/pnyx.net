@@ -2,6 +2,7 @@
 File parsing and transforming automation scripting platform, Native .net
 
 ## Roadmap
+1. Row manipulation 
 1. Egrep, Has Data filter, modify and,or syntax to support shims
 1. Sort
 1. Command line interface (maybe YAML)
