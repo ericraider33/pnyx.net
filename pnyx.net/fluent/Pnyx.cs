@@ -648,6 +648,17 @@ namespace pnyx.net.fluent
             return setEnd(Console.OpenStandardOutput());
         }
 
+        public Pnyx writeSplit(String fileNamePattern, int limit, String path = null)
+        {
+            if (!fileNamePattern.Contains("$0"))
+                throw new InvalidArgumentException("FileName pattern requires $0 substitution variable");
+            
+            if (state == FluentState.Row)
+                rowToLine();
+
+            return setEnd(null, new LineProcessorSplit(streamInformation, fileNamePattern, limit, path));
+        }
+
         public Pnyx captureText(StringBuilder builder)
         {
             return setEnd(null, new CaptureText(streamInformation, builder));

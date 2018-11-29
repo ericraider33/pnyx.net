@@ -3,7 +3,6 @@ File parsing and transforming automation scripting platform, Native .net
 
 ## Roadmap
 1. Sort
-1. Split
 1. Command line interface (maybe YAML)
 1. Command line installers
 1. Build website for library, API, command line
@@ -35,3 +34,4 @@ File parsing and transforming automation scripting platform, Native .net
 1. 2018-11-26: Tee
 1. 2018-11-26: Chain Pnyx, CompiledServile state
 1. 2018-11-27: Column definition stub
+1. 2018-11-28: Split
