@@ -43,11 +43,14 @@ namespace pnyx.net.impl.csv
             
             endOfFile = false;
             String[] current;
-            while ((current = readRow(streamInformation.lineNumber))!= null)
+            while ((current = readRow(streamInformation.lineNumber))!= null && streamInformation.active)
             {
                 streamInformation.lineNumber++;
                 rowProcessor.processRow(current);
             }
+
+            if (!streamInformation.active)
+                streamInformation.endsWithNewLine = current != null;
 
             rowProcessor.endOfFile();
             streamFactory.closeStream();
