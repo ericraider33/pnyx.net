@@ -2,8 +2,9 @@
 File parsing and transforming automation scripting platform, Native .net
 
 ## Roadmap
-1. Row manipulation 
-1. Egrep, Has Data filter, modify and,or syntax to support shims
+1. Egrep
+1. Has Data filter / columns
+1. modify and/or syntax to support shims
 1. Sort
 1. Command line interface (maybe YAML)
 1. Command line installers
@@ -37,3 +38,5 @@ File parsing and transforming automation scripting platform, Native .net
 1. 2018-11-26: Chain Pnyx, CompiledServile state
 1. 2018-11-27: Column definition stub
 1. 2018-11-28: Split
+1. 2018-11-30: Row manipulation 
+

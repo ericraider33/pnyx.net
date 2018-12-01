@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace pnyx.net.util
 {
@@ -39,6 +40,50 @@ namespace pnyx.net.util
             for (int i = Math.Min(row.Length, columnIndex); i < row.Length; i++)
                 result[i + replacement.Length] = row[i];
                         
+            return result;
+        }
+
+        public static String[] insertBlankColumns(String[] row, ISet<int> columnNumbers, String pad = "")
+        {
+            String[] result = new String[row.Length + columnNumbers.Count];
+            for (int i = 0, source = 0; i < result.Length; i++)
+            {
+                if (columnNumbers.Contains(source + 1))
+                    result[i++] = pad;
+
+                if (i < result.Length)
+                    result[i] = row[source++];
+            }
+
+            return result;
+        }
+
+        public static String[] duplicateColumns(String[] row, ISet<int> columnNumbers, String pad = "")
+        {
+            String[] result = new String[row.Length + columnNumbers.Count];
+            for (int i = 0, source = 0; i < result.Length; i++)
+            {
+                if (columnNumbers.Contains(source + 1))
+                    result[i++] = source < row.Length ? row[source] : pad;
+
+                if (i < result.Length)
+                    result[i] = row[source++];
+            }
+
+            return result;
+        }
+
+        public static String[] removeColumns(String[] row, ISet<int> columnNumbers)
+        {
+            String[] result = new String[row.Length - columnNumbers.Count];
+            for (int i = 0, dest = 0; i < row.Length; i++)
+            {
+                if (columnNumbers.Contains(i + 1))
+                    continue;
+
+                result[dest++] = row[i];
+            }
+
             return result;
         }
 

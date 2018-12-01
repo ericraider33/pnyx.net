@@ -274,6 +274,36 @@ namespace pnyx.net.fluent
             return rowBuffering(new SwapColumnsAndRows());
         }
 
+        public Pnyx widthColumns(int columns, String pad = "")
+        {
+            return rowTransformer(new WidthColumns { columns = columns, pad = pad });
+        }
+
+        public Pnyx removeColumns(params int[] columnNumbers)
+        {            
+            return rowTransformer(new RemoveColumns(columnNumbers));
+        }
+
+        public Pnyx insertColumns(String pad = "", params int[] columnNumbers)
+        {
+            return rowTransformer(new InsertColumns(columnNumbers) { pad = pad });
+        }
+
+        public Pnyx insertColumns(params int[] columnNumbers)
+        {
+            return rowTransformer(new InsertColumns(columnNumbers));
+        }
+
+        public Pnyx duplicateColumns(String pad = "", params int[] columnNumbers)
+        {
+            return rowTransformer(new DuplicateColumns(columnNumbers) { pad = pad });
+        }
+
+        public Pnyx duplicateColumns(params int[] columnNumbers)
+        {
+            return rowTransformer(new DuplicateColumns(columnNumbers));
+        }
+
         public Pnyx selectColumns(params int[] columnNumbers)
         {
             int[] indexes = convertColumnNumbersToIndex(columnNumbers);            
