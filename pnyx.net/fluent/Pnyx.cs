@@ -274,6 +274,11 @@ namespace pnyx.net.fluent
             return rowBuffering(new SwapColumnsAndRows());
         }
 
+        public Pnyx hasColumns(bool verifyColumnHasText, params int[] columnNumbers)
+        {
+            return rowFilter(new HasColumns(columnNumbers, verifyColumnHasText));
+        }
+
         public Pnyx widthColumns(int columns, String pad = "")
         {
             return rowTransformer(new WidthColumns { columns = columns, pad = pad });
@@ -551,6 +556,11 @@ namespace pnyx.net.fluent
         public Pnyx egrep(String expression, bool caseSensitive = true)
         {
             return lineFilter(new EGrep(expression, caseSensitive));
+        }
+
+        public Pnyx hasLine()
+        {
+            return lineFilter(new HasLine());
         }
 
         public Pnyx sed(String pattern, String replacement, String flags = null)
