@@ -2,7 +2,6 @@
 File parsing and transforming automation scripting platform, Native .net
 
 ## Roadmap
-1. Egrep
 1. Has Data filter / columns
 1. modify and/or syntax to support shims
 1. Sort
@@ -39,4 +38,5 @@ File parsing and transforming automation scripting platform, Native .net
 1. 2018-11-27: Column definition stub
 1. 2018-11-28: Split
 1. 2018-11-30: Row manipulation 
+1. 2018-12-01: Egrep
 

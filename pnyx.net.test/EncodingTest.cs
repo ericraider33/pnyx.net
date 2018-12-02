@@ -25,9 +25,9 @@ namespace pnyx.net.test
 
         private void verifyEncoding(String file, String expectedEncoding)
         {
-            String inPath = Path.Combine(TestHelper.findTestFileLocation(), "encoding", file);
-            String outPath = Path.Combine(TestHelper.findTestOutputLocation(), "encoding", file);
-            FileHelper.assureDirectoryStructExists(outPath);
+            String inPath = Path.Combine(TestUtil.findTestFileLocation(), "encoding", file);
+            String outPath = Path.Combine(TestUtil.findTestOutputLocation(), "encoding", file);
+            FileUtil.assureDirectoryStructExists(outPath);
 
             using (Pnyx p = new Pnyx())
             {                
@@ -39,7 +39,7 @@ namespace pnyx.net.test
                 Assert.Equal(expectedEncoding, actualEncoding);
             }
             
-            Assert.Null(TestHelper.binaryDiff(inPath, outPath));
+            Assert.Null(TestUtil.binaryDiff(inPath, outPath));
         }
         
     }

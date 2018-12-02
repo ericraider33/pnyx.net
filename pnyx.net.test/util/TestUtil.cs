@@ -5,7 +5,7 @@ using Xunit;
 
 namespace pnyx.net.test.util
 {
-    public static class TestHelper
+    public static class TestUtil
     {
         public const String ENV_TEST_FILES = "PNYX_TEST_FILES";
         public const String ENV_TEST_OUTPUT = "PNYX_TEST_OUTPUT";

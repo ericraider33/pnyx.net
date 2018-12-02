@@ -78,7 +78,7 @@ namespace pnyx.net.test.impl
                 output.AddRange(bufOut);
 
             String[] actual = output.ToArray();
-            TestHelper.assertArrayEquals(expected, actual);
+            TestUtil.assertArrayEquals(expected, actual);
         }                
     }
 }

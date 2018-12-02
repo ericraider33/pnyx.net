@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace pnyx.net.util
 {
-    public static class NameHelper
+    public static class NameUtil
     {
         private static readonly String[] SUFFIX =
         {
@@ -87,7 +87,7 @@ namespace pnyx.net.util
         {
             str = extractNameString(str);           // removes any invalid characters
 
-            if (!TextHelper.isMixedCase(str))
+            if (!TextUtil.isMixedCase(str))
                 str = toTitleCase(str);
 
             return str;
@@ -106,7 +106,7 @@ namespace pnyx.net.util
             nameParts = nameParts[1].Split(' ');
             
             // Parses known suffix
-            String suffix = nameParts.FirstOrDefault(x => TextHelper.findIgnoreCase(SUFFIX, x) != null);
+            String suffix = nameParts.FirstOrDefault(x => TextUtil.findIgnoreCase(SUFFIX, x) != null);
             if (suffix != null && nameParts.Length > 1)
             {
                 nameParts = nameParts.Where(x => x != suffix).ToArray();
@@ -135,7 +135,7 @@ namespace pnyx.net.util
             nameParts = nameParts[1].Split(' ');
 
             // Parses known suffix
-            String suffix = nameParts.FirstOrDefault(x => TextHelper.findIgnoreCase(SUFFIX, x) != null);
+            String suffix = nameParts.FirstOrDefault(x => TextUtil.findIgnoreCase(SUFFIX, x) != null);
             if (suffix != null && nameParts.Length > 1)
             {
                 nameParts = nameParts.Where(x => x != suffix).ToArray();
@@ -163,7 +163,7 @@ namespace pnyx.net.util
             String suffix = null;
             if (nameParts.Length > 2)
             {
-                suffix = nameParts.FirstOrDefault(x => TextHelper.findIgnoreCase(SUFFIX, x) != null);
+                suffix = nameParts.FirstOrDefault(x => TextUtil.findIgnoreCase(SUFFIX, x) != null);
                 if (suffix != null)
                     nameParts = nameParts.Where(x => x != suffix).ToArray();
             }
@@ -186,8 +186,8 @@ namespace pnyx.net.util
             if (String.IsNullOrWhiteSpace(text))
                 return null;
 
-            text = TextHelper.extractAlpha(text);
-            return TextHelper.findIgnoreCase(SUFFIX, text) != null ? text : null;
+            text = TextUtil.extractAlpha(text);
+            return TextUtil.findIgnoreCase(SUFFIX, text) != null ? text : null;
         }
     }
 }

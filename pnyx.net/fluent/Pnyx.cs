@@ -543,9 +543,14 @@ namespace pnyx.net.fluent
             return rowPart(new RowBufferingProcessor { transform = transform });
         }
 
-        public Pnyx grep(String textToFind, bool caseSensitive = true, bool invert = false)
+        public Pnyx grep(String textToFind, bool caseSensitive = true)
         {
-            return lineFilter(new Grep { textToFind = textToFind, caseSensitive = caseSensitive, invert = invert });
+            return lineFilter(new Grep { textToFind = textToFind, caseSensitive = caseSensitive });
+        }
+
+        public Pnyx egrep(String expression, bool caseSensitive = true)
+        {
+            return lineFilter(new EGrep(expression, caseSensitive));
         }
 
         public Pnyx sed(String pattern, String replacement, String flags = null)

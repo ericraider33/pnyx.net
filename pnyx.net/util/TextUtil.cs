@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace pnyx.net.util
 {
-    public static class TextHelper
+    public static class TextUtil
     {
         public static String concate(String delimiter, params String[] x)
         {

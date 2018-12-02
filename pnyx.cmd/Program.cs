@@ -19,14 +19,14 @@ namespace pnyx.cmd
                     
                     if (row[0].Contains(","))
                     {
-                        Tuple<String, String> nameTitle = TextHelper.splitAt(row[0], ",");
+                        Tuple<String, String> nameTitle = TextUtil.splitAt(row[0], ",");
                         fullName = nameTitle.Item1.Trim();
                         row[1] = nameTitle.Item2.Trim();
                     }
                     
                     fullName = fullName.Replace(".", "");
                     
-                    Tuple<String, String, String> name = NameHelper.parseFullName(fullName);
+                    Tuple<String, String, String> name = NameUtil.parseFullName(fullName);
                     return RowHelper.insertColumns(row, 2, name.Item1, name.Item3);
                 });
                 p.writeCsv("G:/My Drive/Sales/database/emails/names2.csv");                
@@ -38,7 +38,7 @@ namespace pnyx.cmd
                 p.read("G:/My Drive/Sales/database/emails/names2.csv");
                 p.parseCsv();
                 p.rowTransformer(row => RowHelper.fixWidth(row, 4));
-                p.lineTransformer(x => TextHelper.enocdeSqlValue(TextHelper.emptyAsNull(x)));
+                p.lineTransformer(x => TextUtil.enocdeSqlValue(TextUtil.emptyAsNull(x)));
                 p.print("update groupexecs set first=$2, last=$3, title=$4 where executivename=$1;");
                 p.write("G:/My Drive/Sales/database/emails/names.sql");                
                 p.process();

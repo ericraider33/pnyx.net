@@ -59,8 +59,8 @@ namespace pnyx.net.test.impl
             if (rows.Count > 0) actualA = rows[0];
             if (rows.Count > 1) actualB = rows[1];
             
-            Assert.True(EqualsHelper.areArraysEquals(actualA, rowA));
-            Assert.True(EqualsHelper.areArraysEquals(actualB, rowB));
+            Assert.True(EqualsUtil.areArraysEquals(actualA, rowA));
+            Assert.True(EqualsUtil.areArraysEquals(actualB, rowB));
         }
 
         private List<String[]> parseRows(String source, Action<CsvStreamToRowProcessor> callback = null)

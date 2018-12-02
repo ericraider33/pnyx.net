@@ -1,6 +1,6 @@
 namespace pnyx.net.test.util
 {
-    public static class EqualsHelper
+    public static class EqualsUtil
     {
         public static bool areArraysEquals<T>(T[] a, T[] b)
         {

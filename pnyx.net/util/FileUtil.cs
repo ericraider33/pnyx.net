@@ -4,7 +4,7 @@ using System.IO;
 
 namespace pnyx.net.util
 {
-    public static class FileHelper
+    public static class FileUtil
     {        
         public static void assureDirectoryStructExists(String absolutePath)
         {                        
