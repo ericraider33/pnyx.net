@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -422,17 +421,8 @@ namespace pnyx.net.fluent
                 state = FluentState.Line;
                 return this;
             }
-            else if (state == FluentState.Row)
-            {
-                // look for SHIM
-                
-                // else convert to LINE
-                
-                throw new NotImplementedException("Code ROW to LINE");
-                
-            }
             else
-                throw new IllegalStateException("Pnyx is not in Line, Row, or Start state: {0}", state.ToString());
+                throw new IllegalStateException("Pnyx is not in Line, or Start state: {0}", state.ToString());
         }
 
         public Pnyx lineFilter(ILineFilter filter)
@@ -444,10 +434,13 @@ namespace pnyx.net.fluent
             
             if (state == FluentState.Row)
             {
+                IRowFilterShimModifier shimModifier = retrieveModifier<IRowFilterShimModifier>(); 
                 if (filter is IRowFilter)
                     return rowFilter((IRowFilter) filter);
+                else if (shimModifier != null)
+                    return rowFilter(shimModifier.shimLineFilter(filter));                
                 else
-                    return rowFilter(new RowFilterShim { lineFilter = filter });                
+                    return rowFilter(new RowFilterShimOr { lineFilter = filter });                
             }
                 
             return linePart(new LineFilterProcessor { filter = filter });
@@ -462,14 +455,17 @@ namespace pnyx.net.fluent
             
             if (state == FluentState.Row)
             {
+                IRowTransformerShimModifier shimModifier = retrieveModifier<IRowTransformerShimModifier>();                
                 if (transform is IRowTransformer)
                     return rowTransformer((IRowTransformer)transform);
+                else if (shimModifier != null)
+                    return rowTransformer(shimModifier.shimLineTransformer(transform));
                 else
-                    return rowTransformer(new RowTransformerShim { lineTransformer = transform });                
+                    return rowTransformer(new RowTransformerShimOr { lineTransformer = transform });                
             }
 
             return linePart(new LineTransformerProcessor { transform = transform });
-        }             
+        }                         
         
         public Pnyx lineBuffering(ILineBuffering transform)
         {
@@ -492,7 +488,25 @@ namespace pnyx.net.fluent
         public Pnyx lineTransformer(Func<String, String> transform)
         {
             return lineTransformer(new LineTransformerFunc { lineTransformerFunc = transform });
-        }           
+        }
+
+        public Pnyx shimAnd(Action<Pnyx> toShim)
+        {
+            if (state != FluentState.Row)
+                throw new IllegalStateException("Shim is only needed in Row state: {0}", state.ToString());
+
+            int toRemove = parts.Count;
+            parts.Add(new AndShimModifier());
+
+            // Runs wrapped
+            toShim(this);
+            
+            if (state != FluentState.Row)
+                throw new IllegalStateException("Shim is only supports Row actions: {0}", state.ToString());
+
+            parts.RemoveAt(toRemove);
+            return this;
+        }
         
         public Pnyx rowPart(IRowPart rowPart)
         {

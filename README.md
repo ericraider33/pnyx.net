@@ -2,7 +2,6 @@
 File parsing and transforming automation scripting platform, Native .net
 
 ## Roadmap
-1. modify and/or syntax to support shims
 1. Sort
 1. Command line interface (maybe YAML)
 1. Command line installers
@@ -39,4 +38,5 @@ File parsing and transforming automation scripting platform, Native .net
 1. 2018-11-30: Row manipulation 
 1. 2018-12-01: Egrep
 1. 2018-12-01: Has Data filter / columns
+1. 2018-12-02: modify and/or syntax to support shims
 

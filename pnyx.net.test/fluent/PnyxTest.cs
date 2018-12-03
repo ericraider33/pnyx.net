@@ -800,5 +800,40 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
             Assert.Equal(FluentState.CompiledServile, teeP.state);
             Assert.Throws<IllegalStateException>(() => teeP.process());            
         }
+        
+        [Fact]
+        public void rowFilterShimOr()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(PLANETS_GODS_TITANS);
+                p.parseCsv();
+                p.grep("u");                        // U needs to be present in any column
+                actual = p.processToString();
+            }
+
+            Assert.Equal(PLANETS_GODS_TITANS, actual);
+        }
+        
+        [Fact]
+        public void rowFilterShimAnd()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(PLANETS_GODS_TITANS);
+                p.parseCsv();
+                p.shimAnd(p2 =>
+                {
+                    p2.grep("u");                    // U must be present in each column
+                });
+                actual = p.processToString();
+            }
+
+            const String expected = @"Cronus,Saturn,""Titan sky god, supreme ruler of the titans""
+";
+            Assert.Equal(expected, actual);
+        }
     }
 }

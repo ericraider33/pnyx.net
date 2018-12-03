@@ -3,13 +3,13 @@ using pnyx.net.api;
 
 namespace pnyx.net.shims
 {
-    public class RowTransformerShim : IRowTransformer
+    public class RowTransformerShimAnd : IRowTransformer
     {
         public ILineTransformer lineTransformer;
         
         public string[] transformRow(string[] row)
         {
-            bool keep = false;
+            bool keep = true;
             string[] result = new string[row.Length];
             for (int i = 0; i < row.Length; i++)
             {
@@ -17,11 +17,11 @@ namespace pnyx.net.shims
                 if (column == null)
                 {
                     result[i] = "";
+                    keep = false;
                 }
                 else
                 {
                     result[i] = column;
-                    keep = true;
                 }
             }
             
