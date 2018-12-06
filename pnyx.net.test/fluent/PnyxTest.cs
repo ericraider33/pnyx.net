@@ -241,15 +241,11 @@ The Lord is my shepherd";
         [Fact]
         public void cat()
         {
-            String actual;
             using (Pnyx p = new Pnyx())
             {
                 p.readString(PLANETS_GODS);
                 Assert.Throws<IllegalStateException>(() => p.readString(PLANETS_GODS));
-//                actual = p.processToString();
             }
-
-//            Assert.Equal(PLANETS_GODS + PLANETS_GODS, actual);
         }
 
         [Fact]

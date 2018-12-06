@@ -15,6 +15,7 @@ using pnyx.net.processors.converters;
 using pnyx.net.processors.dest;
 using pnyx.net.processors.lines;
 using pnyx.net.processors.rows;
+using pnyx.net.processors.sort;
 using pnyx.net.processors.sources;
 using pnyx.net.shims;
 using pnyx.net.util;
@@ -926,6 +927,23 @@ namespace pnyx.net.fluent
                 
                 return lineBuffering(new BeforeAfterLineBuffering(before, after, part.filter));
             }                       
+        }
+
+        public Pnyx sort(
+            bool descending = false, 
+            bool caseSensitive = false,
+            String tempDirectory = null,
+            int bufferSize = 10000
+            )
+        {
+            if (state == FluentState.Start || state == FluentState.Line)
+            {
+                IComparer<String> comparer = new PnyxStringComparer(descending, caseSensitive);             
+                LineSortProcessor sortProcessor = new LineSortProcessor(tempDirectory, comparer, bufferSize);
+                return linePart(sortProcessor);
+            }
+            else 
+                throw new IllegalStateException("Pnyx is not in Line,Row,Start state: {0}", state.ToString());           
         }
     }
 }
