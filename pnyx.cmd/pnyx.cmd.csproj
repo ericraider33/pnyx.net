@@ -6,4 +6,7 @@
   <ItemGroup>
     <ProjectReference Include="..\pnyx.net\pnyx.net.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="YamlDotNet" Version="5.3.0" />
+  </ItemGroup>
 </Project>

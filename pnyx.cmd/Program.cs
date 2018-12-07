@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using pnyx.net.fluent;
 using pnyx.net.util;
 
@@ -8,40 +10,23 @@ namespace pnyx.cmd
     {
         static void Main(string[] args)
         {            
-            using (Pnyx p = new Pnyx())
-            {                
-                p.read("G:/My Drive/Sales/database/emails/names.csv");
-                p.parseCsv();
-                p.rowTransformer(row =>
-                {
-                    row = RowHelper.fixWidth(row, 2);
-                    String fullName = row[0];
-                    
-                    if (row[0].Contains(","))
-                    {
-                        Tuple<String, String> nameTitle = TextUtil.splitAt(row[0], ",");
-                        fullName = nameTitle.Item1.Trim();
-                        row[1] = nameTitle.Item2.Trim();
-                    }
-                    
-                    fullName = fullName.Replace(".", "");
-                    
-                    Tuple<String, String, String> name = NameUtil.parseFullName(fullName);
-                    return RowHelper.insertColumns(row, 2, name.Item1, name.Item3);
-                });
-                p.writeCsv("G:/My Drive/Sales/database/emails/names2.csv");                
-                p.process();
-            }
+// https://stackoverflow.com/questions/53844/how-can-i-evaluate-a-c-sharp-expression-dynamically            
+// https://github.com/davideicardi/DynamicExpresso/
+// https://github.com/aaubry/YamlDotNet            
+// https://www.nuget.org/packages/YamlDotNet/     
+// https://github.com/dotnet/roslyn/wiki/Scripting-API-Samples#multi            
+
+            StringReader test = new StringReader(
+@"readString: Hello World
+writeStdout:
+");
             
-            using (Pnyx p = new Pnyx())
-            {                
-                p.read("G:/My Drive/Sales/database/emails/names2.csv");
-                p.parseCsv();
-                p.rowTransformer(row => RowHelper.fixWidth(row, 4));
-                p.lineTransformer(x => TextUtil.enocdeSqlValue(TextUtil.emptyAsNull(x)));
-                p.print("update groupexecs set first=$2, last=$3, title=$4 where executivename=$1;");
-                p.write("G:/My Drive/Sales/database/emails/names.sql");                
-                p.process();
+            PnyxYaml parser = new PnyxYaml();
+            List<Pnyx> toExecute = parser.parseYaml(test);
+            foreach (Pnyx pnyx in toExecute)
+            {
+                using (pnyx)
+                    pnyx.process();
             }
            
             Console.WriteLine("Done");
