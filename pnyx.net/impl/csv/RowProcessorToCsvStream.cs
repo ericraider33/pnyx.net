@@ -8,7 +8,7 @@ namespace pnyx.net.impl.csv
     public class RowToCsvStream : IRowProcessor, IDisposable
     {
         public Stream stream { get; private set; }
-        public TextWriter writer { get; private set; }
+        public TextWriter writer { get; protected set; }
         public readonly StreamInformation streamInformation;
 
         private String[] previousRow;
@@ -19,11 +19,11 @@ namespace pnyx.net.impl.csv
             this.streamInformation = streamInformation;
         }
 
-        public void processRow(string[] row)
+        public virtual void processRow(string[] row)
         {
             if (previousRow != null)
             {
-                writeRow(previousRow);
+                writeRow_(previousRow);
                 writer.Write(streamInformation.getNewline());
             }
             else
@@ -34,11 +34,11 @@ namespace pnyx.net.impl.csv
             previousRow = row;
         }
 
-        public void endOfFile()
+        public virtual void endOfFile()
         {
             if (previousRow != null)
             {              
-                writeRow(previousRow);
+                writeRow_(previousRow);
                 if (streamInformation.endsWithNewLine)
                     writer.Write(streamInformation.getNewline());
             }
@@ -58,12 +58,14 @@ namespace pnyx.net.impl.csv
                 writer.Flush();
                 writer.Dispose();
             }
-
-            stream = null;
             writer = null;
+
+            if (stream != null)
+                stream.Dispose();
+            stream = null;
         }
         
-        protected virtual void writeRow(String[] row)
+        protected virtual void writeRow_(String[] row)
         {
             bool first = true;
             foreach (String val in row)

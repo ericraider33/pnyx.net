@@ -929,21 +929,46 @@ namespace pnyx.net.fluent
             }                       
         }
 
-        public Pnyx sort(
+        public Pnyx sortLine(
             bool descending = false, 
             bool caseSensitive = false,
             String tempDirectory = null,
             int bufferSize = 10000
             )
         {
-            if (state == FluentState.Start || state == FluentState.Line)
-            {
-                IComparer<String> comparer = new PnyxStringComparer(descending, caseSensitive);             
-                LineSortProcessor sortProcessor = new LineSortProcessor(tempDirectory, comparer, bufferSize);
-                return linePart(sortProcessor);
-            }
-            else 
+            if (state != FluentState.Start && state != FluentState.Line)
                 throw new IllegalStateException("Pnyx is not in Line,Row,Start state: {0}", state.ToString());           
+                
+            IComparer<String> comparer = new PnyxStringComparer(descending, caseSensitive);             
+            LineSortProcessor sortProcessor = new LineSortProcessor(tempDirectory, comparer, bufferSize);
+            return linePart(sortProcessor);
+        }
+
+        public Pnyx sortRow(
+            int[] columnNumbers = null,
+            bool descending = false, 
+            bool caseSensitive = false,
+            String tempDirectory = null,
+            int bufferSize = 10000
+            )
+        {
+            if (state != FluentState.Row)
+                throw new IllegalStateException("Pnyx is not in Line,Row,Start state: {0}", state.ToString());           
+
+            columnNumbers = columnNumbers ?? new int[] { 1 };            
+            List<RowComparer.ColumnDefinition> definitions = new List<RowComparer.ColumnDefinition>();
+            foreach (int columnNumber in columnNumbers)
+            {
+                definitions.Add(new RowComparer.ColumnDefinition
+                {
+                    columnNumber = columnNumber,
+                    comparer = new PnyxStringComparer(descending, caseSensitive)
+                });
+            }
+            
+            IComparer<String[]> comparer = new RowComparer(definitions);             
+            RowSortProcessor sortProcessor = new RowSortProcessor(tempDirectory, comparer, bufferSize);
+            return rowPart(sortProcessor);
         }
     }
 }

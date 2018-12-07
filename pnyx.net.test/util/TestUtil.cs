@@ -71,13 +71,18 @@ namespace pnyx.net.test.util
                 sourceStream = new FileStream(source, FileMode.Open, FileAccess.Read);
                 destStream = new FileStream(dest, FileMode.Open, FileAccess.Read);
 
+                int lineNumber = 1;
                 int position = 0;
                 int current;
                 while ((current = sourceStream.ReadByte()) != -1)
                 {
                     int compare = destStream.ReadByte();
+                    if (compare == '\n')
+                        lineNumber++;
+                    
                     if (current != compare)
-                        return String.Format("Byte at position 0x{0:x2} is different 0x{1:x2} != 0x{2:x2} / {3} != {4}", position, current, compare, (char)current, (char)Math.Max(0,compare));
+                        return String.Format("Byte at pos=0x{0:x2}, lineNumber={5} is different 0x{1:x2} != 0x{2:x2} / {3} != {4}", 
+                            position, current, compare, (char)current, (char)Math.Max(0,compare), lineNumber);
 
                     position++;
                 }

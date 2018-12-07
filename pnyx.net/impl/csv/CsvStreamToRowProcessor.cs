@@ -12,10 +12,10 @@ namespace pnyx.net.impl.csv
     public class CsvStreamToRowProcessor : IRowSource, IDisposable
     {
         public CsvRowConverter rowConverter { get; private set; }
-        public StreamReader reader { get; private set; }
+        public StreamReader reader { get; protected set; }
         public IRowProcessor rowProcessor { get; private set; }
-        public StreamInformation streamInformation { get; private set; }        
-        public IStreamFactory streamFactory { get; private set; }
+        public StreamInformation streamInformation { get; protected set; }        
+        public IStreamFactory streamFactory { get; protected set; }
         
         private readonly StringBuilder stringBuilder = new StringBuilder();
         private readonly List<String> row = new List<String>();
@@ -36,7 +36,7 @@ namespace pnyx.net.impl.csv
             rowConverter.setStrict(strict);
         }
 
-        public void process()
+        public virtual void process()
         {
             Stream stream = streamFactory.openStream();
             reader = new StreamReader(stream, streamInformation.defaultEncoding, streamInformation.detectEncodingFromByteOrderMarks);
@@ -199,6 +199,12 @@ namespace pnyx.net.impl.csv
                 reader.Dispose();
             
             reader = null;
+
+            IDisposable sfDisposable = (IDisposable) streamFactory; 
+            if (sfDisposable != null)
+                sfDisposable.Dispose();
+
+            streamFactory = null;
         }
 
         public void setSource(StreamInformation streamInformation, IStreamFactory streamFactory)

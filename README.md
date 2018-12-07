@@ -2,12 +2,12 @@
 File parsing and transforming automation scripting platform, Native .net
 
 ## Roadmap
-1. Sort
 1. Command line interface (maybe YAML)
 1. Command line installers
 1. Build website for library, API, command line
 1. License, billing
 1. Initial release
+1. Online course of linux tools https://tomwoods.lpages.co/online-course-profits/
 1. Find 100 StackOverflow questions where Pnyx command line would help
 1. Find 100 StackOverflow questions where Pnyx library would help
 
@@ -39,4 +39,5 @@ File parsing and transforming automation scripting platform, Native .net
 1. 2018-12-01: Egrep
 1. 2018-12-01: Has Data filter / columns
 1. 2018-12-02: modify and/or syntax to support shims
+1. 2018-12-06: Sorting for line and row
 
