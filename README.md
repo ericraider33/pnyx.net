@@ -3,6 +3,7 @@ File parsing and transforming automation scripting platform, Native .net
 
 ## Roadmap
 1. Command line interface (maybe YAML)
+1. Settings and defaults for Pnyx
 1. Support temporary files which are auto removed
 1. Command line installers
 1. Build website for library, API, command line
