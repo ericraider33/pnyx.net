@@ -22,6 +22,7 @@ namespace pnyx.net.test.impl
         [InlineData(10, 2, new[] { "1","2","3","4","5","6","7" }, new[] { "1","2","3","4","5","6","7" }, new[] { 1,4,7 })]
         public void before(int num, int before, String[] input, String[] expected, int[] lines)
         {
+            Assert.NotEqual(-1, num);
             verify(before, 0, input, expected, lines);
         }
         
@@ -39,6 +40,7 @@ namespace pnyx.net.test.impl
         [InlineData(10, 2, new[] { "1","2","3","4","5","6","7" }, new[] { "1","2","3","4","5","6","7" }, new[] { 1,2,5 })]
         public void after(int num, int after, String[] input, String[] expected, int[] lines)
         {
+            Assert.NotEqual(-1, num);
             verify(0, after, input, expected, lines);
         }        
         
@@ -56,10 +58,11 @@ namespace pnyx.net.test.impl
         [InlineData(10, 2, new[] { "1","2","3","4","5","6","7" }, new[] { "1","2","3","4","5","6","7" }, new[] { 1,2,5 })]
         public void both(int num, int x, String[] input, String[] expected, int[] lines)
         {
+            Assert.NotEqual(-1, num);
             verify(x, x, input, expected, lines);
         }        
         
-        public void verify(int before, int after, String[] input, String[] expected, int[] lines)
+        private void verify(int before, int after, String[] input, String[] expected, int[] lines)
         {
             LineNumberFilter filter = new LineNumberFilter(lines);
             BeforeAfterLineBuffering buf = new BeforeAfterLineBuffering(before, after, filter);

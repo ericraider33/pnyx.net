@@ -26,7 +26,7 @@ writeStdout:
             foreach (Pnyx pnyx in toExecute)
             {
                 using (pnyx)
-                    pnyx.process();
+                    pnyx.processToString();
             }
            
             Console.WriteLine("Done");

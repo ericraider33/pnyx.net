@@ -14,6 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\pnyx.cmd\pnyx.cmd.csproj" />
       <ProjectReference Include="..\pnyx.net\pnyx.net.csproj" />
     </ItemGroup>
 
