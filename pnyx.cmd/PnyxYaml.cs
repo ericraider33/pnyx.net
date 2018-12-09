@@ -12,7 +12,7 @@ namespace pnyx.cmd
     // Supports 1.1 of the YAML specification.
     public class PnyxYaml
     {
-        private MethodInfo[] methods;
+        private readonly MethodInfo[] methods;
 
         public PnyxYaml()
         {
@@ -38,22 +38,37 @@ namespace pnyx.cmd
         {
             Pnyx p = new Pnyx();
             
-            YamlMappingNode topLevel = (YamlMappingNode)document.RootNode;
+            if (document.RootNode.NodeType != YamlNodeType.Sequence)
+                throw new InvalidArgumentException("Expected a YAML sequence as the document root, but found: {0}", document.RootNode.NodeType.ToString());                
+                
+            YamlSequenceNode topLevel = (YamlSequenceNode)document.RootNode;
             parseBlock(p, topLevel);
             
             return p;
         }
 
-        public void parseBlock(Pnyx p, YamlMappingNode block)
+        public void parseBlock(Pnyx p, YamlSequenceNode block)
         {
-            foreach (KeyValuePair<YamlNode,YamlNode> pairs in block.Children)
+            foreach (YamlNode node in block)
             {
-                switch (pairs.Value.NodeType)
+                if (node.NodeType != YamlNodeType.Mapping)
+                    throw new InvalidArgumentException("Expected YAML mapping for command/value pair, but found: {0}", node.NodeType.ToString());
+
+                YamlMappingNode commandNode = (YamlMappingNode) node;
+                if (commandNode.Children.Count != 1)
+                    throw new InvalidArgumentException("Expected YAML mapping with 1 command/value pair, but found: {0}", commandNode.Children.Count);
+
+                KeyValuePair<YamlNode,YamlNode> commandPair = commandNode.Children.First();
+                if (commandPair.Key.NodeType != YamlNodeType.Scalar)
+                    throw new InvalidArgumentException("Expected YAML scalar for commandName, but found: {0}", commandPair.Key.NodeType.ToString());
+
+                YamlScalarNode commandName = (YamlScalarNode) commandPair.Key;
+                switch (commandPair.Value.NodeType)
                 {
-                    case YamlNodeType.Scalar: parseScalarNode(p, (YamlScalarNode)pairs.Key, (YamlScalarNode)pairs.Value); break;
-                    case YamlNodeType.Sequence: parseSequenceNode(p, (YamlScalarNode)pairs.Key, (YamlSequenceNode)pairs.Value); break;
-                    case YamlNodeType.Mapping: parseMappingNode(p, (YamlScalarNode)pairs.Key, (YamlMappingNode)pairs.Value); break;
-                    default: throw new InvalidArgumentException("YAML node isn't currently supported: {0}", pairs.Value.NodeType.ToString());                
+                    case YamlNodeType.Scalar: parseScalarNode(p, commandName, (YamlScalarNode)commandPair.Value); break;
+                    case YamlNodeType.Sequence: parseSequenceNode(p, commandName, (YamlSequenceNode)commandPair.Value); break;
+                    case YamlNodeType.Mapping: parseMappingNode(p, commandName, (YamlMappingNode)commandPair.Value); break;
+                    default: throw new InvalidArgumentException("YAML node isn't currently supported '{0}' for command values", commandPair.Value.NodeType.ToString());                
                 }
             }
         }
@@ -164,12 +179,12 @@ namespace pnyx.cmd
                             parameters[i] = ((YamlScalarNode) valueNode).Value; 
                             break;
                         
-                        case YamlNodeType.Mapping:
+                        case YamlNodeType.Sequence:
                             if (pi.ParameterType != typeof(Action<Pnyx>))
                                 throw new InvalidArgumentException("Parameter '{0}' does not support block / dictionary", pi.Name);
 
                             // Builds action for populating sub-pnyx yaml block
-                            BlockYaml block = new BlockYaml(this, (YamlMappingNode)valueNode);
+                            BlockYaml block = new BlockYaml(this, (YamlSequenceNode)valueNode);
                             Action<Pnyx> action = block.action;
                             parameters[i] = action;
                             break;

@@ -2,9 +2,10 @@
 File parsing and transforming automation scripting platform, Native .net
 
 ## Roadmap
-1. Command line interface (maybe YAML)
 1. Settings and defaults for Pnyx
-1. Support temporary files which are auto removed
+1. ReWrite function
+1. Inline code scriptlets
+1. Command line interface, more robust argument / method bindings
 1. Command line installers
 1. Build website for library, API, command line
 1. License, billing
@@ -42,4 +43,5 @@ File parsing and transforming automation scripting platform, Native .net
 1. 2018-12-01: Has Data filter / columns
 1. 2018-12-02: modify and/or syntax to support shims
 1. 2018-12-06: Sorting for line and row
+1. 2018-12-09: Command line interface (initial pass)
 

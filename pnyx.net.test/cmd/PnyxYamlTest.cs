@@ -15,7 +15,7 @@ namespace pnyx.net.test.cmd
         {
             const String source = @"
 # echo 'Hello world'
-readString: Hello World
+- readString: Hello World
 ";
             const String expected = "Hello World";
             verify(source, expected);
@@ -24,7 +24,7 @@ readString: Hello World
         [Fact]
         public void unknownMethod()
         {
-            const String source = @"junk:";
+            const String source = @"- junk:";
             InvalidArgumentException error = Assert.Throws<InvalidArgumentException>(() => verify(source));
             Assert.Equal("Pnyx method can not be found: junk", error.Message);
         }
@@ -33,9 +33,9 @@ readString: Hello World
         public void sequenceParameters()
         {
             String source = @"
-readString: 'Mx trx miscarrx.
+- readString: 'Mx trx miscarrx.
   Shx flx.'
-sed:
+- sed:
   - x
   - y
   - ig  
@@ -44,8 +44,8 @@ sed:
             verify(source, expected);
 
             source = @"
-readString: 'Mx trx miscarrx. Shx flx.'
-sed: ['x','y','ig']
+- readString: 'Mx trx miscarrx. Shx flx.'
+- sed: ['x','y','ig']
 ";
             verify(source, expected);
         }
@@ -54,8 +54,8 @@ sed: ['x','y','ig']
         public void sequenceParametersDefaults()
         {
             const String source = @"
-readString: 'Mx trx miscarrx. Shx flx.'
-sed: ['x','y']
+- readString: 'Mx trx miscarrx. Shx flx.'
+- sed: ['x','y']
 ";
             const String expected = "My trx miscarrx. Shx flx.";
             verify(source, expected);
@@ -64,7 +64,7 @@ sed: ['x','y']
         [Fact]
         public void sequenceParametersTooFew()
         {
-            const String source = @"{ 'readString': 'Mx trx miscarrx. Shx flx.', 'sed': ['x'] }";
+            const String source = @"[{'readString': 'Mx trx miscarrx. Shx flx.'},{'sed': ['x'] }]";
             InvalidArgumentException error = Assert.Throws<InvalidArgumentException>(() => verify(source));
             Assert.Equal("Too few parameters 1 specified for Pnyx method 'sed', which only has 2 required parameters", error.Message);
         }        
@@ -72,7 +72,7 @@ sed: ['x','y']
         [Fact]
         public void sequenceParametersTooMany()
         {
-            const String source = @"{ 'readString': 'Mx trx miscarrx. Shx flx.', 'sed': ['w','x','y','z'] }";
+            const String source = @"[{'readString': 'Mx trx miscarrx. Shx flx.'}, {'sed': ['w','x','y','z']}]";
             InvalidArgumentException error = Assert.Throws<InvalidArgumentException>(() => verify(source));
             Assert.Equal("Too many parameters 4 specified for Pnyx method 'sed', which only has 3 parameters", error.Message);
         }
@@ -81,8 +81,8 @@ sed: ['x','y']
         public void dictionaryParameters()
         {
             const String source = @"
-readString: 'Mx trx miscarrx. Shx flx.'
-sed: { 'flags': 'ig', 'pattern': 'x', 'replacement': 'y' }
+- readString: 'Mx trx miscarrx. Shx flx.'
+- sed: { 'flags': 'ig', 'pattern': 'x', 'replacement': 'y' }
 ";            
             const String expected = "My try miscarry. Shy fly.";
             verify(source, expected);
@@ -92,8 +92,8 @@ sed: { 'flags': 'ig', 'pattern': 'x', 'replacement': 'y' }
         public void dictionaryParametersDefaults()
         {
             const String source = @"
-readString: 'Mx trx miscarrx. Shx flx.'
-sed: { 'pattern': 'x', 'replacement': 'y' }
+- readString: 'Mx trx miscarrx. Shx flx.'
+- sed: { 'pattern': 'x', 'replacement': 'y' }
 ";            
             const String expected = "My trx miscarrx. Shx flx.";
             verify(source, expected);
@@ -103,8 +103,8 @@ sed: { 'pattern': 'x', 'replacement': 'y' }
         public void dictionaryParametersMissingRequired()
         {
             const String source = @"
-readString: 'Mx trx miscarrx. Shx flx.'
-sed: { 'pattern': 'x' }
+- readString: 'Mx trx miscarrx. Shx flx.'
+- sed: { 'pattern': 'x' }
 ";            
             InvalidArgumentException error = Assert.Throws<InvalidArgumentException>(() => verify(source));
             Assert.Equal("Pnyx method 'sed' is missing required parameter 'replacement'", error.Message);
@@ -114,8 +114,8 @@ sed: { 'pattern': 'x' }
         public void dictionaryParametersTooMany()
         {
             const String source = @"
-readString: 'Mx trx miscarrx. Shx flx.'
-sed: { 'flags': 'ig', 'pattern': 'x', 'replacement': 'y', 'junk': 'xxx' }
+- readString: 'Mx trx miscarrx. Shx flx.'
+- sed: { 'flags': 'ig', 'pattern': 'x', 'replacement': 'y', 'junk': 'xxx' }
 ";            
             InvalidArgumentException error = Assert.Throws<InvalidArgumentException>(() => verify(source));
             Assert.Equal("Unknown named parameters 'junk' for Pnyx method 'sed', which has parameters 'pattern,replacement,flags'", error.Message);
@@ -125,10 +125,10 @@ sed: { 'flags': 'ig', 'pattern': 'x', 'replacement': 'y', 'junk': 'xxx' }
         public void blockSingle()
         {
             const String source = @"
-cat: 
-  block:
-    readString: Line One
-    readString: Line Two
+- cat: 
+    block:
+      - readString: Line One
+      - readString: Line Two
 ";
             const String expected = 
 @"Line One

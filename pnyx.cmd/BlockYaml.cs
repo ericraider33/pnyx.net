@@ -6,9 +6,9 @@ namespace pnyx.cmd
     public class BlockYaml
     {
         private PnyxYaml pnyxYaml;
-        private YamlMappingNode block;
+        private YamlSequenceNode block;
 
-        public BlockYaml(PnyxYaml pnyxYaml, YamlMappingNode block)
+        public BlockYaml(PnyxYaml pnyxYaml, YamlSequenceNode block)
         {
             this.pnyxYaml = pnyxYaml;
             this.block = block;
