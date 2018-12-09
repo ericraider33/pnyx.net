@@ -39,18 +39,23 @@ namespace pnyx.cmd
             Pnyx p = new Pnyx();
             
             YamlMappingNode topLevel = (YamlMappingNode)document.RootNode;
-            foreach (var pairs in topLevel.Children)
+            parseBlock(p, topLevel);
+            
+            return p;
+        }
+
+        public void parseBlock(Pnyx p, YamlMappingNode block)
+        {
+            foreach (KeyValuePair<YamlNode,YamlNode> pairs in block.Children)
             {
                 switch (pairs.Value.NodeType)
                 {
                     case YamlNodeType.Scalar: parseScalarNode(p, (YamlScalarNode)pairs.Key, (YamlScalarNode)pairs.Value); break;
                     case YamlNodeType.Sequence: parseSequenceNode(p, (YamlScalarNode)pairs.Key, (YamlSequenceNode)pairs.Value); break;
                     case YamlNodeType.Mapping: parseMappingNode(p, (YamlScalarNode)pairs.Key, (YamlMappingNode)pairs.Value); break;
-                    default: throw new InvalidArgumentException("YAML node isn't currently support: {0}", pairs.Value.NodeType.ToString());                
+                    default: throw new InvalidArgumentException("YAML node isn't currently supported: {0}", pairs.Value.NodeType.ToString());                
                 }
             }
-            
-            return p;
         }
 
         protected void parseScalarNode(Pnyx p, YamlScalarNode name, YamlScalarNode value)
@@ -68,7 +73,7 @@ namespace pnyx.cmd
             foreach (YamlNode node in values)
             {
                 if (node.NodeType != YamlNodeType.Scalar)
-                    throw new InvalidArgumentException("YAML node isn't currently support: {0}", node.NodeType.ToString());
+                    throw new InvalidArgumentException("YAML node isn't currently supported: {0}", node.NodeType.ToString());
                 
                 parameterList.Add(((YamlScalarNode)node).Value);
             }
@@ -118,32 +123,22 @@ namespace pnyx.cmd
 
         protected void parseMappingNode(Pnyx p, YamlScalarNode name, YamlMappingNode values)
         {
-            Dictionary<String, Object> parameters = new Dictionary<string, object>();            
+            String methodName = name.Value;
+            
+            // Converts to dictionary
+            Dictionary<String, YamlNode> parameterNodes = new Dictionary<string, YamlNode>();            
             foreach (var pairs in values.Children)
             {
                 String parameterName = ((YamlScalarNode) pairs.Key).Value;
-                if (parameters.ContainsKey(parameterName))
+                if (parameterNodes.ContainsKey(parameterName))
                     throw new InvalidArgumentException("Parameters can only have 1 value: {0}", parameterName);
                 
-                switch (pairs.Value.NodeType)
-                {
-                    case YamlNodeType.Scalar:
-                        parameters.Add(parameterName, ((YamlScalarNode)pairs.Value).Value);
-                        break;
-                    
-                    default: 
-                        throw new InvalidArgumentException("YAML node isn't currently support: {0}", pairs.Value.NodeType.ToString());                
-                }
+                parameterNodes.Add(parameterName, pairs.Value);
             }
-            
-            executeMethod(p, name.Value, parameters);            
-        }
-
-        protected void executeMethod(Pnyx p, String methodName, Dictionary<String, Object> parameterDictionary)
-        {
-            List<MethodInfo> methodMatches = methods.Where(m => m.Name == methodName).ToList();
-            
-            MethodInfo method = methodMatches.FirstOrDefault(m => m.GetParameters().Length == parameterDictionary.Count);
+                                     
+            // Finds matching method 
+            List<MethodInfo> methodMatches = methods.Where(m => m.Name == methodName).ToList();            
+            MethodInfo method = methodMatches.FirstOrDefault(m => m.GetParameters().Length == parameterNodes.Count);
             if (method == null)
             {
                 method = methodMatches.OrderByDescending(m => m.GetParameters().Length).FirstOrDefault();
@@ -157,21 +152,41 @@ namespace pnyx.cmd
             for (int i = 0; i < parameters.Length; i++)
             {
                 ParameterInfo pi = methodParameters[i];
-                if (!parameterDictionary.ContainsKey(pi.Name) && !pi.HasDefaultValue)
+                if (!parameterNodes.ContainsKey(pi.Name) && !pi.HasDefaultValue)
                     throw new InvalidArgumentException("Pnyx method '{0}' is missing required parameter '{1}'", methodName, pi.Name);
 
-                if (parameterDictionary.ContainsKey(pi.Name))
+                if (parameterNodes.ContainsKey(pi.Name))
                 {
-                    parameters[i] = parameterDictionary[pi.Name];
-                    parameterDictionary.Remove(pi.Name);
+                    YamlNode valueNode = parameterNodes[pi.Name];
+                    switch (valueNode.NodeType)
+                    {
+                        case YamlNodeType.Scalar: 
+                            parameters[i] = ((YamlScalarNode) valueNode).Value; 
+                            break;
+                        
+                        case YamlNodeType.Mapping:
+                            if (pi.ParameterType != typeof(Action<Pnyx>))
+                                throw new InvalidArgumentException("Parameter '{0}' does not support block / dictionary", pi.Name);
+
+                            // Builds action for populating sub-pnyx yaml block
+                            BlockYaml block = new BlockYaml(this, (YamlMappingNode)valueNode);
+                            Action<Pnyx> action = block.action;
+                            parameters[i] = action;
+                            break;
+                            
+                        default: 
+                            throw new InvalidArgumentException("YAML node isn't currently supported: {0}", valueNode.NodeType.ToString());                
+                    }
+                    
+                    parameterNodes.Remove(pi.Name);
                 }
                 else
-                    parameters[i] = methodParameters[i].DefaultValue;
+                    parameters[i] = pi.DefaultValue;
             }
 
-            if (parameterDictionary.Count > 0)
+            if (parameterNodes.Count > 0)
             {
-                String unknownParameters = String.Join(",", parameterDictionary.Keys);
+                String unknownParameters = String.Join(",", parameterNodes.Keys);
                 String availableParameters = String.Join(",", methodParameters.Select(pi => pi.Name));
                 throw new InvalidArgumentException("Unknown named parameters '{0}' for Pnyx method '{1}', which has parameters '{2}'", unknownParameters, methodName, availableParameters);                        
             }

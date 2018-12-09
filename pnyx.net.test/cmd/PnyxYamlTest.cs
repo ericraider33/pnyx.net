@@ -119,7 +119,22 @@ sed: { 'flags': 'ig', 'pattern': 'x', 'replacement': 'y', 'junk': 'xxx' }
 ";            
             InvalidArgumentException error = Assert.Throws<InvalidArgumentException>(() => verify(source));
             Assert.Equal("Unknown named parameters 'junk' for Pnyx method 'sed', which has parameters 'pattern,replacement,flags'", error.Message);
-        }        
+        }
+
+        [Fact]
+        public void blockSingle()
+        {
+            const String source = @"
+cat: 
+  block:
+    readString: Line One
+    readString: Line Two
+";
+            const String expected = 
+@"Line One
+Line Two";
+            verify(source, expected);
+        }
         
         private void verify(String source, String expected = null)
         {

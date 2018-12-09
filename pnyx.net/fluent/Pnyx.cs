@@ -113,7 +113,7 @@ namespace pnyx.net.fluent
             return readStream(Console.OpenStandardInput());
         }
 
-        public Pnyx cat(Action<Pnyx> pnyxToGroup)
+        public Pnyx cat(Action<Pnyx> block)
         {
             if (state != FluentState.New)
                 throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
@@ -124,7 +124,7 @@ namespace pnyx.net.fluent
             state = FluentState.Start;
             
             // Runs actions for grouping
-            pnyxToGroup(this);
+            block(this);
 
             if (state == FluentState.New || state == FluentState.Start)
             {
@@ -161,7 +161,7 @@ namespace pnyx.net.fluent
             return this;
         }
 
-        public Pnyx asCsv(Action<Pnyx> pnyxToWrap, bool strict = true)
+        public Pnyx asCsv(Action<Pnyx> block, bool strict = true)
         {
             if (state != FluentState.New && state != FluentState.Start)
                 throw new IllegalStateException("Pnyx is not in New,Start state: {0}", state.ToString());
@@ -169,7 +169,7 @@ namespace pnyx.net.fluent
             int indexModifier = parts.Count;
             parts.Add(new CsvModifer { strict = strict });
 
-            pnyxToWrap(this);
+            block(this);
 
             if (state != FluentState.Start)
                 throw new IllegalStateException("CSV modifier only accepts allows reads: {0}", state.ToString());
@@ -491,7 +491,7 @@ namespace pnyx.net.fluent
             return lineTransformer(new LineTransformerFunc { lineTransformerFunc = transform });
         }
 
-        public Pnyx shimAnd(Action<Pnyx> toShim)
+        public Pnyx shimAnd(Action<Pnyx> block)
         {
             if (state != FluentState.Row)
                 throw new IllegalStateException("Shim is only needed in Row state: {0}", state.ToString());
@@ -500,7 +500,7 @@ namespace pnyx.net.fluent
             parts.Add(new AndShimModifier());
 
             // Runs wrapped
-            toShim(this);
+            block(this);
             
             if (state != FluentState.Row)
                 throw new IllegalStateException("Shim is only supports Row actions: {0}", state.ToString());
@@ -728,7 +728,7 @@ namespace pnyx.net.fluent
             return setEnd(null, new CaptureText(streamInformation, builder));
         }
 
-        public Pnyx tee(Action<Pnyx> teeCommand)
+        public Pnyx tee(Action<Pnyx> block)
         {
             Pnyx teePnyx = new Pnyx();
             teePnyx.streamInformation = streamInformation;                    // shares source's stream-info
@@ -748,7 +748,7 @@ namespace pnyx.net.fluent
             else
                 throw new IllegalStateException("Pnyx is not in Line, Row, or Start state: {0}", state.ToString());
 
-            teeCommand(teePnyx);
+            block(teePnyx);
             teePnyx.compile();
             resources.Add(teePnyx);
             return this;
@@ -822,7 +822,7 @@ namespace pnyx.net.fluent
         }
 
         // groups 0,1, or more filters.  Allows 0 and 1 so that any variable number of filters are treated as 1
-        private Pnyx groupFilters(Action<Pnyx> pnyxToGroup,
+        private Pnyx groupFilters(Action<Pnyx> block,
             Func<IEnumerable<ILineFilter>, ILineFilter> lineFilterFactory,
             Func<IEnumerable<IRowFilter>, IRowFilter> rowFilterFactory            
             )
@@ -833,7 +833,7 @@ namespace pnyx.net.fluent
                 throw new IllegalStateException("Pnyx is not in Line, Row, or Start state: {0}", state.ToString());
 
             int before = parts.Count;
-            pnyxToGroup(this);
+            block(this);
             
             if (current != FluentState.Start && current != state)
                 throw new IllegalStateException("State changed to {0} during groupFilters operation, which is not permitted", state.ToString());
@@ -872,41 +872,41 @@ namespace pnyx.net.fluent
             }            
         }
 
-        public Pnyx and(Action<Pnyx> pnyxToGroup)
+        public Pnyx and(Action<Pnyx> block)
         {
-            return groupFilters(pnyxToGroup,
+            return groupFilters(block,
                 x => new AndLineFilter(x),
                 x => new AndRowFilter(x)
             );
         }
 
-        public Pnyx or(Action<Pnyx> pnyxToGroup)
+        public Pnyx or(Action<Pnyx> block)
         {
-            return groupFilters(pnyxToGroup,
+            return groupFilters(block,
                 x => new OrLineFilter(x),
                 x => new OrRowFilter(x)
             );
         }
 
-        public Pnyx xor(Action<Pnyx> pnyxToGroup)
+        public Pnyx xor(Action<Pnyx> block)
         {
-            return groupFilters(pnyxToGroup,
+            return groupFilters(block,
                 x => new XorLineFilter(x),
                 x => new XorRowFilter(x)
             );
         }
 
-        public Pnyx not(Action<Pnyx> pnyxToGroup)
+        public Pnyx not(Action<Pnyx> block)
         {
-            return groupFilters(pnyxToGroup,
+            return groupFilters(block,
                 x => new NotLineFilter(x),
                 x => new NotRowFilter(x)
             );
         }
 
-        public Pnyx beforeAfterFilter(int before, int after, Action<Pnyx> pnyxToGroup)
+        public Pnyx beforeAfterFilter(int before, int after, Action<Pnyx> block)
         {
-            and(pnyxToGroup);
+            and(block);
 
             Object partRaw = parts[parts.Count - 1];
             parts.RemoveAt(parts.Count - 1);
