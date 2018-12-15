@@ -24,33 +24,43 @@ namespace pnyx.net.fluent
 {
     public class Pnyx : IDisposable
     {
-        private readonly ArrayList parts;
-        private readonly List<IDisposable> resources;
-        private IProcessor processor;
-        private IRowConverter rowConverter;
-        private readonly Settings settings_;
         public FluentState state { get; private set; }
         public StreamInformation streamInformation { get; private set; }
+        private IProcessor processor;
+        private IRowConverter rowConverter;
+        private readonly ArrayList parts;
+        private readonly List<IDisposable> resources;
+        private readonly Settings settings;
+        private readonly List<String> sourceFiles;
+        
+        private EventHandler<Pnyx> stateProcessed;
+        public event EventHandler<Pnyx> StateProcessed
+        {
+            add => stateProcessed += value;
+            remove => stateProcessed -= value;
+        }
             
-        public Pnyx()
-        {            
-            streamInformation = new StreamInformation();
+        public Pnyx(Settings settings = null, StreamInformation streamInformation = null)
+        {
+            this.settings = settings ?? SettingsHome.settingsFactory.buildSettings();
+            this.streamInformation = streamInformation ?? this.settings.buildStreamInformation();
+            
             parts = new ArrayList();
             resources = new List<IDisposable>();
-            settings_ = new Settings();
+            sourceFiles = new List<String>();
         }
 
-        public Pnyx settings(
+        public Pnyx setSettings(
             String tempDirectory = null,
             int? bufferLines = null,
             Encoding defaultEncoding = null,
             String defaultNewline = null                    
             )
         {
-            if (tempDirectory != null) settings_.tempDirectory = tempDirectory;
-            if (bufferLines != null) settings_.bufferLines = bufferLines.Value;
-            if (defaultEncoding != null) { settings_.defaultEncoding = defaultEncoding; streamInformation.defaultEncoding = defaultEncoding; }
-            if (defaultNewline != null) { settings_.defaultNewline = defaultNewline; streamInformation.defaultNewline = defaultNewline; }
+            if (tempDirectory != null) settings.tempDirectory = tempDirectory;
+            if (bufferLines != null) settings.bufferLines = bufferLines.Value;
+            if (defaultEncoding != null) { settings.defaultEncoding = defaultEncoding; streamInformation.defaultEncoding = defaultEncoding; }
+            if (defaultNewline != null) { settings.defaultNewline = defaultNewline; streamInformation.defaultNewline = defaultNewline; }
 
             return this;
         }
@@ -112,6 +122,7 @@ namespace pnyx.net.fluent
 
         public Pnyx read(String path)
         {
+            sourceFiles.Add(path);
             return readStreamFactory(new FileStreamFactory(path));
         }
 
@@ -740,6 +751,20 @@ namespace pnyx.net.fluent
             return setEnd(null, new LineProcessorSplit(streamInformation, fileNamePattern, limit, path));
         }
 
+        public Pnyx rewrite(String t)
+        {
+            if (sourceFiles.Count != 1)
+                throw new InvalidArgumentException("rewrite is only valid when source is a single file, but found source files of: {0}", sourceFiles.Count);
+            
+            String tempFile = Path.Combine(settings.tempDirectory, Guid.NewGuid() + ".tmp");
+            String sourceFile = sourceFiles[0];
+
+            stateProcessed += (sender, pnyx) => { File.Move(tempFile, sourceFile); };            
+            write(tempFile);
+
+            return this;
+        }
+
         public Pnyx captureText(StringBuilder builder)
         {
             return setEnd(null, new CaptureText(streamInformation, builder));
@@ -747,8 +772,7 @@ namespace pnyx.net.fluent
 
         public Pnyx tee(Action<Pnyx> block)
         {
-            Pnyx teePnyx = new Pnyx();
-            teePnyx.streamInformation = streamInformation;                    // shares source's stream-info
+            Pnyx teePnyx = new Pnyx(settings, streamInformation);
             
             if (state == FluentState.Start || state == FluentState.Line)
             {
@@ -799,6 +823,11 @@ namespace pnyx.net.fluent
                                         
             processor.process();
             state = FluentState.Processed;
+            
+            // Updates events
+            if (stateProcessed != null)
+                stateProcessed(this, this);
+            stateProcessed = null;
 
             return this;
         }
@@ -812,7 +841,9 @@ namespace pnyx.net.fluent
                 resource.Dispose();                                    
             resources.Clear();
 
-            state = FluentState.Disposed;
+            stateProcessed = null;
+            
+            state = FluentState.Disposed;            
         }
 
         private ModifierType retrieveModifier<ModifierType>(bool stopAtFirstModifier = true, bool consume = false) 
@@ -956,8 +987,8 @@ namespace pnyx.net.fluent
             if (state != FluentState.Start && state != FluentState.Line)
                 throw new IllegalStateException("Pnyx is not in Line,Row,Start state: {0}", state.ToString());
 
-            tempDirectory = tempDirectory ?? settings_.tempDirectory;
-            bufferLines = bufferLines ?? settings_.bufferLines;
+            tempDirectory = tempDirectory ?? settings.tempDirectory;
+            bufferLines = bufferLines ?? settings.bufferLines;
             
             IComparer<String> comparer = new PnyxStringComparer(descending, caseSensitive);             
             LineSortProcessor sortProcessor = new LineSortProcessor(tempDirectory, comparer, bufferLines.Value);
@@ -975,8 +1006,8 @@ namespace pnyx.net.fluent
             if (state != FluentState.Row)
                 throw new IllegalStateException("Pnyx is not in Line,Row,Start state: {0}", state.ToString());           
 
-            tempDirectory = tempDirectory ?? settings_.tempDirectory;
-            bufferLines = bufferLines ?? settings_.bufferLines;
+            tempDirectory = tempDirectory ?? settings.tempDirectory;
+            bufferLines = bufferLines ?? settings.bufferLines;
 
             columnNumbers = columnNumbers ?? new int[] { 1 };            
             List<RowComparer.ColumnDefinition> definitions = new List<RowComparer.ColumnDefinition>();

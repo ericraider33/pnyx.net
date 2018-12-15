@@ -44,5 +44,5 @@ File parsing and transforming automation scripting platform, Native .net
 1. 2018-12-06: Sorting for line and row
 1. 2018-12-09: Command line interface (initial pass)
 1. 2018-12-14: Port JSP website to .net MVC
-1. 2018-12-14: Settings and defaults for Pnyx
+1. 2018-12-15: Settings and defaults for Pnyx
 

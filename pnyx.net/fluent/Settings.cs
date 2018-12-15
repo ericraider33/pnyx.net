@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text;
+using pnyx.net.util;
 
 namespace pnyx.net.fluent
 {
@@ -17,6 +18,11 @@ namespace pnyx.net.fluent
             bufferLines = 10000;
             defaultEncoding = Encoding.ASCII;
             defaultNewline = Environment.NewLine;
+        }
+
+        public StreamInformation buildStreamInformation()
+        {
+            return new StreamInformation(defaultEncoding, defaultNewline);
         }
     }
 }

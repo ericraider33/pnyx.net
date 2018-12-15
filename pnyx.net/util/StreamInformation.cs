@@ -14,10 +14,10 @@ namespace pnyx.net.util
         public int lineNumber = 0;
         public bool active = true;        
 
-        public StreamInformation()
+        public StreamInformation(Encoding defaultEncoding = null, String defaultNewline = null)
         {
-            defaultEncoding = Encoding.ASCII;
-            defaultNewline = Environment.NewLine;
+            this.defaultEncoding = defaultEncoding ?? Encoding.ASCII;
+            this.defaultNewline = defaultNewline ?? Environment.NewLine;
         }
 
         public String getNewline()
