@@ -26,6 +26,9 @@ namespace pnyx.cmd
                 if (args.Length > 1)
                     return printUsage("unknown arguments specified. Pnyx only expected 1 parameter but found: " + args.Length, 4);
 
+                // Reads settings file
+                SettingsYaml.parseSetting();
+                
                 if (switches.hasAny("-i", "--inline"))
                 {
                     if (args.Length == 0)

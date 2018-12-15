@@ -9,8 +9,13 @@ namespace pnyx.net.fluent
             settingsFactory = new SettingsHome();
         }
         
-        private readonly Settings settings = new Settings();
-        
+        private readonly Settings settings;
+
+        public SettingsHome(Settings settings = null)
+        {
+            this.settings = settings ?? new Settings();
+        }
+
         public Settings buildSettings()
         {
             return settings;
