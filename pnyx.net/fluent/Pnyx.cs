@@ -28,6 +28,7 @@ namespace pnyx.net.fluent
         private readonly List<IDisposable> resources;
         private IProcessor processor;
         private IRowConverter rowConverter;
+        private readonly Settings settings_;
         public FluentState state { get; private set; }
         public StreamInformation streamInformation { get; private set; }
             
@@ -36,6 +37,22 @@ namespace pnyx.net.fluent
             streamInformation = new StreamInformation();
             parts = new ArrayList();
             resources = new List<IDisposable>();
+            settings_ = new Settings();
+        }
+
+        public Pnyx settings(
+            String tempDirectory = null,
+            int? bufferLines = null,
+            Encoding defaultEncoding = null,
+            String defaultNewline = null                    
+            )
+        {
+            if (tempDirectory != null) settings_.tempDirectory = tempDirectory;
+            if (bufferLines != null) settings_.bufferLines = bufferLines.Value;
+            if (defaultEncoding != null) { settings_.defaultEncoding = defaultEncoding; streamInformation.defaultEncoding = defaultEncoding; }
+            if (defaultNewline != null) { settings_.defaultNewline = defaultNewline; streamInformation.defaultNewline = defaultNewline; }
+
+            return this;
         }
 
         public Pnyx startLine(ILinePart lineProcessor)
@@ -933,14 +950,17 @@ namespace pnyx.net.fluent
             bool descending = false, 
             bool caseSensitive = false,
             String tempDirectory = null,
-            int bufferSize = 10000
+            int? bufferLines = null
             )
         {
             if (state != FluentState.Start && state != FluentState.Line)
-                throw new IllegalStateException("Pnyx is not in Line,Row,Start state: {0}", state.ToString());           
-                
+                throw new IllegalStateException("Pnyx is not in Line,Row,Start state: {0}", state.ToString());
+
+            tempDirectory = tempDirectory ?? settings_.tempDirectory;
+            bufferLines = bufferLines ?? settings_.bufferLines;
+            
             IComparer<String> comparer = new PnyxStringComparer(descending, caseSensitive);             
-            LineSortProcessor sortProcessor = new LineSortProcessor(tempDirectory, comparer, bufferSize);
+            LineSortProcessor sortProcessor = new LineSortProcessor(tempDirectory, comparer, bufferLines.Value);
             return linePart(sortProcessor);
         }
 
@@ -949,11 +969,14 @@ namespace pnyx.net.fluent
             bool descending = false, 
             bool caseSensitive = false,
             String tempDirectory = null,
-            int bufferSize = 10000
+            int? bufferLines = null
             )
         {
             if (state != FluentState.Row)
                 throw new IllegalStateException("Pnyx is not in Line,Row,Start state: {0}", state.ToString());           
+
+            tempDirectory = tempDirectory ?? settings_.tempDirectory;
+            bufferLines = bufferLines ?? settings_.bufferLines;
 
             columnNumbers = columnNumbers ?? new int[] { 1 };            
             List<RowComparer.ColumnDefinition> definitions = new List<RowComparer.ColumnDefinition>();
@@ -967,7 +990,7 @@ namespace pnyx.net.fluent
             }
             
             IComparer<String[]> comparer = new RowComparer(definitions);             
-            RowSortProcessor sortProcessor = new RowSortProcessor(tempDirectory, comparer, bufferSize);
+            RowSortProcessor sortProcessor = new RowSortProcessor(tempDirectory, comparer, bufferLines.Value);
             return rowPart(sortProcessor);
         }
     }

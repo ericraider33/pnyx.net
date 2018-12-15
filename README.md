@@ -2,7 +2,6 @@
 File parsing and transforming automation scripting platform, Native .net
 
 ## Roadmap
-1. Settings and defaults for Pnyx
 1. ReWrite function
 1. Inline code scriptlets
 1. Command line interface, more robust argument / method bindings
@@ -44,4 +43,6 @@ File parsing and transforming automation scripting platform, Native .net
 1. 2018-12-02: modify and/or syntax to support shims
 1. 2018-12-06: Sorting for line and row
 1. 2018-12-09: Command line interface (initial pass)
+1. 2018-12-14: Port JSP website to .net MVC
+1. 2018-12-14: Settings and defaults for Pnyx
 
