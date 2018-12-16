@@ -13,9 +13,9 @@ namespace pnyx.net.impl
         {
             bool match;
             if (caseSensitive)
-                match = line.containsIgnoreCase(textToFind);
-            else
                 match = line.Contains(textToFind);
+            else
+                match = line.containsIgnoreCase(textToFind);
 
             return match;
         }

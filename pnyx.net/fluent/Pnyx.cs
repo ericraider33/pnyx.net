@@ -751,16 +751,37 @@ namespace pnyx.net.fluent
             return setEnd(null, new LineProcessorSplit(streamInformation, fileNamePattern, limit, path));
         }
 
-        public Pnyx rewrite(String t)
+        public Pnyx rewrite(bool backupOriginal = true, bool deleteBackup = false)
         {
             if (sourceFiles.Count != 1)
                 throw new InvalidArgumentException("rewrite is only valid when source is a single file, but found source files of: {0}", sourceFiles.Count);
             
             String tempFile = Path.Combine(settings.tempDirectory, Guid.NewGuid() + ".tmp");
-            String sourceFile = sourceFiles[0];
 
-            stateProcessed += (sender, pnyx) => { File.Move(tempFile, sourceFile); };            
-            write(tempFile);
+            String sourcePath = sourceFiles[0];
+
+            String sourceFileName = Path.GetFileName(sourcePath);
+            String backupFile = Path.Combine(settings.tempDirectory, sourceFileName + Guid.NewGuid());
+
+            // Adds hook to move file after processing is complete
+            stateProcessed += (sender, pnyx) =>
+            {
+                // Backs up original file
+                if (backupOriginal)
+                    File.Move(sourcePath, backupFile);
+                else
+                    File.Delete(sourcePath);
+                                
+                // Rewrites output to original source path
+                File.Move(tempFile, sourcePath);
+                
+                // Deletes back up
+                if (backupOriginal && deleteBackup)
+                    File.Delete(backupFile);
+            };            
+            
+            // Performs a standard write to a temporary file
+            write(tempFile);            
 
             return this;
         }

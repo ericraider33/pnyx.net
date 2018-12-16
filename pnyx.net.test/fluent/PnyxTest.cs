@@ -80,7 +80,7 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
             using (Pnyx p = new Pnyx())
             {
                 p.readString(MAGNA_CARTA);
-                p.grep("god");
+                p.grep("god", caseSensitive: false);
                 actual = p.processToString();
             }
 
@@ -403,7 +403,7 @@ The Lord is my shepherd";
             {
                 p.readString(PLANETS_GODS);
                 p.parseCsv();
-                p.withColumns(pn => pn.grep("titan"), 3);
+                p.withColumns(pn => pn.grep("titan", caseSensitive: false), 3);
                 actual = p.processToString();
             }
 
@@ -413,7 +413,7 @@ The Lord is my shepherd";
             {
                 p.readString(PLANETS_GODS);
                 p.parseCsv();
-                p.withColumns(pn => pn.grep("titan"), 1, 2);
+                p.withColumns(pn => pn.grep("titan", caseSensitive: false), 1, 2);
                 actual = p.processToString();
             }
 
@@ -455,7 +455,7 @@ The Lord is my shepherd";
                 p.parseCsv();
                 p.withColumns(sub =>
                 {
-                    sub.grep("titan");
+                    sub.grep("titan", caseSensitive: false);
                     sub.sed("n", "X", "gi");
                 }, 3);
                 actual = p.processToString();
@@ -488,7 +488,7 @@ Uranus,Uranus,""Father of the TitaXs""
             using (Pnyx p = new Pnyx())
             {
                 p.readString(PLANETS_GODS);
-                p.and(pn => pn.grep("titan"));
+                p.and(pn => pn.grep("titan", caseSensitive: false));
                 actual = p.processToString();
             }
 
@@ -517,7 +517,7 @@ Uranus,Uranus,""Father of the TitaXs""
             using (Pnyx p = new Pnyx())
             {
                 p.readString(PLANETS_GODS);
-                p.beforeAfterFilter(1, 1, pn => pn.grep("mercury"));
+                p.beforeAfterFilter(1, 1, pn => pn.grep("mercury", caseSensitive: false));
                 actual = p.processToString();
             }
             
@@ -537,7 +537,7 @@ Poseidon,Neptune,""God of the sea and earthquakes""
             {
                 p.readString(PLANETS_GODS);
                 p.parseCsv();
-                p.beforeAfterFilter(1, 1, pn => pn.grep("mercury"));
+                p.beforeAfterFilter(1, 1, pn => pn.grep("mercury", caseSensitive: false));
                 actual = p.processToString();
             }
             
@@ -576,7 +576,7 @@ Poseidon,Neptune,""God of the sea and earthquakes""
                 p.readString(PLANETS_GODS);
                 p.not(pn =>
                 {
-                    pn.grep("god");
+                    pn.grep("god", caseSensitive: false);
                 });
                 actual = p.processToString();
             }
@@ -595,8 +595,8 @@ Poseidon,Neptune,""God of the sea and earthquakes""
                 p.readString(PLANETS_GODS);
                 p.xor(pn =>
                 {
-                    pn.grep("titan");
-                    pn.grep("Cronus");
+                    pn.grep("titan", caseSensitive: false);
+                    pn.grep("Cronus", caseSensitive: false);
                 });
                 actual = p.processToString();
             }

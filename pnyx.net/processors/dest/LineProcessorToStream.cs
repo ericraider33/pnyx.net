@@ -11,6 +11,7 @@ namespace pnyx.net.processors.dest
         public readonly StreamInformation streamInformation;
 
         private String previousLine;
+        private bool closed;
         
         public LineProcessorToStream(StreamInformation streamInformation, Stream stream)
         {
@@ -48,13 +49,18 @@ namespace pnyx.net.processors.dest
 
             previousLine = null;
             writer.Flush();
+            
+            writer.Close();
+            closed = true;
         }
 
         public void Dispose()
         {
             if (writer != null)
             {
-                writer.Flush();
+                if (!closed)
+                    writer.Flush();
+                
                 writer.Dispose();
             }
 
