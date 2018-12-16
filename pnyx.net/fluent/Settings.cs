@@ -10,7 +10,8 @@ namespace pnyx.net.fluent
         public String tempDirectory { get; set; }
         public int bufferLines { get; set; }
         public Encoding defaultEncoding { get; set; }
-        public String defaultNewline { get; set; }       
+        public String defaultNewline { get; set; }  
+        public bool backupRewrite { get; set; }
 
         public Settings()
         {
@@ -18,6 +19,7 @@ namespace pnyx.net.fluent
             bufferLines = 10000;
             defaultEncoding = Encoding.ASCII;
             defaultNewline = Environment.NewLine;
+            backupRewrite = true;
         }
 
         public StreamInformation buildStreamInformation()

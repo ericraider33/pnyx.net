@@ -35,9 +35,12 @@ namespace pnyx.cmd
                 }
 
                 return true;
-            }
+            }            
             catch (Exception e)
             {
+                if (e.InnerException != null)
+                    e = e.InnerException;
+                
                 Console.Error.WriteLine("Error: Exception while reading '{0}' settings file: {1}", path, e.Message);
                 Console.Error.WriteLine(e.StackTrace);
                 return false;
@@ -48,6 +51,7 @@ namespace pnyx.cmd
         {
             IDeserializer deserializer = new DeserializerBuilder()
                 .WithNamingConvention(new CamelCaseNamingConvention())
+                .WithTypeConverter(new EncodingTypeConverter())
                 .Build();
 
             Settings result = deserializer.Deserialize<Settings>(source);

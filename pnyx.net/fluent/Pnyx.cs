@@ -54,13 +54,15 @@ namespace pnyx.net.fluent
             String tempDirectory = null,
             int? bufferLines = null,
             Encoding defaultEncoding = null,
-            String defaultNewline = null                    
+            String defaultNewline = null,
+            bool? backupRewrite = null
             )
         {
             if (tempDirectory != null) settings.tempDirectory = tempDirectory;
             if (bufferLines != null) settings.bufferLines = bufferLines.Value;
             if (defaultEncoding != null) { settings.defaultEncoding = defaultEncoding; streamInformation.defaultEncoding = defaultEncoding; }
             if (defaultNewline != null) { settings.defaultNewline = defaultNewline; streamInformation.defaultNewline = defaultNewline; }
+            if (backupRewrite != null) settings.backupRewrite = backupRewrite.Value;
 
             return this;
         }
@@ -751,8 +753,11 @@ namespace pnyx.net.fluent
             return setEnd(null, new LineProcessorSplit(streamInformation, fileNamePattern, limit, path));
         }
 
-        public Pnyx rewrite(bool backupOriginal = true, bool deleteBackup = false)
+        public Pnyx rewrite(bool? backupOriginal = null, bool? deleteBackup = null)
         {
+            bool backupOriginal_ = backupOriginal ?? settings.backupRewrite;
+            bool deleteBackup_ = deleteBackup ?? !settings.backupRewrite;
+            
             if (sourceFiles.Count != 1)
                 throw new InvalidArgumentException("rewrite is only valid when source is a single file, but found source files of: {0}", sourceFiles.Count);
             
@@ -767,7 +772,7 @@ namespace pnyx.net.fluent
             stateProcessed += (sender, pnyx) =>
             {
                 // Backs up original file
-                if (backupOriginal)
+                if (backupOriginal_)
                     File.Move(sourcePath, backupFile);
                 else
                     File.Delete(sourcePath);
@@ -776,7 +781,7 @@ namespace pnyx.net.fluent
                 File.Move(tempFile, sourcePath);
                 
                 // Deletes back up
-                if (backupOriginal && deleteBackup)
+                if (backupOriginal_ && deleteBackup_)
                     File.Delete(backupFile);
             };            
             
