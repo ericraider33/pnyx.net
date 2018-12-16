@@ -7,10 +7,10 @@ namespace pnyx.net.fluent
 {
     public class Settings
     {
-        public String tempDirectory;
-        public int bufferLines;
-        public Encoding defaultEncoding;
-        public String defaultNewline;        
+        public String tempDirectory { get; set; }
+        public int bufferLines { get; set; }
+        public Encoding defaultEncoding { get; set; }
+        public String defaultNewline { get; set; }       
 
         public Settings()
         {

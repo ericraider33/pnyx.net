@@ -53,6 +53,7 @@ namespace pnyx.net.util
                 case NewLineEnum.Unix: return "\n";
                 case NewLineEnum.Windows: return "\r\n";
                 case NewLineEnum.LineFeed: return "\r";
+                case NewLineEnum.Native: return Environment.NewLine;
             }
         }
     }

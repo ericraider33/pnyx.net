@@ -1,7 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
+using pnyx.net.errors;
 using pnyx.net.fluent;
-using YamlDotNet.RepresentationModel;
+using pnyx.net.util;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace pnyx.cmd
 {
@@ -41,9 +46,38 @@ namespace pnyx.cmd
         
         public Settings parseReader(TextReader source)
         {
-            YamlStream yaml = new YamlStream();
-            yaml.Load(source);
-            throw new NotImplementedException();            
+            IDeserializer deserializer = new DeserializerBuilder()
+                .WithNamingConvention(new CamelCaseNamingConvention())
+                .Build();
+
+            Settings result = deserializer.Deserialize<Settings>(source);
+            result.defaultNewline = validateNewline(result.defaultNewline);
+            
+            if (result.bufferLines <= 0)
+                throw new InvalidArgumentException("BufferLines must be a positive values '{0}'", result.bufferLines);
+
+            return result;
+        }
+
+        private readonly Regex NEWLINE_EXPRESSION = new Regex("^([\n])|([\n\r])+$");        
+        private String validateNewline(String newline)
+        {
+            if (String.IsNullOrEmpty(newline))
+                throw new InvalidArgumentException("Default newline setting must have a value");
+            
+            if (NEWLINE_EXPRESSION.IsMatch(newline))
+                return newline;
+
+            // Converts 'named' strings into newlines
+            IDictionary<String,NewLineEnum> named = EnumUtil.toDictionary<NewLineEnum>();
+            if (named.ContainsKey(newline))
+            {
+                NewLineEnum newlineType = named[newline];
+                if (newlineType != NewLineEnum.None)
+                    return StreamInformation.newlineString(newlineType);
+            }
+            
+            throw new InvalidArgumentException("Unrecognized newline '{0}'", newline);
         }
     }
 }
