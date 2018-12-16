@@ -16,7 +16,7 @@ namespace pnyx.net.impl
             this.caseSensitive = caseSensitive;
 
             RegexOptions options = RegexOptions.None;
-            if (caseSensitive)
+            if (!caseSensitive)
                 options |= RegexOptions.IgnoreCase;
             
             regex = new Regex(expression, options);
