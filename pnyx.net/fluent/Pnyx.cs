@@ -319,7 +319,7 @@ namespace pnyx.net.fluent
             return rowTransformer(new RemoveColumns(columnNumbers));
         }
 
-        public Pnyx insertColumns(String pad = "", params int[] columnNumbers)
+        public Pnyx insertColumnsWithPadding(String pad = "", params int[] columnNumbers)
         {
             return rowTransformer(new InsertColumns(columnNumbers) { pad = pad });
         }
@@ -329,7 +329,7 @@ namespace pnyx.net.fluent
             return rowTransformer(new InsertColumns(columnNumbers));
         }
 
-        public Pnyx duplicateColumns(String pad = "", params int[] columnNumbers)
+        public Pnyx duplicateColumnsWithPadding(String pad = "", params int[] columnNumbers)
         {
             return rowTransformer(new DuplicateColumns(columnNumbers) { pad = pad });
         }
@@ -511,12 +511,12 @@ namespace pnyx.net.fluent
             return linePart(new LineBufferingProcessor { transform = transform });
         }             
         
-        public Pnyx lineFilter(Func<String, bool> filter)
+        public Pnyx lineFilterFunc(Func<String, bool> filter)
         {
             return lineFilter(new LineFilterFunc { lineFilterFunc = filter });
         }
         
-        public Pnyx lineTransformer(Func<String, String> transform)
+        public Pnyx lineTransformerFunc(Func<String, String> transform)
         {
             return lineTransformer(new LineTransformerFunc { lineTransformerFunc = transform });
         }
@@ -578,12 +578,12 @@ namespace pnyx.net.fluent
             return rowPart(new RowTransformerProcessor { transform = transform });
         }
         
-        public Pnyx rowFilter(Func<String[], bool> filter)
+        public Pnyx rowFilterFunc(Func<String[], bool> filter)
         {
             return rowFilter(new RowFilterFunc { rowFilterFunc = filter });
         }
         
-        public Pnyx rowTransformer(Func<String[], String[]> transform)
+        public Pnyx rowTransformerFunc(Func<String[], String[]> transform)
         {
             return rowTransformer(new RowTransformerFunc { rowTransformerFunc = transform });
         }           
@@ -732,7 +732,7 @@ namespace pnyx.net.fluent
             return setEnd(new FileStream(path, FileMode.Create, FileAccess.Write), new CsvRowConverter().setStrict(strict));            
         }
 
-        public Pnyx writeCsv(Stream stream, bool strict = true)
+        public Pnyx writeCsvStream(Stream stream, bool strict = true)
         {
             return setEnd(stream, new CsvRowConverter().setStrict(strict));            
         }

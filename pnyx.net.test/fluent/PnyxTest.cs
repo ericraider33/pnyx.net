@@ -157,7 +157,7 @@ The Lord is my shepherd";
             using (Pnyx p = new Pnyx())
             {
                 p.readString(PLANETS_GODS_FORMAT_ISSUES);
-                actual = p.processToString((pnyx, stream) => pnyx.writeCsv(stream, strict: false));
+                actual = p.processToString((pnyx, stream) => pnyx.writeCsvStream(stream, strict: false));
             }
 
             Assert.Equal(PLANETS_GODS, actual);

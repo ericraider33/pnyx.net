@@ -3,13 +3,18 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using pnyx.net.errors;
 using pnyx.net.fluent;
+using pnyx.net.util;
 using YamlDotNet.RepresentationModel;
 
 namespace pnyx.cmd
 {
     // Supports 1.1 of the YAML specification.
+    // https://yaml-multiline.info/
+    // https://github.com/aaubry/YamlDotNet            
+    // https://www.nuget.org/packages/YamlDotNet/     
     public class PnyxYaml
     {
         private readonly MethodInfo[] methods;
@@ -176,7 +181,7 @@ namespace pnyx.cmd
                     switch (valueNode.NodeType)
                     {
                         case YamlNodeType.Scalar: 
-                            parameters[i] = ((YamlScalarNode) valueNode).Value; 
+                            parameters[i] = processScalarParameter(pi, ((YamlScalarNode) valueNode).Value); 
                             break;
                         
                         case YamlNodeType.Sequence:
@@ -208,6 +213,28 @@ namespace pnyx.cmd
             
             // Runs named parameters
             method.Invoke(p, parameters);            
+        }
+
+        private Object processScalarParameter(ParameterInfo parameterInfo, String scalarValue)
+        {
+            if (parameterInfo.ParameterType == typeof(String))
+                return scalarValue;
+
+            if (scalarValue.StartsWith("code_cs("))
+                return parserCSharpCode(parameterInfo, scalarValue);
+                    
+            throw new InvalidArgumentException("Type conversion hasn't been built yet for: {0}", parameterInfo.ParameterType.FullName);            
+        }
+
+        // https://github.com/dotnet/roslyn/wiki/Scripting-API-Samples#multi            
+        private Object parserCSharpCode(ParameterInfo parameterInfo, String scalarValue)
+        {
+//            Script<int> script = CSharpScript.Create<int>("1+2");
+//
+//            int result = script.RunAsync(null).Result.ReturnValue;
+//            Console.WriteLine(result);
+            
+            throw new InvalidArgumentException("TODO");                        
         }
     }
 }

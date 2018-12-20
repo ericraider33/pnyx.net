@@ -18,14 +18,14 @@ namespace pnyx.net.test.cmd
 - readString: Hello World
 ";
             const String expected = "Hello World";
-            verify(source, expected);
+            CmdTestUtil.verifyYaml(source, expected);
         }
 
         [Fact]
         public void unknownMethod()
         {
             const String source = @"- junk:";
-            InvalidArgumentException error = Assert.Throws<InvalidArgumentException>(() => verify(source));
+            InvalidArgumentException error = Assert.Throws<InvalidArgumentException>(() => CmdTestUtil.verifyYaml(source));
             Assert.Equal("Pnyx method can not be found: junk", error.Message);
         }
 
@@ -41,13 +41,13 @@ namespace pnyx.net.test.cmd
   - ig  
 ";
             const String expected = "My try miscarry. Shy fly.";
-            verify(source, expected);
+            CmdTestUtil.verifyYaml(source, expected);
 
             source = @"
 - readString: 'Mx trx miscarrx. Shx flx.'
 - sed: ['x','y','ig']
 ";
-            verify(source, expected);
+            CmdTestUtil.verifyYaml(source, expected);
         }
 
         [Fact]
@@ -58,14 +58,14 @@ namespace pnyx.net.test.cmd
 - sed: ['x','y']
 ";
             const String expected = "My trx miscarrx. Shx flx.";
-            verify(source, expected);
+            CmdTestUtil.verifyYaml(source, expected);
         }        
 
         [Fact]
         public void sequenceParametersTooFew()
         {
             const String source = @"[{'readString': 'Mx trx miscarrx. Shx flx.'},{'sed': ['x'] }]";
-            InvalidArgumentException error = Assert.Throws<InvalidArgumentException>(() => verify(source));
+            InvalidArgumentException error = Assert.Throws<InvalidArgumentException>(() => CmdTestUtil.verifyYaml(source));
             Assert.Equal("Too few parameters 1 specified for Pnyx method 'sed', which only has 2 required parameters", error.Message);
         }        
 
@@ -73,7 +73,7 @@ namespace pnyx.net.test.cmd
         public void sequenceParametersTooMany()
         {
             const String source = @"[{'readString': 'Mx trx miscarrx. Shx flx.'}, {'sed': ['w','x','y','z']}]";
-            InvalidArgumentException error = Assert.Throws<InvalidArgumentException>(() => verify(source));
+            InvalidArgumentException error = Assert.Throws<InvalidArgumentException>(() => CmdTestUtil.verifyYaml(source));
             Assert.Equal("Too many parameters 4 specified for Pnyx method 'sed', which only has 3 parameters", error.Message);
         }
 
@@ -85,7 +85,7 @@ namespace pnyx.net.test.cmd
 - sed: { 'flags': 'ig', 'pattern': 'x', 'replacement': 'y' }
 ";            
             const String expected = "My try miscarry. Shy fly.";
-            verify(source, expected);
+            CmdTestUtil.verifyYaml(source, expected);
         }        
 
         [Fact]
@@ -96,7 +96,7 @@ namespace pnyx.net.test.cmd
 - sed: { 'pattern': 'x', 'replacement': 'y' }
 ";            
             const String expected = "My trx miscarrx. Shx flx.";
-            verify(source, expected);
+            CmdTestUtil.verifyYaml(source, expected);
         }        
 
         [Fact]
@@ -106,7 +106,7 @@ namespace pnyx.net.test.cmd
 - readString: 'Mx trx miscarrx. Shx flx.'
 - sed: { 'pattern': 'x' }
 ";            
-            InvalidArgumentException error = Assert.Throws<InvalidArgumentException>(() => verify(source));
+            InvalidArgumentException error = Assert.Throws<InvalidArgumentException>(() => CmdTestUtil.verifyYaml(source));
             Assert.Equal("Pnyx method 'sed' is missing required parameter 'replacement'", error.Message);
         }        
 
@@ -117,7 +117,7 @@ namespace pnyx.net.test.cmd
 - readString: 'Mx trx miscarrx. Shx flx.'
 - sed: { 'flags': 'ig', 'pattern': 'x', 'replacement': 'y', 'junk': 'xxx' }
 ";            
-            InvalidArgumentException error = Assert.Throws<InvalidArgumentException>(() => verify(source));
+            InvalidArgumentException error = Assert.Throws<InvalidArgumentException>(() => CmdTestUtil.verifyYaml(source));
             Assert.Equal("Unknown named parameters 'junk' for Pnyx method 'sed', which has parameters 'pattern,replacement,flags'", error.Message);
         }
 
@@ -133,24 +133,7 @@ namespace pnyx.net.test.cmd
             const String expected = 
 @"Line One
 Line Two";
-            verify(source, expected);
-        }
-        
-        private void verify(String source, String expected = null)
-        {
-            StringReader test = new StringReader(source);
-            
-            PnyxYaml parser = new PnyxYaml();
-            List<Pnyx> toExecute = parser.parseYaml(test);
-            
-            Assert.Single(toExecute);
-            Pnyx p = toExecute[0];
-            
-            String actual;
-            using (p)
-                actual = p.processToString();
-            
-            Assert.Equal(expected, actual);
-        }
+            CmdTestUtil.verifyYaml(source, expected);
+        }                        
     }
 }
