@@ -17,7 +17,7 @@ namespace pnyx.net.impl.columns
         
         public string[] transformRow(string[] row)
         {
-            return RowHelper.insertBlankColumns(row, columnNumbers, pad);
+            return RowUtil.insertBlankColumns(row, columnNumbers, pad);
         }
     }
 }

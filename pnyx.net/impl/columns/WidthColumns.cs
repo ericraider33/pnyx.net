@@ -11,7 +11,7 @@ namespace pnyx.net.impl.columns
         
         public string[] transformRow(string[] row)
         {
-            return RowHelper.fixWidth(row, columns, pad);
+            return RowUtil.fixWidth(row, columns, pad);
         }
     }
 }

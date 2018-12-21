@@ -12,6 +12,7 @@ namespace pnyx.net.fluent
         public Encoding defaultEncoding { get; set; }
         public String defaultNewline { get; set; }  
         public bool backupRewrite { get; set; }
+        public bool processOnDispose { get; set; }
 
         public Settings()
         {
@@ -20,6 +21,7 @@ namespace pnyx.net.fluent
             defaultEncoding = Encoding.ASCII;
             defaultNewline = Environment.NewLine;
             backupRewrite = true;
+            processOnDispose = true;
         }
 
         public StreamInformation buildStreamInformation()

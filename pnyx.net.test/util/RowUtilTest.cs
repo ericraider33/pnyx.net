@@ -21,7 +21,7 @@ namespace pnyx.net.test.util
                 source[i] = (i + 1).ToString();
 
             HashSet<int> columnNumbers = new HashSet<int>(TextUtil.parseInts(columnNumbersText));
-            String[] actual = RowHelper.insertBlankColumns(source, columnNumbers, pad: "_");
+            String[] actual = RowUtil.insertBlankColumns(source, columnNumbers, pad: "_");
 
             String actualText = String.Join(",", actual);
             Assert.Equal(expectedText, actualText);
@@ -41,7 +41,7 @@ namespace pnyx.net.test.util
                 source[i] = (i + 1).ToString();
 
             HashSet<int> columnNumbers = new HashSet<int>(TextUtil.parseInts(columnNumbersText));
-            String[] actual = RowHelper.duplicateColumns(source, columnNumbers, pad: "_");
+            String[] actual = RowUtil.duplicateColumns(source, columnNumbers, pad: "_");
 
             String actualText = String.Join(",", actual);
             Assert.Equal(expectedText, actualText);
@@ -60,7 +60,7 @@ namespace pnyx.net.test.util
                 source[i] = (i + 1).ToString();
 
             HashSet<int> columnNumbers = new HashSet<int>(TextUtil.parseInts(columnNumbersText));
-            String[] actual = RowHelper.removeColumns(source, columnNumbers);
+            String[] actual = RowUtil.removeColumns(source, columnNumbers);
 
             String actualText = String.Join(",", actual);
             Assert.Equal(expectedText, actualText);

@@ -55,7 +55,8 @@ namespace pnyx.net.fluent
             int? bufferLines = null,
             Encoding defaultEncoding = null,
             String defaultNewline = null,
-            bool? backupRewrite = null
+            bool? backupRewrite = null,
+            bool? processOnDispose = null
             )
         {
             if (tempDirectory != null) settings.tempDirectory = tempDirectory;
@@ -63,6 +64,7 @@ namespace pnyx.net.fluent
             if (defaultEncoding != null) { settings.defaultEncoding = defaultEncoding; streamInformation.defaultEncoding = defaultEncoding; }
             if (defaultNewline != null) { settings.defaultNewline = defaultNewline; streamInformation.defaultNewline = defaultNewline; }
             if (backupRewrite != null) settings.backupRewrite = backupRewrite.Value;
+            if (processOnDispose != null) settings.processOnDispose = processOnDispose.Value;
 
             return this;
         }
@@ -860,6 +862,9 @@ namespace pnyx.net.fluent
 
         public void Dispose()
         {
+            if (settings.processOnDispose && (state == FluentState.End || state == FluentState.Compiled))
+                process();
+            
             if (state == FluentState.Disposed)
                 return;
             

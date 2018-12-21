@@ -1,9 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace pnyx.net.util
 {
-    public static class RowHelper
+    public static class RowUtil
     {
         public static String[] replaceColumn(String[] row, int columnNumber, params String[] replacement)
         {
@@ -100,6 +101,11 @@ namespace pnyx.net.util
             }
                         
             return result;
+        }
+
+        public static bool isEqual(String[] rowA, String[] rowB)
+        {            
+            return ((IStructuralEquatable)rowA).Equals(rowB, StructuralComparisons.StructuralEqualityComparer);
         }
     }
 }

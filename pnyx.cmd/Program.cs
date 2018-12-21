@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Scripting;
+using pnyx.cmd.examples;
 using pnyx.net.fluent;
 using pnyx.net.util;
 
@@ -25,6 +23,11 @@ namespace pnyx.cmd
 
                 // Reads settings file
                 SettingsYaml.parseSetting();
+
+                // Undocumented flag / used for testing
+                String example = switches.value("-e", "--example");
+                if (example != null)
+                    return runExample(example, switches, args);
                 
                 if (switches.hasAny("-i", "--inline"))
                 {
@@ -84,6 +87,14 @@ namespace pnyx.cmd
 
             return errorCode;
         }
-        
+
+        private static int runExample(String example, Dictionary<String, String> switches, String[] args)
+        {
+            switch (example.ToLower())
+            {
+                case "bhcdischarge": return BhcDischarge.main();
+                default: return printUsage("Unknown example: " + example, 69);                    
+            }
+        }        
     }
 }

@@ -15,7 +15,7 @@ namespace pnyx.net.impl.columns
         
         public string[] transformRow(string[] row)
         {
-            return RowHelper.removeColumns(row, columnNumbers);
+            return RowUtil.removeColumns(row, columnNumbers);
         }
     }
 }
