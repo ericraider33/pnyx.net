@@ -26,11 +26,11 @@ namespace pnyx.net.fluent
     {
         public FluentState state { get; private set; }
         public StreamInformation streamInformation { get; private set; }
+        public readonly Settings settings;
         private IProcessor processor;
         private IRowConverter rowConverter;
         private readonly ArrayList parts;
         private readonly List<IDisposable> resources;
-        private readonly Settings settings;
         private readonly List<String> sourceFiles;
         
         private EventHandler<Pnyx> stateProcessed;

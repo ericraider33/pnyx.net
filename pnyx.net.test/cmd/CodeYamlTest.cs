@@ -11,7 +11,10 @@ namespace pnyx.net.test.cmd
             const String source = @"
 - readString: 'Line One
 
-Line Two'
+Line Two
+
+Hell no
+'
 - lineFilter:
       filter: 'code_cs(String line)
  

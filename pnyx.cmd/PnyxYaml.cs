@@ -3,7 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Scripting;
+using pnyx.cmd.code;
 using pnyx.net.errors;
 using pnyx.net.fluent;
 using pnyx.net.util;
@@ -181,7 +185,7 @@ namespace pnyx.cmd
                     switch (valueNode.NodeType)
                     {
                         case YamlNodeType.Scalar: 
-                            parameters[i] = processScalarParameter(pi, ((YamlScalarNode) valueNode).Value); 
+                            parameters[i] = processScalarParameter(p, pi, ((YamlScalarNode) valueNode).Value); 
                             break;
                         
                         case YamlNodeType.Sequence:
@@ -215,26 +219,38 @@ namespace pnyx.cmd
             method.Invoke(p, parameters);            
         }
 
-        private Object processScalarParameter(ParameterInfo parameterInfo, String scalarValue)
+        private Object processScalarParameter(Pnyx p, ParameterInfo parameterInfo, String scalarValue)
         {
             if (parameterInfo.ParameterType == typeof(String))
                 return scalarValue;
 
-            if (scalarValue.StartsWith("code_cs("))
-                return parserCSharpCode(parameterInfo, scalarValue);
+            Object codeResult = parserCSharpCode(p, parameterInfo, scalarValue);
+            if (codeResult != null)
+                return codeResult;
                     
             throw new InvalidArgumentException("Type conversion hasn't been built yet for: {0}", parameterInfo.ParameterType.FullName);            
         }
 
-        // https://github.com/dotnet/roslyn/wiki/Scripting-API-Samples#multi            
-        private Object parserCSharpCode(ParameterInfo parameterInfo, String scalarValue)
+        private readonly Regex CODE_EXPRESSION = new Regex("^code_cs[(].*[)]");        
+                 
+        // https://github.com/dotnet/roslyn/wiki/Scripting-API-Samples#multi   
+        private Object parserCSharpCode(Pnyx p, ParameterInfo parameterInfo, String scalarValue)
         {
-//            Script<int> script = CSharpScript.Create<int>("1+2");
-//
-//            int result = script.RunAsync(null).Result.ReturnValue;
-//            Console.WriteLine(result);
-            
-            throw new InvalidArgumentException("TODO");                        
+            Match headerRex = CODE_EXPRESSION.Match(scalarValue);
+            if (!headerRex.Success)
+                return null;
+
+            // Extract body / expression
+            String headerText = headerRex.Value;
+            String body = scalarValue.Substring(headerText.Length);
+                                    
+            // Compiles
+            Script<bool> script = CSharpScript.Create<bool>(body, globalsType: typeof(LineGlobals));
+
+            // Wraps script as filter
+            LineGlobals globals = new LineGlobals(p.streamInformation, p.settings);                
+            CodeLineFilter filter = new CodeLineFilter(globals, script);
+            return filter;
         }
     }
 }
