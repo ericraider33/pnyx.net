@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.Design.Serialization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using pnyx.net.api;
 using pnyx.net.errors;
@@ -237,11 +239,11 @@ namespace pnyx.net.fluent
             return this;
         }
         
-        public Pnyx lineToRow(IRowConverter converter)
+        public Pnyx lineToRow(IRowConverter converter, bool hasHeader = false)
         {
             if (state == FluentState.Line || state == FluentState.Start)
             {
-                parts.Add(new LineToRowProcessor { rowConverter = converter });
+                parts.Add(new LineToRowProcessor { rowConverter = converter, hasHeader = hasHeader});
                 state = FluentState.Row;
                 rowConverter = converter;
             }
@@ -341,6 +343,37 @@ namespace pnyx.net.fluent
             return rowTransformer(new DuplicateColumns(columnNumbers));
         }
 
+        public Pnyx headerNames(params Object[] columnNumbersAndNames)
+        {
+            if (columnNumbersAndNames == null)
+                throw new InvalidArgumentException("At least one name is required");
+            
+            int index = 0;
+            Dictionary<int, String> nameMap = new Dictionary<int, String>(columnNumbersAndNames.Length);
+            foreach (Object val in columnNumbersAndNames)
+            {
+                if (val is int)
+                {
+                    index = (int) val - 1;
+                    if (index < 0)
+                        throw new InvalidArgumentException("Column number must be 1 or greater: {0}", val);
+                }
+                else if (val is String)
+                {
+                    nameMap.Add(index, (String)val);
+                    index++;
+                }
+                else if (val == null)
+                    throw new InvalidArgumentException("Null is not a valid parameter");
+                else
+                    throw new InvalidArgumentException("Value should be either an integer index or a header name, but found value '{0}' of type '{1}'", val, val.GetType().Name);
+            }
+            if (nameMap.Count == 0)
+                throw new InvalidArgumentException("At least one name is required");
+            
+            return rowTransformer(new HeaderNames(nameMap));
+        }
+
         public Pnyx selectColumns(params int[] columnNumbers)
         {
             int[] indexes = convertColumnNumbersToIndex(columnNumbers);            
@@ -419,7 +452,7 @@ namespace pnyx.net.fluent
             {
                 CsvRowConverter rc = new CsvRowConverter();
                 rc.setStrict(strict);
-                lineToRow(rc);
+                lineToRow(rc, hasHeader);
             }
             else 
                 throw new IllegalStateException("Pnyx is not in Start or Line state: {0}", state.ToString());
@@ -427,14 +460,14 @@ namespace pnyx.net.fluent
             return this;
         }
 
-        public Pnyx parseDelimiter(String delimiter)
+        public Pnyx parseDelimiter(String delimiter, bool hasHeader = false)
         {
-            return lineToRow(new DelimiterRowConverter { delimiter = delimiter });
+            return lineToRow(new DelimiterRowConverter { delimiter = delimiter }, hasHeader);
         }
 
-        public Pnyx parseTab()
+        public Pnyx parseTab(bool hasHeader = false)
         {
-            return lineToRow(new DelimiterRowConverter { delimiter = "\t" });
+            return lineToRow(new DelimiterRowConverter { delimiter = "\t" }, hasHeader);
         }
 
         public Pnyx printDelimiter(String delimiter)

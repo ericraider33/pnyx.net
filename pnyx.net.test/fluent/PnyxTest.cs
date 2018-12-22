@@ -417,6 +417,23 @@ valueX1,valueX1
         }
 
         [Fact]
+        public void tabHasHeader()
+        {
+            const String source = "headerA\theaderB\nvalueA1\tvalueB1";
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(source);
+                p.parseTab(hasHeader: true);
+                p.sed("[AB]", "X");
+                actual = p.processToString();
+            }
+
+            const String expected = "headerA\theaderB\nvalueX1\tvalueX1";
+            Assert.Equal(expected, actual);            
+        }
+        
+        [Fact]
         public void withColumnsFilter()
         {
             String actual;
