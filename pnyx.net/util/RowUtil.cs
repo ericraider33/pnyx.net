@@ -107,5 +107,16 @@ namespace pnyx.net.util
         {            
             return ((IStructuralEquatable)rowA).Equals(rowB, StructuralComparisons.StructuralEqualityComparer);
         }
+
+        public static String[] setDefaultHeaderNames(String[] header)
+        {
+            for (int i = 0; i < header.Length; i++)
+            {
+                if (String.IsNullOrEmpty(header[i]))
+                    header[i] = "Header" + (i + 1);
+            }
+
+            return header;
+        }
     }
 }

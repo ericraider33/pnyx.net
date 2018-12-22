@@ -175,6 +175,27 @@ The Lord is my shepherd";
 
             Assert.Equal(PLANETS_GODS, actual);
         }
+
+        [Fact]
+        public void hasHeader()
+        {
+            const String source = @"headerA,headerB
+valueA1,valueB1
+";
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(source);
+                p.parseCsv(hasHeader: true);
+                p.sed("[AB]", "X");
+                actual = p.processToString();
+            }
+
+            const String expected = @"headerA,headerB
+valueX1,valueX1
+";
+            Assert.Equal(expected, actual);            
+        }
         
         [Fact]
         public void rowFilter()

@@ -9,8 +9,14 @@ namespace pnyx.net.impl.columns
     {
         private readonly List<List<String>> buffer = new List<List<String>>();
         private int lineNumber = 0;
-        
-        public string[][] bufferingRow(string[] row)
+
+        public String[] rowHeader(String[] header)
+        {
+            bufferingRow(header);
+            return null;
+        }
+
+        public String[][] bufferingRow(String[] row)
         {
             lineNumber++;
 
@@ -33,9 +39,9 @@ namespace pnyx.net.impl.columns
             return null;
         }
 
-        public string[][] endOfFile()
+        public String[][] endOfFile()
         {
-            string[][] result = buffer.Select(x => x.ToArray()).ToArray();
+            String[][] result = buffer.Select(x => x.ToArray()).ToArray();
             return result;
         }
     }

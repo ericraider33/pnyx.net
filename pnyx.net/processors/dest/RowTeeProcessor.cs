@@ -1,3 +1,5 @@
+using System;
+
 namespace pnyx.net.processors.dest
 {
     public class RowTeeProcessor : IRowProcessor, IRowPart
@@ -10,7 +12,13 @@ namespace pnyx.net.processors.dest
             this.tee = tee;
         }
 
-        public void processRow(string[] row)
+        public void rowHeader(String[] header)
+        {
+            processor.processRow(header);
+            tee.processRow(header);            
+        }
+
+        public void processRow(String[] row)
         {
             processor.processRow(row);
             tee.processRow(row);

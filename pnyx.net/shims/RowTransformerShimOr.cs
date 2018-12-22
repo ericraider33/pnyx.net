@@ -6,6 +6,11 @@ namespace pnyx.net.shims
     public class RowTransformerShimOr : IRowTransformer
     {
         public ILineTransformer lineTransformer;
+
+        public String[] transformHeader(String[] header)
+        {
+            return header;
+        }
         
         public string[] transformRow(string[] row)
         {

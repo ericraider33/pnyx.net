@@ -6,7 +6,12 @@ namespace pnyx.net.impl.columns
     public class SelectColumns : IRowTransformer
     {
         public int[] indexes;                                // zero-based
-        
+
+        public String[] transformHeader(String[] header)
+        {
+            return transformRow(header);
+        }
+
         public String[] transformRow(String[] row)
         {
             String[] result = new String[indexes.Length];

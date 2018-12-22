@@ -193,13 +193,13 @@ namespace pnyx.net.fluent
             return this;
         }
 
-        public Pnyx asCsv(Action<Pnyx> block, bool strict = true)
+        public Pnyx asCsv(Action<Pnyx> block, bool strict = true, bool hasHeader = false)
         {
             if (state != FluentState.New && state != FluentState.Start)
                 throw new IllegalStateException("Pnyx is not in New,Start state: {0}", state.ToString());
 
             int indexModifier = parts.Count;
-            parts.Add(new CsvModifer { strict = strict });
+            parts.Add(new CsvModifer { strict = strict, hasHeader = hasHeader });
 
             block(this);
 
@@ -401,12 +401,13 @@ namespace pnyx.net.fluent
             return indexes;
         }
                 
-        public Pnyx parseCsv(bool strict = true)
+        public Pnyx parseCsv(bool strict = true, bool hasHeader = false)
         {
             ILineSource lineSource = (parts.Count == 0 ? null : parts[parts.Count-1]) as ILineSource;
             if (state == FluentState.Start && lineSource != null)
             {
                 CsvStreamToRowProcessor csv = new CsvStreamToRowProcessor();
+                csv.hasHeader = hasHeader;
                 csv.setStrict(strict);
                 csv.setSource(streamInformation, lineSource.streamFactory);
                 rowConverter = csv.getRowConverter();
@@ -585,14 +586,14 @@ namespace pnyx.net.fluent
             return rowFilter(new RowFilterFunc { rowFilterFunc = filter });
         }
         
-        public Pnyx rowTransformerFunc(Func<String[], String[]> transform)
+        public Pnyx rowTransformerFunc(Func<String[], String[]> transform, bool treatHeaderAsRow = false)
         {
-            return rowTransformer(new RowTransformerFunc { rowTransformerFunc = transform });
+            return rowTransformer(new RowTransformerFunc { rowTransformerFunc = transform, treatHeaderAsRow = treatHeaderAsRow });
         }           
         
         public Pnyx rowBuffering(IRowBuffering transform)
         {
-            return rowPart(new RowBufferingProcessor { transform = transform });
+            return rowPart(new RowBufferingProcessor { buffering = transform });
         }
 
         public Pnyx grep(String textToFind, bool caseSensitive = true)

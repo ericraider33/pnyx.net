@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using pnyx.net.api;
 
@@ -7,7 +8,12 @@ namespace pnyx.net.impl.groups
     {
         public readonly List<IRowTransformer> transformers = new List<IRowTransformer>();
 
-        public string[] transformRow(string[] row)
+        public String[] transformHeader(String[] header)
+        {
+            return header;
+        }
+
+        public String[] transformRow(String[] row)
         {
             foreach (IRowTransformer transformer in transformers)
             {

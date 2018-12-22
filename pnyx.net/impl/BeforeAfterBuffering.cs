@@ -13,17 +13,17 @@ namespace pnyx.net.impl
             this.lineFilter = lineFilter;
         }
 
-        protected override bool shouldKeep(string source)
+        protected override bool shouldKeep(String source)
         {
             return lineFilter.shouldKeepLine(source);
         }
 
-        public string[] bufferingLine(string line)
+        public String[] bufferingLine(String line)
         {
             return bufferingT(line);
         }
 
-        public string[] endOfFile()
+        public String[] endOfFile()
         {
             return endOfFileT();
         }
@@ -38,17 +38,22 @@ namespace pnyx.net.impl
             this.rowFilter = rowFilter;
         }
 
-        protected override bool shouldKeep(string[] source)
+        protected override bool shouldKeep(String[] source)
         {
             return rowFilter.shouldKeepRow(source);
         }
 
-        public string[][] bufferingRow(string[] row)
+        public String[] rowHeader(String[] header)
+        {
+            return header;
+        }
+
+        public String[][] bufferingRow(String[] row)
         {
             return bufferingT(row);
         }
 
-        public string[][] endOfFile()
+        public String[][] endOfFile()
         {
             return endOfFileT();
         }

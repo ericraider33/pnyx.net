@@ -14,8 +14,14 @@ namespace pnyx.net.impl.columns
         {
             columnNumbers = new HashSet<int>(columns);
         }
-        
-        public string[] transformRow(string[] row)
+
+        public String[] transformHeader(String[] header)
+        {
+            header = RowUtil.duplicateColumns(header, columnNumbers, pad);
+            return RowUtil.setDefaultHeaderNames(header);
+        }
+
+        public String[] transformRow(String[] row)
         {
             return RowUtil.duplicateColumns(row, columnNumbers, pad);
         }

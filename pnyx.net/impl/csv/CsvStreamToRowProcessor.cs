@@ -12,6 +12,7 @@ namespace pnyx.net.impl.csv
     public class CsvStreamToRowProcessor : IRowSource, IDisposable
     {
         public CsvRowConverter rowConverter { get; private set; }
+        public bool hasHeader { get; set; }
         public StreamReader reader { get; protected set; }
         public IRowProcessor rowProcessor { get; private set; }
         public StreamInformation streamInformation { get; protected set; }        
@@ -46,7 +47,10 @@ namespace pnyx.net.impl.csv
             while ((current = readRow(streamInformation.lineNumber))!= null && streamInformation.active)
             {
                 streamInformation.lineNumber++;
-                rowProcessor.processRow(current);
+                if (streamInformation.lineNumber == 1 && hasHeader)
+                    rowProcessor.rowHeader(current);
+                else
+                    rowProcessor.processRow(current);
             }
 
             if (!streamInformation.active)

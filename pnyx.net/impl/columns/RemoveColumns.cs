@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using pnyx.net.api;
 using pnyx.net.util;
@@ -12,8 +13,13 @@ namespace pnyx.net.impl.columns
         {
             columnNumbers = new HashSet<int>(columns);
         }
-        
-        public string[] transformRow(string[] row)
+
+        public String[] transformHeader(String[] header)
+        {
+            return RowUtil.removeColumns(header, columnNumbers);
+        }
+
+        public String[] transformRow(String[] row)
         {
             return RowUtil.removeColumns(row, columnNumbers);
         }

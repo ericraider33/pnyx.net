@@ -7,7 +7,13 @@ namespace pnyx.net.impl.columns
     {
         public int index;                                        // zero based
         public ILineProcessor processor;
-        
+
+        public void rowHeader(String[] header)
+        {
+            String line = index < header.Length ? header[index] : "";
+            processor.processLine(line);
+        }
+
         public void processRow(string[] row)
         {
             String line = index < row.Length ? row[index] : "";

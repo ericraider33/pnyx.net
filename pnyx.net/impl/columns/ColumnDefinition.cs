@@ -45,7 +45,23 @@ namespace pnyx.net.impl.columns
             flag = Flags.MaxWidth;
         }
 
-        public string[][] bufferingRow(string[] row)
+        public String[] rowHeader(String[] header)
+        {
+            lineNumber++;
+
+            for (int i = 0; i < header.Length; i++)
+            {
+                String column = header[i];
+                ColumnInformation info = infoList[i];
+
+                if (flag.HasFlag(Flags.Header))
+                    info.header = column;
+            }
+
+            return null;
+        }
+
+        public String[][] bufferingRow(String[] row)
         {
             lineNumber++;
 
@@ -76,9 +92,9 @@ namespace pnyx.net.impl.columns
             return null;
         }
 
-        public string[][] endOfFile()
+        public String[][] endOfFile()
         {
-            List<String[]> result = new List<string[]>();
+            List<String[]> result = new List<String[]>();
 
             if (flag.HasFlag(Flags.Header))
                 result.Add(buildOutput("Header", list => list.Select(ci => ci.header)));

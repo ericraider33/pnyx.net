@@ -18,21 +18,41 @@ namespace pnyx.net.impl.columns
             subColumns = new String[indexes.Length];
         }
 
-        public string[] transformRow(string[] row)
+        public String[] transformHeader(String[] header)
+        {
+            subColumnsIn(header);
+            String[] transformed = rowTransformer.transformHeader(subColumns);
+            return subColumnsOut(transformed, header);
+        }
+
+        public String[] transformRow(String[] row)
+        {
+            subColumnsIn(row);
+            String[] transformed = rowTransformer.transformRow(subColumns);
+            return subColumnsOut(transformed, row);
+        }
+
+        private void subColumnsIn(String[] row)
         {
             for (int i = 0; i < indexes.Length; i++)
             {
                 int columnIndex = indexes[i];
                 String column = columnIndex < row.Length ? row[columnIndex] : "";
                 subColumns[i] = column;
-            }
+            }            
+        }
 
-            String[] transformed = rowTransformer.transformRow(subColumns);
-            
+        private String[] subColumnsOut(String[] transformed, String[] row)
+        {
             for (int i = 0; i < indexes.Length; i++)
             {
                 int columnIndex = indexes[i];
-                if (columnIndex < row.Length)
+                if (columnIndex >= row.Length)
+                    continue;
+
+                if (transformed == null)
+                    row[columnIndex] = "";
+                else
                     row[columnIndex] = transformed[i];
             }
 

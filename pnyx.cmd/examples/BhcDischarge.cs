@@ -12,7 +12,7 @@ namespace pnyx.cmd.examples
             using (Pnyx p = new Pnyx())
             {
                 p.read("C:/dev/asclepius/prod_import/BHC Patients from 1-1-15 thru 10-31-2018.csv");
-                p.parseCsv();
+                p.parseCsv(hasHeader: true);
                 p.rowTransformerFunc(row =>
                 {
                     String fullName = row[2];
