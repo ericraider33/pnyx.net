@@ -35,11 +35,11 @@ namespace pnyx.net.fluent
         private readonly List<IDisposable> resources;
         private readonly List<String> sourceFiles;
         
-        private EventHandler<Pnyx> stateProcessed;
-        public event EventHandler<Pnyx> StateProcessed
+        private EventHandler<Pnyx> stateProcessedHandler;
+        public event EventHandler<Pnyx> stateProcessed
         {
-            add => stateProcessed += value;
-            remove => stateProcessed -= value;
+            add => stateProcessedHandler += value;
+            remove => stateProcessedHandler -= value;
         }
             
         public Pnyx(Settings settings = null, StreamInformation streamInformation = null)
@@ -58,7 +58,8 @@ namespace pnyx.net.fluent
             Encoding defaultEncoding = null,
             String defaultNewline = null,
             bool? backupRewrite = null,
-            bool? processOnDispose = null
+            bool? processOnDispose = null,
+            bool? stdIoDefault = false
             )
         {
             if (tempDirectory != null) settings.tempDirectory = tempDirectory;
@@ -67,6 +68,8 @@ namespace pnyx.net.fluent
             if (defaultNewline != null) { settings.defaultNewline = defaultNewline; streamInformation.defaultNewline = defaultNewline; }
             if (backupRewrite != null) settings.backupRewrite = backupRewrite.Value;
             if (processOnDispose != null) settings.processOnDispose = processOnDispose.Value;
+
+            if (stdIoDefault != null) settings.stdIoDefault = stdIoDefault.Value;
 
             return this;
         }
@@ -805,7 +808,7 @@ namespace pnyx.net.fluent
             String backupFile = Path.Combine(settings.tempDirectory, sourceFileName + Guid.NewGuid());
 
             // Adds hook to move file after processing is complete
-            stateProcessed += (sender, pnyx) =>
+            stateProcessedHandler += (sender, pnyx) =>
             {
                 // Backs up original file
                 if (backupOriginal_)
@@ -887,9 +890,9 @@ namespace pnyx.net.fluent
             state = FluentState.Processed;
             
             // Updates events
-            if (stateProcessed != null)
-                stateProcessed(this, this);
-            stateProcessed = null;
+            if (stateProcessedHandler != null)
+                stateProcessedHandler(this, this);
+            stateProcessedHandler = null;
 
             return this;
         }
@@ -906,7 +909,7 @@ namespace pnyx.net.fluent
                 resource.Dispose();                                    
             resources.Clear();
 
-            stateProcessed = null;
+            stateProcessedHandler = null;
             
             state = FluentState.Disposed;            
         }
