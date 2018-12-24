@@ -31,8 +31,13 @@ namespace pnyx.net.processors.sort
             buffer = new SortedList<String[], String[]>(bufferSize, comparer);            
             tempFileKey = TextUtil.extractAlphaNumeric(Guid.NewGuid().ToString());
         }
-        
-        public void processRow(string[] row)
+
+        public void rowHeader(String[] header)
+        {
+            next.rowHeader(header);
+        }
+
+        public void processRow(String[] row)
         {
             buffer.Add(row, row);
 
@@ -45,7 +50,7 @@ namespace pnyx.net.processors.sort
             if (buffer.Count > 0)
                 emptyBuffer();
 
-            sort();
+            sort();                        
 
             if (sortFiles.Count > 0)
             {

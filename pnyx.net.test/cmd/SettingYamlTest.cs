@@ -29,7 +29,7 @@ backupRewrite: false
             Assert.Equal(100, settings.bufferLines);
             Assert.Equal("\r\n", settings.defaultNewline);
             Assert.Equal("utf-8", settings.defaultEncoding.WebName);
-            Assert.Equal(false, settings.backupRewrite);
+            Assert.False(settings.backupRewrite);
         }
 
         [Theory]

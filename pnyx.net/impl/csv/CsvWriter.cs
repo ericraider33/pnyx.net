@@ -24,8 +24,13 @@ namespace pnyx.net.impl.csv
             
             return result;
         }        
+        
+        public override void rowHeader(String[] header)
+        {
+            throw new IllegalStateException("Use writeRow method instead");            
+        }        
 
-        public override void processRow(string[] row)
+        public override void processRow(String[] row)
         {
             throw new IllegalStateException("Use writeRow method instead");            
         }

@@ -1,3 +1,4 @@
+using System;
 using pnyx.net.api;
 
 namespace pnyx.net.processors.rows
@@ -7,7 +8,12 @@ namespace pnyx.net.processors.rows
         public IRowFilter filter;
         public IRowProcessor processor;
 
-        public void processRow(string[] row)
+        public void rowHeader(String[] header)
+        {
+            processor.rowHeader(header);
+        }
+
+        public void processRow(String[] row)
         {
             if (filter.shouldKeepRow(row))
                 processor.processRow(row);

@@ -18,7 +18,7 @@ namespace pnyx.net.fluent
 
         public Settings buildSettings()
         {
-            return settings;
+            return (Settings) settings.Clone();
         }
     }
 }

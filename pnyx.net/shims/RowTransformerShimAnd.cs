@@ -6,11 +6,16 @@ namespace pnyx.net.shims
     public class RowTransformerShimAnd : IRowTransformer
     {
         public ILineTransformer lineTransformer;
-        
-        public string[] transformRow(string[] row)
+
+        public String[] transformHeader(String[] header)
+        {
+            return header;
+        }
+
+        public String[] transformRow(String[] row)
         {
             bool keep = true;
-            string[] result = new string[row.Length];
+            String[] result = new String[row.Length];
             for (int i = 0; i < row.Length; i++)
             {
                 String column = lineTransformer.transformLine(row[i]);

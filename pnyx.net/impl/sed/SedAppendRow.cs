@@ -8,17 +8,22 @@ namespace pnyx.net.impl.sed
     public class SedAppendRow : IRowBuffering
     {
         public String[] text;
-        
-        public string[][] bufferingRow(string[] row)
+
+        public String[] rowHeader(String[] header)
         {
-            return new string[][]
+            return header;
+        }
+
+        public String[][] bufferingRow(String[] row)
+        {
+            return new String[][]
             {                
                 row,
                 text
             };            
         }
 
-        public string[][] endOfFile()
+        public String[][] endOfFile()
         {
             return null;
         }

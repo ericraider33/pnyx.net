@@ -19,7 +19,7 @@ namespace pnyx.cmd.examples
             using (Pnyx p = new Pnyx())
             {
                 p.read("C:/dev/asclepius/prod_import/BHC Patients from 1-1-15 thru 10-31-2018.csv");
-                p.parseCsv();
+                p.parseCsv(hasHeader: true);
                 p.withColumns(p2 => p2.lineTransformer(new DateTransform
                 {
                     formatSource = DateUtil.FORMAT_MDYYYY, formatDestination = DateUtil.FORMAT_ISO_8601_DATE                        

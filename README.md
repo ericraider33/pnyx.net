@@ -47,3 +47,4 @@ File parsing and transforming automation scripting platform, Native .net
 1. 2018-12-15: ReWrite function
 1. 2018-12-16: Settings and defaults for Pnyx
 1. 2018-12-21: Enhancements to NameUtil and bhc example
+1. 2018-12-22: Titles for columns

@@ -16,7 +16,7 @@ namespace pnyx.net.test.impl
         public void grep(String source, String textToFind, bool caseSensitive, bool expected)
         {
             EGrep grep = new EGrep(textToFind, caseSensitive);
-        }
-        
+            Assert.Equal(expected, grep.shouldKeepLine(source));
+        }        
     }
 }

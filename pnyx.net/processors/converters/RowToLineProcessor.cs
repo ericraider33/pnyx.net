@@ -7,14 +7,20 @@ namespace pnyx.net.processors.converters
     {
         public IRowConverter rowConverter;
         public ILineProcessor processor;
-        
-        public void processRow(string[] row)
+
+        public void rowHeader(String[] header)
+        {
+            String line = rowConverter.rowToLine(header);
+            processor.processLine(line);
+        }
+
+        public void processRow(String[] row)
         {
             String line = rowConverter.rowToLine(row);
             processor.processLine(line);
         }
 
-        public void processLine(string line)
+        public void processLine(String line)
         {
             processor.processLine(line);
         }

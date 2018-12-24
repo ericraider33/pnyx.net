@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using pnyx.net.util;
 
@@ -40,13 +41,23 @@ namespace pnyx.net.processors.sources
         private class RowProcessorCollector : IRowProcessor
         {
             private readonly IRowProcessor next;
+            private bool hasRowHeader;
 
             public RowProcessorCollector(IRowProcessor next)
             {
                 this.next = next;
             }
 
-            public void processRow(string[] row)
+            public void rowHeader(String[] header)
+            {
+                if (hasRowHeader)
+                    return;
+
+                next.rowHeader(header);
+                hasRowHeader = true;
+            }
+
+            public void processRow(String[] row)
             {
                 next.processRow(row);
             }

@@ -20,13 +20,15 @@ namespace pnyx.net.test
                 p.read(inPath).grep("schenbach", caseSensitive: false).write(outPath).process();                
 
             String expectedPath = Path.Combine(TestUtil.findTestFileLocation(), "csv", "us_census_schenbach.csv");
-            Assert.Null(TestUtil.binaryDiff(expectedPath, outPath));           
+            String diff = TestUtil.binaryDiff(expectedPath, outPath);
+            Assert.Null(diff);
 
             using (Pnyx p = new Pnyx())
                 p.read(outPath).grep("eschenbach", caseSensitive: false).rewrite().process();
             
             expectedPath = Path.Combine(TestUtil.findTestFileLocation(), "csv", "us_census_eschenbach.csv");
-            Assert.Null(TestUtil.binaryDiff(expectedPath, outPath));           
+            diff = TestUtil.binaryDiff(expectedPath, outPath);
+            Assert.Null(diff);            
         }
     }
 }

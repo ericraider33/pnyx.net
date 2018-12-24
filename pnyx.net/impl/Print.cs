@@ -13,7 +13,13 @@ namespace pnyx.net.impl
         private readonly StringBuilder formatBuilder = new StringBuilder();
         private readonly String[] emptyRow = new String[0];
 
-        public void processRow(string[] row)
+        public void rowHeader(String[] header)
+        {
+            String line = print(null, header);
+            processor.processLine(line);            
+        }
+
+        public void processRow(String[] row)
         {
             String line = print(null, row);
             processor.processLine(line);            

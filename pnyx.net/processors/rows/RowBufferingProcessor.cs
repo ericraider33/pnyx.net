@@ -5,17 +5,24 @@ namespace pnyx.net.processors.rows
 {
     public class RowBufferingProcessor : IRowPart, IRowProcessor
     {
-        public IRowBuffering transform;
+        public IRowBuffering buffering;
         public IRowProcessor processor;
 
-        public void processRow(string[] row)
+        public void rowHeader(String[] header)
         {
-            forward(transform.bufferingRow(row));
+            header = buffering.rowHeader(header);
+            if (header != null)
+                processor.rowHeader(header);
+        }
+
+        public void processRow(String[] row)
+        {
+            forward(buffering.bufferingRow(row));
         }
 
         public void endOfFile()
         {
-            forward(transform.endOfFile());
+            forward(buffering.endOfFile());
             processor.endOfFile();
         }
 

@@ -5,13 +5,20 @@ namespace pnyx.net.processors.converters
 {
     public class LineToRowProcessor : ILineProcessor, IRowPart
     {
+        public bool hasHeader;        
         public IRowConverter rowConverter;
         public IRowProcessor processor;
+        private int lineNumber;
         
         public void processLine(string line)
         {
+            lineNumber++;
+            
             String[] row = rowConverter.lineToRow(line);
-            processor.processRow(row);
+            if (lineNumber == 1 && hasHeader)
+                processor.rowHeader(row);
+            else
+                processor.processRow(row);
         }
 
         public void processRow(string[] row)

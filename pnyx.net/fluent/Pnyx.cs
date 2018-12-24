@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.Design.Serialization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using pnyx.net.api;
 using pnyx.net.errors;
@@ -33,11 +35,11 @@ namespace pnyx.net.fluent
         private readonly List<IDisposable> resources;
         private readonly List<String> sourceFiles;
         
-        private EventHandler<Pnyx> stateProcessed;
-        public event EventHandler<Pnyx> StateProcessed
+        private EventHandler<Pnyx> stateProcessedHandler;
+        public event EventHandler<Pnyx> stateProcessed
         {
-            add => stateProcessed += value;
-            remove => stateProcessed -= value;
+            add => stateProcessedHandler += value;
+            remove => stateProcessedHandler -= value;
         }
             
         public Pnyx(Settings settings = null, StreamInformation streamInformation = null)
@@ -56,7 +58,8 @@ namespace pnyx.net.fluent
             Encoding defaultEncoding = null,
             String defaultNewline = null,
             bool? backupRewrite = null,
-            bool? processOnDispose = null
+            bool? processOnDispose = null,
+            bool? stdIoDefault = false
             )
         {
             if (tempDirectory != null) settings.tempDirectory = tempDirectory;
@@ -65,6 +68,8 @@ namespace pnyx.net.fluent
             if (defaultNewline != null) { settings.defaultNewline = defaultNewline; streamInformation.defaultNewline = defaultNewline; }
             if (backupRewrite != null) settings.backupRewrite = backupRewrite.Value;
             if (processOnDispose != null) settings.processOnDispose = processOnDispose.Value;
+
+            if (stdIoDefault != null) settings.stdIoDefault = stdIoDefault.Value;
 
             return this;
         }
@@ -193,13 +198,13 @@ namespace pnyx.net.fluent
             return this;
         }
 
-        public Pnyx asCsv(Action<Pnyx> block, bool strict = true)
+        public Pnyx asCsv(Action<Pnyx> block, bool strict = true, bool hasHeader = false)
         {
             if (state != FluentState.New && state != FluentState.Start)
                 throw new IllegalStateException("Pnyx is not in New,Start state: {0}", state.ToString());
 
             int indexModifier = parts.Count;
-            parts.Add(new CsvModifer { strict = strict });
+            parts.Add(new CsvModifer { strict = strict, hasHeader = hasHeader });
 
             block(this);
 
@@ -212,23 +217,52 @@ namespace pnyx.net.fluent
             return this;
         }
 
+        private void requireStart(bool line, bool row)
+        {
+            if (state == FluentState.New && settings.stdIoDefault)
+                readStdin();
+
+            if (line && row)
+            {
+                if (state != FluentState.Line && state != FluentState.Row && state != FluentState.Start)
+                    throw new IllegalStateException("Pnyx is not in Line,Row,Start state: {0}", state.ToString());            
+            }
+            else if (line)
+            {
+                if (state != FluentState.Line && state != FluentState.Start)
+                    throw new IllegalStateException("Pnyx is not in Line,Start state: {0}", state.ToString());                            
+            }
+            else if (row)
+            {
+                if (state != FluentState.Row)
+                    throw new IllegalStateException("Pnyx is not in Row state: {0}", state.ToString());                                            
+            }
+            else
+            {
+                if (state != FluentState.Start)
+                    throw new IllegalStateException("Pnyx is not in Start state: {0}", state.ToString());
+            }
+        }
+
         public Pnyx head(int limit = 1)
         {
             if (limit < 1)
                 throw new InvalidArgumentException("Head limit must be greater than zero");
 
+            requireStart(line: true, row: true);
+            
             if (state == FluentState.Start || state == FluentState.Line)
-                return lineFilter(new HeadFilter(streamInformation, limit));
+                lineFilter(new HeadFilter(streamInformation, limit));
             else if (state == FluentState.Row)
-                return rowFilter(new HeadFilter(streamInformation, limit));
-            else
-                throw new IllegalStateException("Pnyx is not in Line,Row,Start state: {0}", state.ToString());
+                rowFilter(new HeadFilter(streamInformation, limit));
+            
+            return this;
         }
 
         public Pnyx tail(int limit = 1)
         {
             if (limit < 1)
-                throw new InvalidArgumentException("Head limit must be greater than zero");
+                throw new InvalidArgumentException("Tail limit must be greater than zero");
 
             if (state != FluentState.New && state != FluentState.Start)
                 throw new IllegalStateException("Pnyx is not in New,Start state: {0}", state.ToString());
@@ -237,37 +271,33 @@ namespace pnyx.net.fluent
             return this;
         }
         
-        public Pnyx lineToRow(IRowConverter converter)
+        public Pnyx lineToRow(IRowConverter converter, bool hasHeader = false)
         {
-            if (state == FluentState.Line || state == FluentState.Start)
-            {
-                parts.Add(new LineToRowProcessor { rowConverter = converter });
-                state = FluentState.Row;
-                rowConverter = converter;
-            }
-            else
-                throw new IllegalStateException("Pnyx is not in Line, Row, or Start state: {0}", state.ToString());
+            requireStart(line: true, row: false);
+            
+            parts.Add(new LineToRowProcessor { rowConverter = converter, hasHeader = hasHeader});
+            state = FluentState.Row;
+            rowConverter = converter;
 
             return this;
         }
 
         public Pnyx rowToLine(IRowConverter converter = null)
         {
-            if (state == FluentState.Row)
-            {
-                converter = converter ?? rowConverter;
-                parts.Add(new RowToLineProcessor { rowConverter = converter });
-                state = FluentState.Line;
-                rowConverter = null;
-            }
-            else
-                throw new IllegalStateException("Pnyx is not in Row state: {0}", state.ToString());
+            requireStart(line: false, row: true);
+
+            converter = converter ?? rowConverter;
+            parts.Add(new RowToLineProcessor { rowConverter = converter });
+            state = FluentState.Line;
+            rowConverter = null;
 
             return this;
         }
 
         public Pnyx print(String format)
-        {            
+        {   
+            requireStart(line: true, row: true);
+            
             if (state == FluentState.Row)
             {
                 parts.Add(new Print { format = format, rowConverter = rowConverter });
@@ -279,8 +309,6 @@ namespace pnyx.net.fluent
                 parts.Add(new Print { format = format });
                 state = FluentState.Line;                
             }
-            else
-                throw new IllegalStateException("Pnyx is not in Row,Line or Start state: {0}", state.ToString());
 
             return this;                
         }
@@ -341,6 +369,37 @@ namespace pnyx.net.fluent
             return rowTransformer(new DuplicateColumns(columnNumbers));
         }
 
+        public Pnyx headerNames(params Object[] columnNumbersAndNames)
+        {
+            if (columnNumbersAndNames == null)
+                throw new InvalidArgumentException("At least one name is required");
+            
+            int index = 0;
+            Dictionary<int, String> nameMap = new Dictionary<int, String>(columnNumbersAndNames.Length);
+            foreach (Object val in columnNumbersAndNames)
+            {
+                if (val is int)
+                {
+                    index = (int) val - 1;
+                    if (index < 0)
+                        throw new InvalidArgumentException("Column number must be 1 or greater: {0}", val);
+                }
+                else if (val is String)
+                {
+                    nameMap.Add(index, (String)val);
+                    index++;
+                }
+                else if (val == null)
+                    throw new InvalidArgumentException("Null is not a valid parameter");
+                else
+                    throw new InvalidArgumentException("Value should be either an integer index or a header name, but found value '{0}' of type '{1}'", val, val.GetType().Name);
+            }
+            if (nameMap.Count == 0)
+                throw new InvalidArgumentException("At least one name is required");
+            
+            return rowTransformer(new HeaderNames(nameMap));
+        }
+
         public Pnyx selectColumns(params int[] columnNumbers)
         {
             int[] indexes = convertColumnNumbersToIndex(columnNumbers);            
@@ -349,25 +408,21 @@ namespace pnyx.net.fluent
         
         public Pnyx printColumn(int columnNumber)            // 1-based to be consistent with print and sed
         {
-            if (state == FluentState.Row)
-            {
-                if (columnNumber <= 0)
-                    throw new InvalidArgumentException("Invalid ColumnNumber {0}, ColumnNumbers start at 1", columnNumber);
-                
-                parts.Add(new ColumnToLine { index = columnNumber-1 });
-                state = FluentState.Line;
-                rowConverter = null;
-            }
-            else
-                throw new IllegalStateException("Pnyx is not in Row state: {0}", state.ToString());
+            requireStart(line: false, row: true);
+
+            if (columnNumber <= 0)
+                throw new InvalidArgumentException("Invalid ColumnNumber {0}, ColumnNumbers start at 1", columnNumber);
+            
+            parts.Add(new ColumnToLine { index = columnNumber-1 });
+            state = FluentState.Line;
+            rowConverter = null;
 
             return this;
         }
                 
         public Pnyx withColumns(Action<Pnyx> block, params int[] columnNumbers)
         {
-            if (state != FluentState.Row)
-                throw new IllegalStateException("Pnyx is not in Row state: {0}", state.ToString());
+            requireStart(line: false, row: true);
                
             // Add modifier to parts
             int partIndex = parts.Count;
@@ -401,12 +456,15 @@ namespace pnyx.net.fluent
             return indexes;
         }
                 
-        public Pnyx parseCsv(bool strict = true)
+        public Pnyx parseCsv(bool strict = true, bool hasHeader = false)
         {
+            requireStart(line: true, row: false);
+            
             ILineSource lineSource = (parts.Count == 0 ? null : parts[parts.Count-1]) as ILineSource;
             if (state == FluentState.Start && lineSource != null)
             {
                 CsvStreamToRowProcessor csv = new CsvStreamToRowProcessor();
+                csv.hasHeader = hasHeader;
                 csv.setStrict(strict);
                 csv.setSource(streamInformation, lineSource.streamFactory);
                 rowConverter = csv.getRowConverter();
@@ -418,22 +476,20 @@ namespace pnyx.net.fluent
             {
                 CsvRowConverter rc = new CsvRowConverter();
                 rc.setStrict(strict);
-                lineToRow(rc);
+                lineToRow(rc, hasHeader);
             }
-            else 
-                throw new IllegalStateException("Pnyx is not in Start or Line state: {0}", state.ToString());
 
             return this;
         }
 
-        public Pnyx parseDelimiter(String delimiter)
+        public Pnyx parseDelimiter(String delimiter, bool hasHeader = false)
         {
-            return lineToRow(new DelimiterRowConverter { delimiter = delimiter });
+            return lineToRow(new DelimiterRowConverter { delimiter = delimiter }, hasHeader);
         }
 
-        public Pnyx parseTab()
+        public Pnyx parseTab(bool hasHeader = false)
         {
-            return lineToRow(new DelimiterRowConverter { delimiter = "\t" });
+            return lineToRow(new DelimiterRowConverter { delimiter = "\t" }, hasHeader);
         }
 
         public Pnyx printDelimiter(String delimiter)
@@ -448,14 +504,11 @@ namespace pnyx.net.fluent
 
         public Pnyx linePart(ILinePart linePart)
         {
-            if (state == FluentState.Line || state == FluentState.Start)
-            {
-                parts.Add(linePart);
-                state = FluentState.Line;
-                return this;
-            }
-            else
-                throw new IllegalStateException("Pnyx is not in Line, or Start state: {0}", state.ToString());
+            requireStart(line: true, row: false);
+            
+            parts.Add(linePart);
+            state = FluentState.Line;
+            return this;
         }
 
         public Pnyx lineFilter(ILineFilter filter)
@@ -543,21 +596,11 @@ namespace pnyx.net.fluent
         
         public Pnyx rowPart(IRowPart rowPart)
         {
-            if (state == FluentState.Line)
-            {
-                if (rowConverter == null)
-                    throw new IllegalStateException("Specify a RowConverter before adding Row parts");
-                
-                throw new NotImplementedException("Code LINE to ROW");
-            }
-            else if (state == FluentState.Row || state == FluentState.Start)
-            {
-                parts.Add(rowPart);
-                state = FluentState.Row;
-                return this;
-            }
-            else
-                throw new IllegalStateException("Pnyx is not in Line, Row, or Start state: {0}", state.ToString());
+            requireStart(line: false, row: true);
+
+            parts.Add(rowPart);
+            state = FluentState.Row;
+            return this;
         }
 
         public Pnyx rowFilter(IRowFilter rowFilter)
@@ -585,14 +628,14 @@ namespace pnyx.net.fluent
             return rowFilter(new RowFilterFunc { rowFilterFunc = filter });
         }
         
-        public Pnyx rowTransformerFunc(Func<String[], String[]> transform)
+        public Pnyx rowTransformerFunc(Func<String[], String[]> transform, bool treatHeaderAsRow = false)
         {
-            return rowTransformer(new RowTransformerFunc { rowTransformerFunc = transform });
+            return rowTransformer(new RowTransformerFunc { rowTransformerFunc = transform, treatHeaderAsRow = treatHeaderAsRow });
         }           
         
         public Pnyx rowBuffering(IRowBuffering transform)
         {
-            return rowPart(new RowBufferingProcessor { transform = transform });
+            return rowPart(new RowBufferingProcessor { buffering = transform });
         }
 
         public Pnyx grep(String textToFind, bool caseSensitive = true)
@@ -680,8 +723,7 @@ namespace pnyx.net.fluent
         
         private Pnyx setEnd(Stream output, Object destination = null)
         {
-            if (state != FluentState.Line && state != FluentState.Row && state != FluentState.Start)
-                throw new IllegalStateException("Pnyx is not in Line, Row, or Start state: {0}", state.ToString());
+            requireStart(line: true, row: true);
 
             IRowConverter endRowConverter = destination as IRowConverter;
             ILineProcessor lineDestination = destination as ILineProcessor;
@@ -771,7 +813,7 @@ namespace pnyx.net.fluent
             String backupFile = Path.Combine(settings.tempDirectory, sourceFileName + Guid.NewGuid());
 
             // Adds hook to move file after processing is complete
-            stateProcessed += (sender, pnyx) =>
+            stateProcessedHandler += (sender, pnyx) =>
             {
                 // Backs up original file
                 if (backupOriginal_)
@@ -800,6 +842,8 @@ namespace pnyx.net.fluent
 
         public Pnyx tee(Action<Pnyx> block)
         {
+            requireStart(line: true, row: true);
+            
             Pnyx teePnyx = new Pnyx(settings, streamInformation);
             
             if (state == FluentState.Start || state == FluentState.Line)
@@ -814,8 +858,6 @@ namespace pnyx.net.fluent
                 teePnyx.startRow(teePass, rowConverter);
                 rowPart(new RowTeeProcessor(teePass));
             }
-            else
-                throw new IllegalStateException("Pnyx is not in Line, Row, or Start state: {0}", state.ToString());
 
             block(teePnyx);
             teePnyx.compile();
@@ -853,9 +895,9 @@ namespace pnyx.net.fluent
             state = FluentState.Processed;
             
             // Updates events
-            if (stateProcessed != null)
-                stateProcessed(this, this);
-            stateProcessed = null;
+            if (stateProcessedHandler != null)
+                stateProcessedHandler(this, this);
+            stateProcessedHandler = null;
 
             return this;
         }
@@ -872,7 +914,7 @@ namespace pnyx.net.fluent
                 resource.Dispose();                                    
             resources.Clear();
 
-            stateProcessed = null;
+            stateProcessedHandler = null;
             
             state = FluentState.Disposed;            
         }
@@ -906,11 +948,9 @@ namespace pnyx.net.fluent
             Func<IEnumerable<IRowFilter>, IRowFilter> rowFilterFactory            
             )
         {
-            FluentState current = state;
+            requireStart(line: true, row: true);
             
-            if (state != FluentState.Line && state != FluentState.Row && state != FluentState.Start)
-                throw new IllegalStateException("Pnyx is not in Line, Row, or Start state: {0}", state.ToString());
-
+            FluentState current = state;
             int before = parts.Count;
             block(this);
             
@@ -1015,8 +1055,7 @@ namespace pnyx.net.fluent
             int? bufferLines = null
             )
         {
-            if (state != FluentState.Start && state != FluentState.Line)
-                throw new IllegalStateException("Pnyx is not in Line,Row,Start state: {0}", state.ToString());
+            requireStart(line: true, row: false);
 
             tempDirectory = tempDirectory ?? settings.tempDirectory;
             bufferLines = bufferLines ?? settings.bufferLines;
@@ -1034,8 +1073,7 @@ namespace pnyx.net.fluent
             int? bufferLines = null
             )
         {
-            if (state != FluentState.Row)
-                throw new IllegalStateException("Pnyx is not in Line,Row,Start state: {0}", state.ToString());           
+            requireStart(line: false, row: true);
 
             tempDirectory = tempDirectory ?? settings.tempDirectory;
             bufferLines = bufferLines ?? settings.bufferLines;

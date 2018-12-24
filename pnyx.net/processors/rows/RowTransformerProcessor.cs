@@ -7,6 +7,13 @@ namespace pnyx.net.processors.rows
         public IRowTransformer transform;
         public IRowProcessor processor;
 
+        public void rowHeader(string[] header)
+        {
+            header = transform.transformHeader(header);
+            if (header != null)
+                processor.rowHeader(header);            
+        }
+
         public void processRow(string[] row)
         {
             row = transform.transformRow(row);

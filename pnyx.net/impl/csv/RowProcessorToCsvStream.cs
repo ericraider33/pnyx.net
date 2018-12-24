@@ -19,7 +19,12 @@ namespace pnyx.net.impl.csv
             this.streamInformation = streamInformation;
         }
 
-        public virtual void processRow(string[] row)
+        public virtual void rowHeader(String[] header)
+        {
+            processRow(header);
+        }
+
+        public virtual void processRow(String[] row)
         {
             if (previousRow != null)
             {
