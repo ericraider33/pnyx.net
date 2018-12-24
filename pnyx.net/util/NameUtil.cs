@@ -29,8 +29,8 @@ namespace pnyx.net.util
             return NAME_EXPRESSION.IsMatch(text);
         }
 
-        // Removes special characters from string.    Allows letters, spaces, hyphens and apostrophes
-        public static string extractNameString(this string str)
+        // Removes special characters from String.    Allows letters, spaces, hyphens and apostrophes
+        public static String extractNameString(this String str)
         {
             if (str == null) return null;
 
@@ -46,7 +46,7 @@ namespace pnyx.net.util
                 max--;
             }
 
-            // Processes string up to last char
+            // Processes String up to last char
             bool previousFormat = false;
             for (int i = 0; i <= max; i++)
             {
@@ -77,14 +77,14 @@ namespace pnyx.net.util
             return c == ' ' || c == '-' || c == '\'';
         }
 
-        public static String toTitleCase(this string str)
+        public static String toTitleCase(this String str)
         {
             if (str == null) return null;
             TextInfo textInfo = Thread.CurrentThread.CurrentCulture.TextInfo;
             return textInfo.ToTitleCase(str.ToLower());
         }
 
-        public static String asName(this string str)
+        public static String asName(this String str)
         {
             str = extractNameString(str);           // removes any invalid characters
 
@@ -120,7 +120,7 @@ namespace pnyx.net.util
             String firstName = String.Join(" ", nameParts.Take(Math.Max(1, nameParts.Length - 1)));
             String middleName = nameParts.Length == 1 ? null : nameParts.Last().Replace(".", "");
 
-            return new Tuple<string, string, string>(firstName, middleName, lastName);
+            return new Tuple<String, String, String>(firstName, middleName, lastName);
         }
 
         public static Tuple<String, String, String> lastMiddleFirstName(String name)
@@ -149,7 +149,7 @@ namespace pnyx.net.util
             String middleName = nameParts.Length >= 2 ? nameParts[0] : null;
             String firstName = String.Join(" ", nameParts.Skip(middleName != null ? 1 : 0));
 
-            return new Tuple<string, string, string>(firstName, middleName, lastName);
+            return new Tuple<String, String, String>(firstName, middleName, lastName);
         }
 
         public static Name parseFullName(String name)
@@ -196,13 +196,29 @@ namespace pnyx.net.util
             return result;
         }
 
-        public static String parseSuffix(String text)
+        public static Tuple<String,String> parseSuffix(String name)
         {
-            if (String.IsNullOrWhiteSpace(text))
-                return null;
+            if (String.IsNullOrWhiteSpace(name))
+                return new Tuple<String, String>(name, null);
 
-            text = TextUtil.extractAlpha(text);
-            return TextUtil.findIgnoreCase(SUFFIX, text) != null ? text : null;
+            name = name.asName();
+            
+            List<String> nameParts = new List<String>();
+            String suffix = null;
+            foreach (String part in name.Split(' '))
+            {
+                if (suffix == null)
+                {
+                    suffix = TextUtil.findIgnoreCase(SUFFIX, part);
+                    if (suffix == null)
+                        nameParts.Add(part);
+                }
+                else
+                    nameParts.Add(part);                    
+            }
+
+            name = String.Join(" ", nameParts);
+            return new Tuple<String, String>(name, suffix);
         }
     }
 }

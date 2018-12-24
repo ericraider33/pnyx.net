@@ -1,4 +1,5 @@
 using System;
+using pnyx.net.api;
 using pnyx.net.fluent;
 using pnyx.net.impl;
 using pnyx.net.util;
@@ -11,6 +12,7 @@ namespace pnyx.cmd.examples
         {
             transform();
             columnDefs();
+            ccmNames();
             return 0;
         }
 
@@ -69,7 +71,39 @@ namespace pnyx.cmd.examples
                 p.writeStdout();
                 p.process();
             }
-        }        
+        }
+
+        private static void ccmNames()
+        {
+            using (Pnyx p = new Pnyx())
+            {
+                p.read("C:/dev/asclepius/prod_import/ccm_names.csv");
+                p.parseCsv(hasHeader: true);
+                p.rowTransformerFunc(row =>
+                {
+                    String lastName = row[1];
+                    Tuple<String, String> lastNameSuffix = NameUtil.parseSuffix(lastName);
+
+                    if (lastNameSuffix.Item2 == null)
+                        return null;
+                    
+                    // Expands name into 2 columns
+                    row = RowUtil.replaceColumn(row, 2, lastNameSuffix.Item1, lastNameSuffix.Item2);                    
+                    return row;
+                });
+                p.rowTransformerFunc(row =>
+                {
+                    for (int i = 0; i < row.Length; i++)
+                        row[i] = TextUtil.enocdeSqlValue(row[i]);                    
+                    return row;
+                });
+                p.print("update bhc_patient_ccm set lastname=$2, suffix=$3 where patientid=$1;");
+                p.write("C:/dev/asclepius/prod_import/ccm_names_update.sql");
+                p.process();
+            }
+            
+        }
+        
         
     }
 }
