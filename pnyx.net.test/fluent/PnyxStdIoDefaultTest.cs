@@ -3,7 +3,7 @@ using pnyx.net.errors;
 using pnyx.net.fluent;
 using Xunit;
 
-namespace pnyx.net.test.fluent
+namespace pnyx.test.net.fluent
 {
     public class PnyxStdIoDefaultTest
     {
@@ -12,7 +12,7 @@ namespace pnyx.net.test.fluent
         [InlineData(false)]
         public void grep(bool stdIoDefault)
         {
-            verifyStdin(stdIoDefault, p => p.grep("x"), FluentState.Line);
+            verifyStdIo(stdIoDefault, p => p.grep("x"), FluentState.Line);
         }
 
         [Theory]
@@ -20,10 +20,34 @@ namespace pnyx.net.test.fluent
         [InlineData(false)]
         public void parseCsv(bool stdIoDefault)
         {
-            verifyStdin(stdIoDefault, p => p.parseCsv(), FluentState.Row);
+            verifyStdIo(stdIoDefault, p => p.parseCsv(), FluentState.Row);
         }
 
-        private void verifyStdin(bool stdIoDefault, Action<Pnyx> toTest, FluentState? expected = null)
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void stdOutGrep(bool stdIoDefault)
+        {
+            verifyStdIo(stdIoDefault, p => p.grep("x").compile(), FluentState.Compiled);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void stdOutParseCsv(bool stdIoDefault)
+        {
+            verifyStdIo(stdIoDefault, p => p.parseCsv().compile(), FluentState.Compiled);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void stdInOut(bool stdIoDefault)
+        {
+            verifyStdIo(stdIoDefault, p => p.compile(), FluentState.Compiled);
+        }
+        
+        private Pnyx verifyStdIo(bool stdIoDefault, Action<Pnyx> toTest, FluentState? expected = null)
         {
             Pnyx p = new Pnyx();
             p.setSettings(stdIoDefault: stdIoDefault);
@@ -37,6 +61,8 @@ namespace pnyx.net.test.fluent
             {                
                 Assert.Throws<IllegalStateException>(() => toTest(p));
             }
+
+            return p;
         }
     }
 }

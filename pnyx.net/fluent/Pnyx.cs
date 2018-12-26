@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel.Design.Serialization;
 using System.IO;
-using System.Linq;
 using System.Text;
 using pnyx.net.api;
 using pnyx.net.errors;
@@ -680,9 +678,11 @@ namespace pnyx.net.fluent
 
         public Pnyx compile()
         {
+            defaultStdOut();
+            
             if (state == FluentState.Compiled || state == FluentState.CompiledServile)
                 return this;
-            
+                        
             if (state != FluentState.End)
                 throw new IllegalStateException("Pnyx is not in End state: {0}", state.ToString());
             
@@ -880,8 +880,22 @@ namespace pnyx.net.fluent
             }
         }
 
+        private void defaultStdOut()
+        {
+            if (!settings.stdIoDefault)
+                return;
+            
+            if (state == FluentState.New)
+                readStdin();
+
+            if ((state == FluentState.Line || state == FluentState.Row || state == FluentState.Start) && settings.stdIoDefault)
+                writeStdout();            
+        }
+
         public Pnyx process()
         {
+            defaultStdOut();
+            
             if (state == FluentState.End)
                 compile();
             
@@ -904,8 +918,12 @@ namespace pnyx.net.fluent
 
         public void Dispose()
         {
-            if (settings.processOnDispose && (state == FluentState.End || state == FluentState.Compiled))
-                process();
+            if (settings.processOnDispose)
+            {
+                defaultStdOut();
+                if (state == FluentState.End || state == FluentState.Compiled)
+                    process();
+            }
             
             if (state == FluentState.Disposed)
                 return;
