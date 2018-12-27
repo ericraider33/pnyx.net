@@ -2,9 +2,7 @@
 File parsing and transforming automation scripting platform, Native .net
 
 ## Roadmap
-1. Inline code scriptlets
-1. Titles for columns
-1. Command line interface, more robust argument / method bindings (assume STDOUT)
+1. Command line interface, more robust argument / method bindings
 1. Command line installers
 1. Build website for library, API, command line
 1. License, billing
@@ -14,6 +12,7 @@ File parsing and transforming automation scripting platform, Native .net
 1. Find 100 StackOverflow questions where Pnyx library would help
 
 ## Distance Roadmap
+1. Sort unique
 1. Sed duplication
 1. Port to Python, Javascript, and Java
 1. Support character transform
@@ -48,3 +47,5 @@ File parsing and transforming automation scripting platform, Native .net
 1. 2018-12-16: Settings and defaults for Pnyx
 1. 2018-12-21: Enhancements to NameUtil and bhc example
 1. 2018-12-22: Titles for columns
+1. 2018-12-24: Assume STDIN and STDOUT when not explicitly set / driving by settings
+1. 2018-12-26: Inline code scriptlets

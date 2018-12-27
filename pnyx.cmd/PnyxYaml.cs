@@ -3,14 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Scripting;
-using pnyx.cmd.code;
 using pnyx.net.errors;
 using pnyx.net.fluent;
-using pnyx.net.util;
 using YamlDotNet.RepresentationModel;
 
 namespace pnyx.cmd
@@ -223,34 +217,8 @@ namespace pnyx.cmd
         {
             if (parameterInfo.ParameterType == typeof(String))
                 return scalarValue;
-
-            Object codeResult = parserCSharpCode(p, parameterInfo, scalarValue);
-            if (codeResult != null)
-                return codeResult;
                     
             throw new InvalidArgumentException("Type conversion hasn't been built yet for: {0}", parameterInfo.ParameterType.FullName);            
-        }
-
-        private readonly Regex CODE_EXPRESSION = new Regex("^code_cs[(].*[)]");        
-                 
-        // https://github.com/dotnet/roslyn/wiki/Scripting-API-Samples#multi   
-        private Object parserCSharpCode(Pnyx p, ParameterInfo parameterInfo, String scalarValue)
-        {
-            Match headerRex = CODE_EXPRESSION.Match(scalarValue);
-            if (!headerRex.Success)
-                return null;
-
-            // Extract body / expression
-            String headerText = headerRex.Value;
-            String body = scalarValue.Substring(headerText.Length);
-                                    
-            // Compiles
-            Script<bool> script = CSharpScript.Create<bool>(body, globalsType: typeof(LineGlobals));
-
-            // Wraps script as filter
-            LineGlobals globals = new LineGlobals(p.streamInformation, p.settings);                
-            CodeLineFilter filter = new CodeLineFilter(globals, script);
-            return filter;
         }
     }
 }

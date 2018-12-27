@@ -3,7 +3,7 @@ using pnyx.net.errors;
 using pnyx.net.fluent;
 using Xunit;
 
-namespace pnyx.test.net.fluent
+namespace pnyx.net.test.fluent
 {
     public class PnyxStdIoDefaultTest
     {

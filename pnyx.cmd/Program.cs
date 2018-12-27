@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using pnyx.cmd.examples;
+using pnyx.net.errors;
 using pnyx.net.fluent;
 using pnyx.net.util;
 
@@ -11,7 +12,6 @@ namespace pnyx.cmd
     {
         public static int Main(string[] args)
         {
-            TextReader yamlInput = null;
             try
             {
                 Dictionary<String, String> switches = ArgsUtil.parseDictionary(ref args);
@@ -28,47 +28,84 @@ namespace pnyx.cmd
                 String example = switches.value("-e", "--example");
                 if (example != null)
                     return runExample(example, switches, args);
-                
-                if (switches.hasAny("-i", "--inline"))
-                {
-                    if (args.Length == 0)
-                        return printUsage("missing inline YAML text", 3);
 
-                    yamlInput = new StringReader(args[0]);
-                }
+                if (switches.hasAny("-cs", "--csharp"))
+                    return runCSharp(switches, args);
                 else
-                {
-                    if (args.Length == 0)
-                        return printUsage("missing YAML file", 2);
-
-                    yamlInput = new StreamReader(new FileStream(args[0], FileMode.Open, FileAccess.Read));
-                }
-
-                PnyxYaml parser = new PnyxYaml();
-                List<Pnyx> toExecute = parser.parseYaml(yamlInput);
-                foreach (Pnyx pnyx in toExecute)
-                {
-                    using (pnyx)
-                        pnyx.process();
-                }
-
-                return 0;
+                    return runYaml(switches, args);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
                 return 1;
             }
-            finally
+        }
+
+        private static int runCSharp(Dictionary<String, String> switches, String[] args)
+        {
+            String source;
+            if (switches.hasAny("-i", "--inline"))
             {
-                if (yamlInput != null)
-                    yamlInput.Dispose();
-            }            
+                if (args.Length == 0)
+                    return printUsage("missing inline YAML text", 3);
+
+                source = args[0];
+            }
+            else
+            {
+                if (args.Length == 0)
+                    return printUsage("missing YAML file", 2);
+
+                using (TextReader reader = new StreamReader(new FileStream(args[0], FileMode.Open, FileAccess.Read)))
+                    source = reader.ReadToEnd();
+            }
+
+            CodeParser parser = new CodeParser();
+            Pnyx p = parser.parseCode(source);
+            if (p.state != FluentState.Compiled)
+                throw new IllegalStateException("Pnyx wasn't compiled properly");
+                
+            using (p)
+                p.process();
+
+            return 0;
+        }
+
+        private static int runYaml(Dictionary<String, String> switches, String[] args)
+        {
+            TextReader yamlInput;
+            if (switches.hasAny("-i", "--inline"))
+            {
+                if (args.Length == 0)
+                    return printUsage("missing inline YAML text", 3);
+
+                yamlInput = new StringReader(args[0]);
+            }
+            else
+            {
+                if (args.Length == 0)
+                    return printUsage("missing YAML file", 2);
+
+                yamlInput = new StreamReader(new FileStream(args[0], FileMode.Open, FileAccess.Read));
+            }
+
+            using (yamlInput)
+            {
+                PnyxYaml parser = new PnyxYaml();
+                List<Pnyx> toExecute = parser.parseYaml(yamlInput);
+                foreach (Pnyx pnyx in toExecute)
+                {
+                    using (pnyx)
+                        pnyx.process();
+                }            
+            }
+
+            return 0;
         }
         
         public static int printUsage(String message = null, int errorCode = 0)
         {
-            Console.WriteLine("usage: pnyx [-h] commands.yaml");
+            Console.WriteLine("usage: pnyx [-h] commands");
             if (message != null)
             {
                 Console.WriteLine("error: {0}", message);
@@ -76,14 +113,15 @@ namespace pnyx.cmd
             }
 
             Console.WriteLine();
-            Console.WriteLine("Run a YAML file of Pnyx commands");
+            Console.WriteLine("Run a file of Pnyx commands, either YAML or CSharp script");
             Console.WriteLine();
             Console.WriteLine("optional arguments:");
             Console.WriteLine("-h, --help              show this help message and exit");
-            Console.WriteLine("-i, --inline            flag to specify that first parameter is an inline YAML string instead of a file path");            
+            Console.WriteLine("-cs, --csharp           flag to specify that commands are CSharp scripts instead of YAML");            
+            Console.WriteLine("-i, --inline            flag to specify that first parameter is an inline YAML/CS string instead of a file path");            
             Console.WriteLine();
             Console.WriteLine("required arguments:");
-            Console.WriteLine("commands.yaml           path to YAML file of Pnyx commands, which are compiled and executed");
+            Console.WriteLine("commands                path to YAML/CS file of Pnyx commands, which are compiled and executed");
 
             return errorCode;
         }
