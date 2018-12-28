@@ -23,7 +23,7 @@ backupRewrite: false
 ";
             
             SettingsYaml parser = new SettingsYaml();
-            Settings settings = parser.parseReader(new StringReader(source));
+            Settings settings = parser.deserializeSettings(new StringReader(source));
             
             Assert.Equal(".", settings.tempDirectory);
             Assert.Equal(100, settings.bufferLines);
@@ -47,11 +47,11 @@ backupRewrite: false
             SettingsYaml parser = new SettingsYaml();
             if (expected == null)
             {                
-                Assert.Throws<InvalidArgumentException>(() => parser.parseReader(reader));            
+                Assert.Throws<InvalidArgumentException>(() => parser.deserializeSettings(reader));            
             }
             else
             {
-                Settings settings = parser.parseReader(reader);
+                Settings settings = parser.deserializeSettings(reader);
                 Assert.Equal(expected, settings.defaultNewline);
             }
         }
@@ -70,12 +70,12 @@ backupRewrite: false
             SettingsYaml parser = new SettingsYaml();
             if (!valid)
             {                
-                YamlException error = Assert.Throws<YamlException>(() => parser.parseReader(reader));
+                YamlException error = Assert.Throws<YamlException>(() => parser.deserializeSettings(reader));
                 Assert.IsType<InvalidArgumentException>(error.InnerException);
             }
             else
             {
-                Settings settings = parser.parseReader(reader);
+                Settings settings = parser.deserializeSettings(reader);
                 Assert.Equal(value, settings.defaultEncoding.WebName);
             }
         }

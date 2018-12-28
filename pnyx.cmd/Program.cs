@@ -18,6 +18,8 @@ namespace pnyx.cmd
 
                 if (switches.hasAny("-h", "--help"))
                     return printUsage();
+                if (switches.hasAny("-vs", "--verboseSettings"))
+                    return runVerboseSettings(switches, args);
                 if (args.Length > 1)
                     return printUsage("unknown arguments specified. Pnyx only expected 1 parameter but found: " + args.Length, 4);
 
@@ -102,6 +104,19 @@ namespace pnyx.cmd
 
             return 0;
         }
+
+        private static int runVerboseSettings(Dictionary<String, String> switches, String[] args)
+        {
+            bool success = SettingsYaml.parseSetting(verboseSettings: true);
+            if (success)
+                Console.WriteLine("\nShowing settings as configured from settings file:\n");
+            else
+                Console.WriteLine("\nShowing default settings of application:\n");
+
+            SettingsYaml sy = new SettingsYaml();
+            sy.serializeSettings(Console.Out, SettingsHome.settingsFactory.buildSettings());
+            return 0;
+        }
         
         public static int printUsage(String message = null, int errorCode = 0)
         {
@@ -118,7 +133,8 @@ namespace pnyx.cmd
             Console.WriteLine("optional arguments:");
             Console.WriteLine("-h, --help              show this help message and exit");
             Console.WriteLine("-cs, --csharp           flag to specify that commands are CSharp scripts instead of YAML");            
-            Console.WriteLine("-i, --inline            flag to specify that first parameter is an inline YAML/CS string instead of a file path");            
+            Console.WriteLine("-i, --inline            flag to specify that first parameter is an inline YAML/CS string instead of a file path");
+            Console.WriteLine("-vs, --verboseSettings  flag to display settings. program after displaying settings");
             Console.WriteLine();
             Console.WriteLine("required arguments:");
             Console.WriteLine("commands                path to YAML/CS file of Pnyx commands, which are compiled and executed");

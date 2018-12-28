@@ -14,26 +14,43 @@ namespace pnyx.cmd
     {
         public const String SETTINGS_FILE_NAME = "pnyx_settings.yaml";
         
-        public static bool parseSetting(String path = null)
+        public static bool parseSetting(String path = null, bool verboseSettings = false)
         {
             if (path == null)
-            {
-                String directory = AppContext.BaseDirectory;
-                path = Path.Combine(directory, SETTINGS_FILE_NAME);
-            }
+                path = findSettings(verboseSettings);
 
             if (!File.Exists(path))
+            {
+                if (verboseSettings)
+                    Console.WriteLine("- Could not find file: {0}", path);    
+                
                 return false;
+            }
+
+            if (verboseSettings)
+                Console.WriteLine("- Found settings file: {0}", path);    
 
             try
             {
                 using (StreamReader reader = new StreamReader(new FileStream(path, FileMode.Open, FileAccess.Read)))
                 {
                     SettingsYaml sy = new SettingsYaml();
-                    Settings settings = sy.parseReader(reader);
+                    Settings settings = sy.deserializeSettings(reader);
+
+                    if (settings == null)
+                    {
+                        if (verboseSettings)
+                            Console.WriteLine("- Settings file '{0}' contained no settings and was ignored", path);
+                        
+                        return false;
+                    }
+                    
                     SettingsHome.settingsFactory = new SettingsHome(settings);
                 }
 
+                if (verboseSettings)
+                    Console.WriteLine("- Finished reading settings from: {0}", path);
+                
                 return true;
             }            
             catch (Exception e)
@@ -46,8 +63,35 @@ namespace pnyx.cmd
                 return false;
             }
         }
+
+        private static String findSettings(bool verboseSettings)
+        {
+            if (verboseSettings)
+                Console.WriteLine("- Starting search for '{0}' file", SETTINGS_FILE_NAME);    
         
-        public Settings parseReader(TextReader source)
+            String directory = AppContext.BaseDirectory;
+            if (verboseSettings)
+                Console.WriteLine("- Directory of application: {0}", directory);    
+                        
+            String path = Path.Combine(directory, SETTINGS_FILE_NAME);
+            if (File.Exists(path))
+                return path;
+            
+            DirectoryInfo di = new DirectoryInfo(directory);
+            if (TextUtil.isEqualsIgnoreCase(di.Name, "dll"))
+            {
+                di = di.Parent;
+                path = Path.Combine(di.FullName, SETTINGS_FILE_NAME);
+                
+                if (verboseSettings)
+                    Console.WriteLine("- Checking parent directory: {0}", di.FullName);                 
+            }
+
+            return path;
+        }
+        
+        // NOTE: If source file is completely commented out, then result is NULL
+        public Settings deserializeSettings(TextReader source)
         {
             IDeserializer deserializer = new DeserializerBuilder()
                 .WithNamingConvention(new CamelCaseNamingConvention())
@@ -55,12 +99,25 @@ namespace pnyx.cmd
                 .Build();
 
             Settings result = deserializer.Deserialize<Settings>(source);
+            if (result == null)
+                return null;
+            
             result.defaultNewline = validateNewline(result.defaultNewline);
             
             if (result.bufferLines <= 0)
                 throw new InvalidArgumentException("BufferLines must be a positive values '{0}'", result.bufferLines);
 
             return result;
+        }
+
+        public void serializeSettings(TextWriter destination, Settings settings)
+        {
+            ISerializer serializer = new SerializerBuilder()
+                .WithNamingConvention(new CamelCaseNamingConvention())
+                .WithTypeConverter(new EncodingTypeConverter())
+                .Build();
+
+            serializer.Serialize(destination, settings);                       
         }
 
         private readonly Regex NEWLINE_EXPRESSION = new Regex("^([\n])|([\n\r])+$");        

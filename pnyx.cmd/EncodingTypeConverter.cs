@@ -30,7 +30,8 @@ namespace pnyx.cmd
 
         public void WriteYaml(IEmitter emitter, object value, Type type)
         {
-            throw new NotImplementedException();
+            Encoding encoding = (Encoding) value;
+            emitter.Emit(new Scalar(encoding.WebName));
         }
     }
 }
