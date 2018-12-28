@@ -49,3 +49,5 @@ File parsing and transforming automation scripting platform, Native .net
 1. 2018-12-22: Titles for columns
 1. 2018-12-24: Assume STDIN and STDOUT when not explicitly set / driving by settings
 1. 2018-12-26: Inline code scriptlets
+1. 2018-12-28: Verbose mode to easily show settings and location of settings file
+
