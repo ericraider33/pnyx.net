@@ -134,6 +134,37 @@ namespace pnyx.net.test.cmd
 @"Line One
 Line Two";
             CmdTestUtil.verifyYaml(source, expected);
-        }                        
+        }
+
+        [Theory]
+        [InlineData("head:", "My Text\n")]
+        [InlineData("head: { limit: 2 }", "My Text\nGoes\n")]
+        [InlineData("head: [2]", "My Text\nGoes\n")]
+        [InlineData("head: 2", "My Text\nGoes\n")]
+        public void integerParameter(String input, String expected)
+        {
+            String source = @"- readString: ""My Text\nGoes\nHere\nand is\nmulti line\n""                            
+- {0}
+";
+            source = String.Format(source, input);
+            CmdTestUtil.verifyYaml(source, expected);
+        }
+
+        [Theory]
+        [InlineData("parseTab:", "xbx|xax\nxdx|xcx\n")]
+        [InlineData("parseTab: false", "xbx|xax\nxdx|xcx\n")]
+        [InlineData("parseTab: true", "b|a\nxdx|xcx\n")]
+        [InlineData("parseTab: [false]", "xbx|xax\nxdx|xcx\n")]
+        [InlineData("parseTab: [true]", "b|a\nxdx|xcx\n")]
+        public void booleanParameter(String input, String expected)
+        {
+            String source = @"- readString: ""a\tb\nc\td\n""
+- {0}
+- sed: ['.*', 'x\0x']
+- print: $2|$1
+";            
+            source = String.Format(source, input);
+            CmdTestUtil.verifyYaml(source, expected);
+        }
     }
 }

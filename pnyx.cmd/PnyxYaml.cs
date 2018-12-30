@@ -78,7 +78,7 @@ namespace pnyx.cmd
 
         protected void parseScalarNode(Pnyx p, YamlScalarNode name, YamlScalarNode value)
         {
-            List<Object> parameterList = new List<Object>();
+            List<String> parameterList = new List<String>();
             if (value.Value != "")
                 parameterList.Add(value.Value);
 
@@ -87,7 +87,7 @@ namespace pnyx.cmd
         
         protected void parseSequenceNode(Pnyx p, YamlScalarNode name, YamlSequenceNode values)
         {
-            List<Object> parameterList = new List<Object>();
+            List<String> parameterList = new List<String>();
             foreach (YamlNode node in values)
             {
                 if (node.NodeType != YamlNodeType.Scalar)
@@ -99,20 +99,13 @@ namespace pnyx.cmd
             executeMethod(p, name.Value, parameterList);
         }
 
-        protected void executeMethod(Pnyx p, String methodName, List<Object> parameterList)
+        protected void executeMethod(Pnyx p, String methodName, List<String> parameterList)
         {
-            object[] parameters = parameterList.ToArray();
-            
-            List<MethodInfo> methodMatches = methods.Where(m => m.Name == methodName).ToList();
-            
-            MethodInfo method = methodMatches.FirstOrDefault(m => m.GetParameters().Length == parameters.Length);
-            if (method != null)
-            {
-                method.Invoke(p, parameters);
-                return;
-            }
+            List<MethodInfo> methodMatches = methods.Where(m => m.Name == methodName).ToList();            
+            MethodInfo method = methodMatches.FirstOrDefault(m => m.GetParameters().Length == parameterList.Count);
+            if (method == null)
+                method = methodMatches.OrderByDescending(m => m.GetParameters().Length).FirstOrDefault();           // finds longest number of paramets
 
-            method = methodMatches.OrderByDescending(m => m.GetParameters().Length).FirstOrDefault();
             if (method == null)
                 throw new InvalidArgumentException("Pnyx method can not be found: {0}", methodName);
 
@@ -126,11 +119,11 @@ namespace pnyx.cmd
                 throw new InvalidArgumentException("Too few parameters {0} specified for Pnyx method '{1}', which only has {2} required parameters", parameterList.Count, methodName, requiredParameters);
             
             // Builds parameter list with defaults
-            parameters = new object[methodParameters.Length];
+            object[] parameters = new object[methodParameters.Length];
             for (int i = 0; i < parameters.Length; i++)
             {
                 if (i < parameterList.Count)
-                    parameters[i] = parameterList[i];
+                    parameters[i] = processScalarParameter(methodParameters[i], parameterList[i]);
                 else 
                     parameters[i] = methodParameters[i].DefaultValue;
             }
@@ -179,7 +172,7 @@ namespace pnyx.cmd
                     switch (valueNode.NodeType)
                     {
                         case YamlNodeType.Scalar: 
-                            parameters[i] = processScalarParameter(p, pi, ((YamlScalarNode) valueNode).Value); 
+                            parameters[i] = processScalarParameter(pi, ((YamlScalarNode) valueNode).Value); 
                             break;
                         
                         case YamlNodeType.Sequence:
@@ -213,12 +206,19 @@ namespace pnyx.cmd
             method.Invoke(p, parameters);            
         }
 
-        private Object processScalarParameter(Pnyx p, ParameterInfo parameterInfo, String scalarValue)
+        private Object processScalarParameter(ParameterInfo parameterInfo, String scalarValue)
         {
             if (parameterInfo.ParameterType == typeof(String))
                 return scalarValue;
-                    
-            throw new InvalidArgumentException("Type conversion hasn't been built yet for: {0}", parameterInfo.ParameterType.FullName);            
+
+            switch (parameterInfo.ParameterType.Name)
+            {
+                case "Int32": return Int32.Parse(scalarValue);
+                case "Boolean": return Boolean.Parse(scalarValue);
+                case "String": return scalarValue;
+                default:
+                    throw new InvalidArgumentException("Type conversion hasn't been built yet for: {0}", parameterInfo.ParameterType.FullName);            
+            }
         }
     }
 }
