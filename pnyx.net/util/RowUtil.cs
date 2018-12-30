@@ -76,16 +76,16 @@ namespace pnyx.net.util
 
         public static String[] removeColumns(String[] row, ISet<int> columnNumbers)
         {
-            String[] result = new String[row.Length - columnNumbers.Count];
-            for (int i = 0, dest = 0; i < row.Length; i++)
+            List<String> result = new List<String>(row.Length);
+            for (int i = 0; i < row.Length; i++)
             {
                 if (columnNumbers.Contains(i + 1))
                     continue;
 
-                result[dest++] = row[i];
+                result.Add(row[i]);
             }
 
-            return result;
+            return result.ToArray();
         }
 
         public static String[] fixWidth(String[] row, int columns, String pad = "")

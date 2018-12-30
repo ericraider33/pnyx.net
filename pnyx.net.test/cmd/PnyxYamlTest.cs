@@ -166,5 +166,23 @@ Line Two";
             source = String.Format(source, input);
             CmdTestUtil.verifyYaml(source, expected);
         }
+        
+        [Theory]
+        [InlineData("removeColumns: ", "a\nb\tc\n")]
+        [InlineData("removeColumns: 2", "a\nb\n")]
+        [InlineData("removeColumns: [2,3]", "a\nb\n")]
+        [InlineData("hasColumns: [false, 1]", "a\nb\tc\n")]
+        [InlineData("hasColumns: [false, 2]", "b\tc\n")]
+        [InlineData("hasColumns: [false, 1, 2]", "b\tc\n")]
+        [InlineData("hasColumns: { verifyColumnHasText: false, columnNumbers: [2] }", "b\tc\n")]                
+        public void multiParameters(String input, String expected)
+        {
+            String source = @"- readString: ""a\nb\tc\n""
+- parseTab: 
+- {0}
+";            
+            source = String.Format(source, input);
+            CmdTestUtil.verifyYaml(source, expected);
+        }        
     }
 }

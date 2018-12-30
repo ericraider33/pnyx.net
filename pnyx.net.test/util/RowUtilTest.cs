@@ -53,6 +53,12 @@ namespace pnyx.net.test.util
         [InlineData(4, "1,2", "3,4")]
         [InlineData(4, "1,2,3", "4")]
         [InlineData(4, "1,2,3,4", "")]
+
+        [InlineData(0, "1,3,5", "")]
+        [InlineData(1, "1,3,5", "")]
+        [InlineData(2, "1,3,5", "2")]
+        [InlineData(3, "1,3,5", "2")]
+        [InlineData(4, "1,3,5", "2,4")]
         public void removeColumns(int original, String columnNumbersText, String expectedText)
         {
             String[] source = new string[original];

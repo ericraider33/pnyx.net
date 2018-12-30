@@ -334,6 +334,9 @@ namespace pnyx.net.fluent
 
         public Pnyx hasColumns(bool verifyColumnHasText, params int[] columnNumbers)
         {
+            if (columnNumbers.Length == 0)
+                throw new InvalidArgumentException("At least one columnNumber is required");
+            
             return rowFilter(new HasColumns(columnNumbers, verifyColumnHasText));
         }
 

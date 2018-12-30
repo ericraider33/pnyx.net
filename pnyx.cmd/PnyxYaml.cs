@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices.WindowsRuntime;
 using pnyx.net.errors;
 using pnyx.net.fluent;
 using YamlDotNet.RepresentationModel;
@@ -87,15 +88,7 @@ namespace pnyx.cmd
         
         protected void parseSequenceNode(Pnyx p, YamlScalarNode name, YamlSequenceNode values)
         {
-            List<String> parameterList = new List<String>();
-            foreach (YamlNode node in values)
-            {
-                if (node.NodeType != YamlNodeType.Scalar)
-                    throw new InvalidArgumentException("YAML node isn't currently supported: {0}", node.NodeType.ToString());
-                
-                parameterList.Add(((YamlScalarNode)node).Value);
-            }
-
+            List<String> parameterList = convertSequenceToList(values);            
             executeMethod(p, name.Value, parameterList);
         }
 
@@ -110,22 +103,27 @@ namespace pnyx.cmd
                 throw new InvalidArgumentException("Pnyx method can not be found: {0}", methodName);
 
             ParameterInfo[] methodParameters = method.GetParameters();
-            if (parameterList.Count > methodParameters.Length)
+            ParameterInfo multiParameter = findParameterArray(methodParameters);                        
+            if (parameterList.Count > methodParameters.Length && multiParameter == null)
                 throw new InvalidArgumentException("Too many parameters {0} specified for Pnyx method '{1}', which only has {2} parameters", parameterList.Count, methodName, methodParameters.Length);
 
             // Checks for minimum size
             int requiredParameters = methodParameters.Count(pi => !pi.HasDefaultValue);
-            if (parameterList.Count < requiredParameters)
+            if (parameterList.Count < requiredParameters + (multiParameter != null ? -1 : 0))
                 throw new InvalidArgumentException("Too few parameters {0} specified for Pnyx method '{1}', which only has {2} required parameters", parameterList.Count, methodName, requiredParameters);
             
             // Builds parameter list with defaults
             object[] parameters = new object[methodParameters.Length];
             for (int i = 0; i < parameters.Length; i++)
             {
-                if (i < parameterList.Count)
-                    parameters[i] = processScalarParameter(methodParameters[i], parameterList[i]);
-                else 
-                    parameters[i] = methodParameters[i].DefaultValue;
+                ParameterInfo current = methodParameters[i];
+
+                if (current == multiParameter)
+                    parameters[i] = processMultiParameters(multiParameter, i == 0 ? parameterList : parameterList.Skip(i));
+                else if (i < parameterList.Count)
+                    parameters[i] = processScalarParameter(current, parameterList[i]);
+                else
+                    parameters[i] = current.DefaultValue;
             }
             
             // Runs with default values
@@ -174,16 +172,27 @@ namespace pnyx.cmd
                         case YamlNodeType.Scalar: 
                             parameters[i] = processScalarParameter(pi, ((YamlScalarNode) valueNode).Value); 
                             break;
-                        
-                        case YamlNodeType.Sequence:
-                            if (pi.ParameterType != typeof(Action<Pnyx>))
-                                throw new InvalidArgumentException("Parameter '{0}' does not support block / dictionary", pi.Name);
 
-                            // Builds action for populating sub-pnyx yaml block
-                            BlockYaml block = new BlockYaml(this, (YamlSequenceNode)valueNode);
-                            Action<Pnyx> action = block.action;
-                            parameters[i] = action;
+                        case YamlNodeType.Sequence:
+                        {
+                            YamlSequenceNode sequenceNode = (YamlSequenceNode)valueNode;
+                            if (pi.ParameterType.IsArray)
+                            {
+                                parameters[i] = processArray(pi, sequenceNode);
+                            }
+                            else if (pi.ParameterType != typeof(Action<Pnyx>))
+                            {
+                                throw new InvalidArgumentException("Parameter '{0}' does not support block / dictionary", pi.Name);
+                            }
+                            else
+                            {                                
+                                // Builds action for populating sub-pnyx yaml block
+                                BlockYaml block = new BlockYaml(this, sequenceNode);
+                                Action<Pnyx> action = block.action;
+                                parameters[i] = action;
+                            }
                             break;
+                        }
                             
                         default: 
                             throw new InvalidArgumentException("YAML node isn't currently supported: {0}", valueNode.NodeType.ToString());                
@@ -208,9 +217,6 @@ namespace pnyx.cmd
 
         private Object processScalarParameter(ParameterInfo parameterInfo, String scalarValue)
         {
-            if (parameterInfo.ParameterType == typeof(String))
-                return scalarValue;
-
             switch (parameterInfo.ParameterType.Name)
             {
                 case "Int32": return Int32.Parse(scalarValue);
@@ -220,5 +226,51 @@ namespace pnyx.cmd
                     throw new InvalidArgumentException("Type conversion hasn't been built yet for: {0}", parameterInfo.ParameterType.FullName);            
             }
         }
+
+        private ParameterInfo findParameterArray(ParameterInfo[] methodParameters)
+        {
+            if (methodParameters.Length == 0)
+                return null;
+
+            ParameterInfo last = methodParameters[methodParameters.Length - 1];
+            if (Attribute.IsDefined(last, typeof(ParamArrayAttribute)))
+                return last;
+
+            return null;
+        }
+
+        private Object processMultiParameters(ParameterInfo multiParameter, IEnumerable<String> values)
+        {                
+            switch (multiParameter.ParameterType.Name)
+            {
+                case "Int32[]": return values.Select(Int32.Parse).ToArray();
+                case "Boolean[]": return values.Select(Boolean.Parse).ToArray();
+                case "String[]": return values.ToArray();
+                default:
+                    throw new InvalidArgumentException("No multi-param conversion exists for: {0}", multiParameter.ParameterType.FullName);            
+            }
+        }
+
+        private Object processArray(ParameterInfo arrayParam, YamlSequenceNode sequenceNode)
+        {
+            List<String> parameterList = convertSequenceToList(sequenceNode);
+            return processMultiParameters(arrayParam, parameterList);
+        }
+
+        private List<String> convertSequenceToList(YamlSequenceNode sequenceNode)
+        {
+            List<String> parameterList = new List<String>();
+            foreach (YamlNode node in sequenceNode)
+            {
+                if (node.NodeType != YamlNodeType.Scalar)
+                    throw new InvalidArgumentException("YAML node isn't currently supported: {0}", node.NodeType.ToString());
+                
+                parameterList.Add(((YamlScalarNode)node).Value);
+            }
+
+            return parameterList;
+        }
+        
+
     }
 }

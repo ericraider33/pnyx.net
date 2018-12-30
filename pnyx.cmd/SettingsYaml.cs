@@ -13,6 +13,7 @@ namespace pnyx.cmd
     public class SettingsYaml
     {
         public const String SETTINGS_FILE_NAME = "pnyx_settings.yaml";
+        public const String LIB_DIRECTORY = "lib";
         
         public static bool parseSetting(String path = null, bool verboseSettings = false)
         {
@@ -78,7 +79,7 @@ namespace pnyx.cmd
                 return path;
             
             DirectoryInfo di = new DirectoryInfo(directory);
-            if (TextUtil.isEqualsIgnoreCase(di.Name, "dll"))
+            if (TextUtil.isEqualsIgnoreCase(di.Name, LIB_DIRECTORY))
             {
                 di = di.Parent;
                 path = Path.Combine(di.FullName, SETTINGS_FILE_NAME);
