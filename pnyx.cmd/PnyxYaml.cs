@@ -4,8 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text.RegularExpressions;
 using pnyx.net.errors;
 using pnyx.net.fluent;
+using pnyx.net.util;
+using YamlDotNet.Core;
 using YamlDotNet.RepresentationModel;
 
 namespace pnyx.cmd
@@ -79,23 +82,23 @@ namespace pnyx.cmd
 
         protected void parseScalarNode(Pnyx p, YamlScalarNode name, YamlScalarNode value)
         {
-            List<String> parameterList = new List<String>();
+            List<YamlScalarNode> parameterNodes = new List<YamlScalarNode>();
             if (value.Value != "")
-                parameterList.Add(value.Value);
+                parameterNodes.Add(value);
 
-            executeMethod(p, name.Value, parameterList);
+            executeMethod(p, name.Value, parameterNodes);
         }
         
         protected void parseSequenceNode(Pnyx p, YamlScalarNode name, YamlSequenceNode values)
         {
-            List<String> parameterList = convertSequenceToList(values);            
-            executeMethod(p, name.Value, parameterList);
+            List<YamlScalarNode> parameterNodes = convertSequenceToList(values);            
+            executeMethod(p, name.Value, parameterNodes);
         }
 
-        protected void executeMethod(Pnyx p, String methodName, List<String> parameterList)
+        protected void executeMethod(Pnyx p, String methodName, List<YamlScalarNode> parameterNodes)
         {
             List<MethodInfo> methodMatches = methods.Where(m => m.Name == methodName).ToList();            
-            MethodInfo method = methodMatches.FirstOrDefault(m => m.GetParameters().Length == parameterList.Count);
+            MethodInfo method = methodMatches.FirstOrDefault(m => m.GetParameters().Length == parameterNodes.Count);
             if (method == null)
                 method = methodMatches.OrderByDescending(m => m.GetParameters().Length).FirstOrDefault();           // finds longest number of paramets
 
@@ -104,13 +107,13 @@ namespace pnyx.cmd
 
             ParameterInfo[] methodParameters = method.GetParameters();
             ParameterInfo multiParameter = findParameterArray(methodParameters);                        
-            if (parameterList.Count > methodParameters.Length && multiParameter == null)
-                throw new InvalidArgumentException("Too many parameters {0} specified for Pnyx method '{1}', which only has {2} parameters", parameterList.Count, methodName, methodParameters.Length);
+            if (parameterNodes.Count > methodParameters.Length && multiParameter == null)
+                throw new InvalidArgumentException("Too many parameters {0} specified for Pnyx method '{1}', which only has {2} parameters", parameterNodes.Count, methodName, methodParameters.Length);
 
             // Checks for minimum size
             int requiredParameters = methodParameters.Count(pi => !pi.HasDefaultValue);
-            if (parameterList.Count < requiredParameters + (multiParameter != null ? -1 : 0))
-                throw new InvalidArgumentException("Too few parameters {0} specified for Pnyx method '{1}', which only has {2} required parameters", parameterList.Count, methodName, requiredParameters);
+            if (parameterNodes.Count < requiredParameters + (multiParameter != null ? -1 : 0))
+                throw new InvalidArgumentException("Too few parameters {0} specified for Pnyx method '{1}', which only has {2} required parameters", parameterNodes.Count, methodName, requiredParameters);
             
             // Builds parameter list with defaults
             object[] parameters = new object[methodParameters.Length];
@@ -119,15 +122,22 @@ namespace pnyx.cmd
                 ParameterInfo current = methodParameters[i];
 
                 if (current == multiParameter)
-                    parameters[i] = processMultiParameters(multiParameter, i == 0 ? parameterList : parameterList.Skip(i));
-                else if (i < parameterList.Count)
-                    parameters[i] = processScalarParameter(current, parameterList[i]);
+                    parameters[i] = processMultiParameters(multiParameter, i == 0 ? parameterNodes : parameterNodes.Skip(i));
+                else if (i < parameterNodes.Count)
+                    parameters[i] = processScalarParameter(current, parameterNodes[i]);
                 else
                     parameters[i] = current.DefaultValue;
             }
             
-            // Runs with default values
-            method.Invoke(p, parameters);
+            try
+            {
+                // Runs method
+                method.Invoke(p, parameters);
+            }
+            catch (TargetInvocationException err)
+            {
+                throw err.InnerException;
+            }
         }
 
         protected void parseMappingNode(Pnyx p, YamlScalarNode name, YamlMappingNode values)
@@ -170,7 +180,7 @@ namespace pnyx.cmd
                     switch (valueNode.NodeType)
                     {
                         case YamlNodeType.Scalar: 
-                            parameters[i] = processScalarParameter(pi, ((YamlScalarNode) valueNode).Value); 
+                            parameters[i] = processScalarParameter(pi, (YamlScalarNode)valueNode); 
                             break;
 
                         case YamlNodeType.Sequence:
@@ -210,17 +220,25 @@ namespace pnyx.cmd
                 String availableParameters = String.Join(",", methodParameters.Select(pi => pi.Name));
                 throw new InvalidArgumentException("Unknown named parameters '{0}' for Pnyx method '{1}', which has parameters '{2}'", unknownParameters, methodName, availableParameters);                        
             }
-            
-            // Runs named parameters
-            method.Invoke(p, parameters);            
+                        
+            try
+            {
+                // Runs named parameters
+                method.Invoke(p, parameters);
+            }
+            catch (TargetInvocationException err)
+            {
+                throw err.InnerException;
+            }
         }
 
-        private Object processScalarParameter(ParameterInfo parameterInfo, String scalarValue)
+        private Object processScalarParameter(ParameterInfo parameterInfo, YamlScalarNode scalarNode)
         {
+            String scalarValue = scalarNode.Value;
             switch (parameterInfo.ParameterType.Name)
             {
                 case "Int32": return Int32.Parse(scalarValue);
-                case "Boolean": return Boolean.Parse(scalarValue);
+                case "Boolean": return TextUtil.parseBool(scalarValue);
                 case "String": return scalarValue;
                 default:
                     throw new InvalidArgumentException("Type conversion hasn't been built yet for: {0}", parameterInfo.ParameterType.FullName);            
@@ -239,38 +257,68 @@ namespace pnyx.cmd
             return null;
         }
 
-        private Object processMultiParameters(ParameterInfo multiParameter, IEnumerable<String> values)
+        private Object processMultiParameters(ParameterInfo multiParameter, IEnumerable<YamlScalarNode> values)
         {                
             switch (multiParameter.ParameterType.Name)
             {
-                case "Int32[]": return values.Select(Int32.Parse).ToArray();
-                case "Boolean[]": return values.Select(Boolean.Parse).ToArray();
-                case "String[]": return values.ToArray();
+                case "Int32[]": return values.Select(ysn => Int32.Parse(ysn.Value)).ToArray();
+                case "Boolean[]": return values.Select(ysn => TextUtil.parseBool(ysn.Value)).ToArray();
+                case "String[]": return values.Select(ysn => ysn.Value).ToArray();
+                case "Object[]":
+                {
+                    List<Object> result = new List<Object>();
+                    foreach (YamlScalarNode scalarNode in values)
+                    {
+                        if (scalarNode.Style == ScalarStyle.DoubleQuoted || scalarNode.Style == ScalarStyle.SingleQuoted)
+                            result.Add(scalarNode.Value);
+                        else
+                            result.Add(convertToObject(scalarNode.Value));
+                    }
+
+                    return result.ToArray();
+                }
                 default:
                     throw new InvalidArgumentException("No multi-param conversion exists for: {0}", multiParameter.ParameterType.FullName);            
             }
         }
 
+        private Object convertToObject(String value)
+        {
+            if (value.Length == 0)
+                return value;
+
+            if (TextUtil.isDecimal(value))
+            {
+                if (TextUtil.isInteger(value))
+                    return Int32.Parse(value);
+                return Double.Parse(value);
+            }
+
+            bool? boolValue = TextUtil.parseBoolNullable(value);
+            if (boolValue.HasValue)
+                return boolValue.Value;
+
+            return value;
+        }
+        
         private Object processArray(ParameterInfo arrayParam, YamlSequenceNode sequenceNode)
         {
-            List<String> parameterList = convertSequenceToList(sequenceNode);
+            List<YamlScalarNode> parameterList = convertSequenceToList(sequenceNode);
             return processMultiParameters(arrayParam, parameterList);
         }
 
-        private List<String> convertSequenceToList(YamlSequenceNode sequenceNode)
+        private List<YamlScalarNode> convertSequenceToList(YamlSequenceNode sequenceNode)
         {
-            List<String> parameterList = new List<String>();
+            List<YamlScalarNode> parameterList = new List<YamlScalarNode>();
             foreach (YamlNode node in sequenceNode)
             {
                 if (node.NodeType != YamlNodeType.Scalar)
                     throw new InvalidArgumentException("YAML node isn't currently supported: {0}", node.NodeType.ToString());
-                
-                parameterList.Add(((YamlScalarNode)node).Value);
+
+                parameterList.Add((YamlScalarNode) node);
             }
 
             return parameterList;
-        }
-        
-
+        }        
     }
 }

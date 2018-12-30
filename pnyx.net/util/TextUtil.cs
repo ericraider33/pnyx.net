@@ -81,14 +81,29 @@ namespace pnyx.net.util
             return results;
         }
 
-        public static bool parseBool(String value, bool defaultValue = false)
+        private static readonly Regex BOOLEAN_EXPRESSION_TRUE = new Regex("^(yes)|(true)$", RegexOptions.IgnoreCase);
+        private static readonly Regex BOOLEAN_EXPRESSION_FALSE = new Regex("^(no)|(false)$", RegexOptions.IgnoreCase);
+        
+        public static bool? parseBoolNullable(String value)
         {
-            if (isEqualsIgnoreCase(value, "true")) return true;
-            if (isEqualsIgnoreCase(value, "false")) return false;
-            return defaultValue;            
+            if (BOOLEAN_EXPRESSION_TRUE.IsMatch(value)) return true;
+            if (BOOLEAN_EXPRESSION_FALSE.IsMatch(value)) return false;
+            return null;            
         }
 
-        public static List<bool> parseBools(String value, bool defaultValue = false)
+        public static bool parseBool(String value, bool? defaultValue = null)
+        {
+            bool? result = parseBoolNullable(value);
+            if (result.HasValue)
+                return result.Value;
+                   
+            if (!defaultValue.HasValue)
+                throw new ArgumentException(String.Format("String '{0}' can not be converted to boolean", value));
+
+            return defaultValue.Value;
+        }
+
+        public static List<bool> parseBools(String value, bool? defaultValue = null)
         {
             String[] values = value.Split(',');
             List<bool> results = new List<bool>(values.Length);
@@ -163,6 +178,15 @@ namespace pnyx.net.util
             return NUMBER_ONLY_EXPRESSION.IsMatch(text);
         }
 
+        private static readonly Regex INTEGER_ONLY_EXPRESSION = new Regex("^[-+]?[\\d]+$");
+        public static bool isInteger(String text)
+        {
+            if (String.IsNullOrEmpty(text))
+                return false;
+
+            return INTEGER_ONLY_EXPRESSION.IsMatch(text);
+        }
+        
         private static readonly Regex DECIMAL_ONLY_EXPRESSION = new Regex("^[-+]?[\\d]+([.][\\d]*)?$");
         public static bool isDecimal(String text)
         {
@@ -179,6 +203,15 @@ namespace pnyx.net.util
                 return false;
 
             return CHARACTER_ONLY_EXPRESSION.IsMatch(text);
+        }
+        
+        private static readonly Regex BOOLEAN_EXPRESSION = new Regex("^(yes)|(no)|(true)|(false)$", RegexOptions.IgnoreCase);
+        public static bool isBoolean(String text)
+        {
+            if (String.IsNullOrEmpty(text))
+                return false;
+
+            return BOOLEAN_EXPRESSION.IsMatch(text);            
         }
 
         private static readonly Regex CHARACTER_ANY_EXPRESSION = new Regex("[a-zA-Z]");

@@ -156,6 +156,8 @@ Line Two";
         [InlineData("parseTab: true", "b|a\nxdx|xcx\n")]
         [InlineData("parseTab: [false]", "xbx|xax\nxdx|xcx\n")]
         [InlineData("parseTab: [true]", "b|a\nxdx|xcx\n")]
+        [InlineData("parseTab: no", "xbx|xax\nxdx|xcx\n")]
+        [InlineData("parseTab: yes", "b|a\nxdx|xcx\n")]
         public void booleanParameter(String input, String expected)
         {
             String source = @"- readString: ""a\tb\nc\td\n""
@@ -183,6 +185,24 @@ Line Two";
 ";            
             source = String.Format(source, input);
             CmdTestUtil.verifyYaml(source, expected);
-        }        
+        }
+        
+        [Theory]
+        [InlineData("headerNames: ", null)]
+        [InlineData("headerNames: HD1", "HD1\thead2\na1\ta2\n")]
+        [InlineData("headerNames: [HD1,HD2]", "HD1\tHD2\na1\ta2\n")]
+        [InlineData("headerNames: [2,HD2]", "head1\tHD2\na1\ta2\n")]
+        public void multiObject(String input, String expected)
+        {
+            String source = @"- readString: ""head1\thead2\na1\ta2\n""
+- parseTab: true 
+- {0}
+";            
+            source = String.Format(source, input);
+            if (expected == null)
+                Assert.Throws<InvalidArgumentException>(() => CmdTestUtil.verifyYaml(source));
+            else
+                CmdTestUtil.verifyYaml(source, expected);
+        }
     }
 }
