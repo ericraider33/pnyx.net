@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using pnyx.net.api;
 
 namespace pnyx.net.impl.sed
@@ -9,17 +10,17 @@ namespace pnyx.net.impl.sed
     {
         private int lineNumber;
         
-        public String[] bufferingLine(String line)
+        public List<String> bufferingLine(String line)
         {
             lineNumber++;            
-            return new String[]
+            return new List<String>
             {
                 lineNumber.ToString(),
                 line
             };            
         }
 
-        public String[] endOfFile()
+        public List<String> endOfFile()
         {
             return null;
         }

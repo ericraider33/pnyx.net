@@ -18,12 +18,12 @@ namespace pnyx.net.impl
             return lineFilter.shouldKeepLine(source);
         }
 
-        public String[] bufferingLine(String line)
+        public List<String> bufferingLine(String line)
         {
             return bufferingT(line);
         }
 
-        public String[] endOfFile()
+        public List<String> endOfFile()
         {
             return endOfFileT();
         }
@@ -50,12 +50,13 @@ namespace pnyx.net.impl
 
         public String[][] bufferingRow(String[] row)
         {
-            return bufferingT(row);
+            List<String[]> result = bufferingT(row);
+           return result == null ? null : result.ToArray();
         }
 
         public String[][] endOfFile()
         {
-            return endOfFileT();
+            return endOfFileT().ToArray();
         }
     }
     
@@ -67,7 +68,7 @@ namespace pnyx.net.impl
         private T[] buffer;
         private bool[] include;
         private int lineNumber;
-        private readonly T[] resultBuffer = new T[1]; 
+        private readonly List<T> resultBuffer = new List<T> { null }; 
 
         protected BeforeAfterBase(int before, int after)
         {
@@ -80,7 +81,7 @@ namespace pnyx.net.impl
 
         protected abstract bool shouldKeep(T source);
 
-        protected T[] bufferingT(T line)
+        protected List<T> bufferingT(T line)
         {
             lineNumber++;
             bool keep = shouldKeep(line);
@@ -128,7 +129,7 @@ namespace pnyx.net.impl
             return lineToFetch % include.Length;
         }
 
-        protected T[] endOfFileT()
+        protected List<T> endOfFileT()
         {
             List<T> final = new List<T>();
             for (int lineToCheck = Math.Max(1, lineNumber - before); lineToCheck <= lineNumber; lineToCheck++)
@@ -138,7 +139,7 @@ namespace pnyx.net.impl
                     final.Add(buffer[index]);
             }
 
-            return final.ToArray();
+            return final;
         }
     }
 }

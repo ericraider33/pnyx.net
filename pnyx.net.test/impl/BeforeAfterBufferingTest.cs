@@ -67,7 +67,7 @@ namespace pnyx.net.test.impl
             LineNumberFilter filter = new LineNumberFilter(lines);
             BeforeAfterLineBuffering buf = new BeforeAfterLineBuffering(before, after, filter);
 
-            String[] bufOut;
+            List<String> bufOut;
             List<String> output = new List<String>();
             foreach (String x in input)
             {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using pnyx.net.api;
 
 namespace pnyx.net.processors.sources
@@ -9,13 +10,13 @@ namespace pnyx.net.processors.sources
         {
         }
 
-        public String[] bufferingLine(String line)
+        public List<String> bufferingLine(String line)
         {
             addLineToBuffer(line);
             return null;
         }
 
-        public String[] endOfFile()
+        public List<String> endOfFile()
         {
             return getBuffer();
         }
@@ -40,7 +41,7 @@ namespace pnyx.net.processors.sources
 
         public String[][] endOfFile()
         {
-            return getBuffer();
+            return getBuffer().ToArray();
         }
     }
 
@@ -65,14 +66,13 @@ namespace pnyx.net.processors.sources
             return (ln - 1) % buffer.Length;
         }
 
-        protected T[] getBuffer()
+        protected List<T> getBuffer()
         {
             int resultSize = Math.Min(lineNumber, buffer.Length);
-            T[] result = new T[resultSize];
+            List<T> result = new List<T>(resultSize);
 
-            int ln = lineNumber;
-            for (int i = result.Length - 1; i >= 0; i--)
-                result[i] = buffer[getIndex(ln--)];
+            for (int ln = lineNumber - resultSize + 1; ln <= lineNumber; ln++)
+                result.Add(buffer[getIndex(ln)]);
 
             return result;
         }

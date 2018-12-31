@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using pnyx.net.api;
 
 namespace pnyx.net.processors.lines
@@ -19,7 +20,7 @@ namespace pnyx.net.processors.lines
             processor.endOfFile();
         }
 
-        private void forward(String[] lines)
+        private void forward(List<String> lines)
         {
             if (lines == null)
                 return;
