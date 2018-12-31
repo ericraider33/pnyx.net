@@ -31,7 +31,7 @@ namespace pnyx.net.fluent
             return new StreamInformation(defaultEncoding, defaultNewline);
         }
 
-        public object Clone()
+        public Object Clone()
         {
             return MemberwiseClone();
         }

@@ -116,7 +116,7 @@ namespace pnyx.cmd
                 throw new InvalidArgumentException("Too few parameters {0} specified for Pnyx method '{1}', which only has {2} required parameters", parameterNodes.Count, methodName, requiredParameters);
             
             // Builds parameter list with defaults
-            object[] parameters = new object[methodParameters.Length];
+            Object[] parameters = new Object[methodParameters.Length];
             for (int i = 0; i < parameters.Length; i++)
             {
                 ParameterInfo current = methodParameters[i];

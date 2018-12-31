@@ -13,7 +13,7 @@ namespace pnyx.net.errors
         {
         }
 
-        public InvalidArgumentException(String message, params object[] replacements) : base(message, replacements)
+        public InvalidArgumentException(String message, params Object[] replacements) : base(message, replacements)
         {
         }
 

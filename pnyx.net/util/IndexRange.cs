@@ -53,7 +53,7 @@ namespace pnyx.net.util
             return String.Format("{0}-{1}", low, high);
         }
 
-        public object Clone()
+        public Object Clone()
         {
             return MemberwiseClone();
         }

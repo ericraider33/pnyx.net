@@ -13,7 +13,7 @@ namespace pnyx.net.errors
         {
         }
 
-        public PnyxException(String message, params object[] replacements) : base(String.Format(message, replacements))
+        public PnyxException(String message, params Object[] replacements) : base(String.Format(message, replacements))
         {
         }
 

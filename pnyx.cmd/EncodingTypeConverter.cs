@@ -16,7 +16,7 @@ namespace pnyx.cmd
             return typeof(Encoding).IsAssignableFrom(type);
         }
 
-        public object ReadYaml(IParser parser, Type type)
+        public Object ReadYaml(IParser parser, Type type)
         {            
             Scalar valueNode = parser.Expect<Scalar>();
             String valueText = valueNode.Value;
@@ -28,7 +28,7 @@ namespace pnyx.cmd
             return match.GetEncoding();
         }
 
-        public void WriteYaml(IEmitter emitter, object value, Type type)
+        public void WriteYaml(IEmitter emitter, Object value, Type type)
         {
             Encoding encoding = (Encoding) value;
             emitter.Emit(new Scalar(encoding.WebName));

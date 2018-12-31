@@ -386,7 +386,7 @@ namespace pnyx.net.util
             return result.ToString();
         }
        
-        public static String camelToDash(object val)
+        public static String camelToDash(Object val)
         {
             if (val == null)
                 return null;
@@ -428,7 +428,7 @@ namespace pnyx.net.util
             return source.Substring(0, source.Length - ending.Length);
         }
 
-        public static String camelToSpace(object val)
+        public static String camelToSpace(Object val)
         {
             if (val == null)
                 return null;
