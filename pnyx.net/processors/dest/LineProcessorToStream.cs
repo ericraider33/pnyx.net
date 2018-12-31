@@ -19,7 +19,7 @@ namespace pnyx.net.processors.dest
             this.streamInformation = streamInformation;
         }
 
-        public void processLine(string line)
+        public void processLine(String line)
         {
             if (previousLine != null)
             {

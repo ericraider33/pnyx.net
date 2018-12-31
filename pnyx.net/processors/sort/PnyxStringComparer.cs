@@ -25,7 +25,7 @@ namespace pnyx.net.processors.sort
             }
         }
         
-        public int Compare(string x, string y)
+        public int Compare(String x, String y)
         {
             int max = Math.Min(x.Length, y.Length);
             for (int i = 0; i < max; i++)

@@ -7,7 +7,7 @@ namespace pnyx.net.shims
     {
         public Func<String, String> lineTransformerFunc;
         
-        public string transformLine(string line)
+        public String transformLine(String line)
         {
             return lineTransformerFunc(line);
         }

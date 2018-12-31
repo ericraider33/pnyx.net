@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using pnyx.net.api;
 
@@ -13,12 +14,12 @@ namespace pnyx.net.impl
             linesToKeep.AddRange(lines);
         }        
         
-        public bool shouldKeepLine(string line)
+        public bool shouldKeepLine(String line)
         {
             return shouldKeep();
         }
 
-        public bool shouldKeepRow(string[] values)
+        public bool shouldKeepRow(String[] values)
         {
             return shouldKeep();
         }

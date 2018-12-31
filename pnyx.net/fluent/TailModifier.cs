@@ -6,7 +6,7 @@ namespace pnyx.net.fluent
 {
     public class TailModifier : IStreamFactoryWrapper
     {
-        public int limit;
+        public readonly int limit;
         private readonly StreamInformation streamInformation;
 
         public TailModifier(int limit, StreamInformation streamInformation)

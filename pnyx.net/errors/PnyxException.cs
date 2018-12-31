@@ -9,15 +9,15 @@ namespace pnyx.net.errors
         {
         }
 
-        public PnyxException(string message) : base(message)
+        public PnyxException(String message) : base(message)
         {
         }
 
-        public PnyxException(string message, params object[] replacements) : base(String.Format(message, replacements))
+        public PnyxException(String message, params object[] replacements) : base(String.Format(message, replacements))
         {
         }
 
-        public PnyxException(string message, Exception innerException) : base(message, innerException)
+        public PnyxException(String message, Exception innerException) : base(message, innerException)
         {
         }
 

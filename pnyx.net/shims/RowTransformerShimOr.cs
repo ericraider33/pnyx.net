@@ -12,10 +12,10 @@ namespace pnyx.net.shims
             return header;
         }
         
-        public string[] transformRow(string[] row)
+        public String[] transformRow(String[] row)
         {
             bool keep = false;
-            string[] result = new string[row.Length];
+            String[] result = new String[row.Length];
             for (int i = 0; i < row.Length; i++)
             {
                 String column = lineTransformer.transformLine(row[i]);

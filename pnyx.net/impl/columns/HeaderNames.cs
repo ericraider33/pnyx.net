@@ -8,7 +8,7 @@ namespace pnyx.net.impl.columns
     {
         public readonly Dictionary<int, String> nameMap;
 
-        public HeaderNames(Dictionary<int, string> nameMap)
+        public HeaderNames(Dictionary<int, String> nameMap)
         {
             this.nameMap = nameMap;
         }

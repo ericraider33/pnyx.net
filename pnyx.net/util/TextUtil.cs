@@ -305,7 +305,7 @@ namespace pnyx.net.util
             return x == null ? 0 : x.Length;
         }
 
-        public static bool isMixedCase(this string x)
+        public static bool isMixedCase(this String x)
         {
             if (x == null) return false;
             int upper = 0;
@@ -318,7 +318,7 @@ namespace pnyx.net.util
             return lower > 0 && upper > 0;
         }
 
-        public static bool isUpperCase(this string x)
+        public static bool isUpperCase(this String x)
         {
             if (x == null) return false;
             int upper = 0;
@@ -331,7 +331,7 @@ namespace pnyx.net.util
             return lower == 0 && upper > 0;
         }
 
-        public static string trunc(this string text, int maxLength)
+        public static String trunc(this String text, int maxLength)
         {
             if (text == null || text.Length <= maxLength)
                 return text;
@@ -339,7 +339,7 @@ namespace pnyx.net.util
             return text.Substring(0, maxLength);
         }
 
-        public static string truncRight(this string text, int maxLength)
+        public static String truncRight(this String text, int maxLength)
         {
             if (text == null || text.Length <= maxLength)
                 return text;
@@ -358,7 +358,7 @@ namespace pnyx.net.util
                 char c = text[i];
                 if (Char.IsWhiteSpace(c))
                 {
-                    result.Length = i;                          // truncates string
+                    result.Length = i;                          // truncates String
                     return result.ToString();
                 }
             }
@@ -583,7 +583,7 @@ namespace pnyx.net.util
         public static String[] splitSpace(String input)
         {
             if (String.IsNullOrEmpty(input))
-                return new string[0];
+                return new String[0];
 
             String[] words = input.Split(SPLIT_SPACE_CHARS, StringSplitOptions.RemoveEmptyEntries);
             return words;
@@ -591,30 +591,30 @@ namespace pnyx.net.util
 
         public static Tuple<String, String> splitAt(this String input, String token)
         {
-            if (string.IsNullOrEmpty(input))
+            if (String.IsNullOrEmpty(input))
                 return null;
 
             int index = input.IndexOf(token, StringComparison.Ordinal);
             if (index < 0)
-                return new Tuple<string, string>(input, "");
+                return new Tuple<String, String>(input, "");
 
-            return new Tuple<string, string>(input.Substring(0, index), input.Substring(index+token.Length));
+            return new Tuple<String, String>(input.Substring(0, index), input.Substring(index+token.Length));
         }
 
         public static Tuple<String, String> splitAtIndex(this String input, int index)
         {
-            if (string.IsNullOrEmpty(input) || index < 0)
+            if (String.IsNullOrEmpty(input) || index < 0)
                 return null;
 
             if (input.Length < index)
-                return new Tuple<string, string>(input, "");
+                return new Tuple<String, String>(input, "");
 
-            return new Tuple<string, string>(input.Substring(0, index), input.Substring(index));
+            return new Tuple<String, String>(input.Substring(0, index), input.Substring(index));
         }
 
         public static String replaceFirst(this String input, String token, String replacement = null)
         {
-            if (string.IsNullOrEmpty(input))
+            if (String.IsNullOrEmpty(input))
                 return null;
 
             int index = input.IndexOf(token, StringComparison.Ordinal);
@@ -721,7 +721,7 @@ namespace pnyx.net.util
 
         public static String removeParts(String input, int startIndex, int endIndex)        // both indexes get removed
         {
-            if (string.IsNullOrEmpty(input))
+            if (String.IsNullOrEmpty(input))
                 return input;
             if (startIndex < 0 || startIndex >= input.Length)
                 throw new ArgumentException("Invalid index " + startIndex);

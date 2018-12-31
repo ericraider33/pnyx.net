@@ -28,7 +28,7 @@ namespace pnyx.net.util
                 String value = null;
                 if (key.Contains("="))
                 {
-                    Tuple<string, String> parts = key.splitAt("=");                    
+                    Tuple<String, String> parts = key.splitAt("=");                    
                     key = parts.Item1;
                     value = parts.Item2;
                 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using pnyx.net.util;
 
@@ -46,7 +47,7 @@ namespace pnyx.net.processors.sources
                 this.next = next;
             }
 
-            public void processLine(string line)
+            public void processLine(String line)
             {
                 next.processLine(line);
             }

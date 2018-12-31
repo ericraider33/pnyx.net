@@ -41,7 +41,7 @@ namespace pnyx.net.test.impl
         {
             String line = "Adam Smith";
             Print p = new Print { format = format };
-            String actual = p.print(line, new string[0]);
+            String actual = p.print(line, new String[0]);
             Assert.Equal(expected, actual);
         }
     }

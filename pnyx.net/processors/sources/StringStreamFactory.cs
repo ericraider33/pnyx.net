@@ -10,7 +10,7 @@ namespace pnyx.net.processors.sources
         
         private MemoryStream stream;
 
-        public StringStreamFactory(string source)
+        public StringStreamFactory(String source)
         {
             this.source = source;
         }

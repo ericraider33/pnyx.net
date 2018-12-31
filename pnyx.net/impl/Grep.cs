@@ -9,7 +9,7 @@ namespace pnyx.net.impl
         public String textToFind;
         public bool caseSensitive;
                 
-        public bool shouldKeepLine(string line)
+        public bool shouldKeepLine(String line)
         {
             bool match;
             if (caseSensitive)

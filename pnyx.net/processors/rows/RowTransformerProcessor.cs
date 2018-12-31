@@ -1,3 +1,4 @@
+using System;
 using pnyx.net.api;
 
 namespace pnyx.net.processors.rows
@@ -7,14 +8,14 @@ namespace pnyx.net.processors.rows
         public IRowTransformer transform;
         public IRowProcessor processor;
 
-        public void rowHeader(string[] header)
+        public void rowHeader(String[] header)
         {
             header = transform.transformHeader(header);
             if (header != null)
                 processor.rowHeader(header);            
         }
 
-        public void processRow(string[] row)
+        public void processRow(String[] row)
         {
             row = transform.transformRow(row);
             if (row != null)

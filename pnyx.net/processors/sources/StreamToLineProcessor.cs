@@ -48,7 +48,7 @@ namespace pnyx.net.processors.sources
             streamFactory.closeStream();            
         }
         
-        protected virtual string readLine(int lineNumber)
+        protected virtual String readLine(int lineNumber)
         {
             stringBuilder.Clear();
             if (endOfFile)
@@ -86,7 +86,7 @@ namespace pnyx.net.processors.sources
             if (stringBuilder.Length > 0)
                 return stringBuilder.ToString();
 
-            // Sets flag because an empty string
+            // Sets flag because an empty String
             if (lineNumber > 0)
                 streamInformation.endsWithNewLine = true;
             

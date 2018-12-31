@@ -27,7 +27,7 @@ namespace pnyx.net.test.impl
         [InlineData("\"a\",\"b\"\n\"c\"\n", new String[] { "a", "b" }, new String[] { "c" })]
         [InlineData("\n", new String[0], null)]
         [InlineData("\n\n", new String[0], new String[0])]        
-        public void line(string source, string[] rowA, string[] rowB)
+        public void line(String source, String[] rowA, String[] rowB)
         {
             verifyRows(source, rowA, rowB);
         }
@@ -51,9 +51,9 @@ namespace pnyx.net.test.impl
             verifyRows(source, rowA, null, x => { x.setStrict(false); });
         }
         
-        private void verifyRows(string source, string[] rowA, string[] rowB, Action<CsvStreamToRowProcessor> callback = null)
+        private void verifyRows(String source, String[] rowA, String[] rowB, Action<CsvStreamToRowProcessor> callback = null)
         {
-            string[] actualA = null, actualB = null;
+            String[] actualA = null, actualB = null;
             
             List<String[]> rows = parseRows(source, callback);
             if (rows.Count > 0) actualA = rows[0];

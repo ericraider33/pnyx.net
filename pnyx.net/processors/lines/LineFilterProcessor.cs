@@ -1,3 +1,4 @@
+using System;
 using pnyx.net.api;
 
 namespace pnyx.net.processors.lines
@@ -7,7 +8,7 @@ namespace pnyx.net.processors.lines
         public ILineFilter filter;
         public ILineProcessor processor;
 
-        public void processLine(string line)
+        public void processLine(String line)
         {
             if (filter.shouldKeepLine(line))
                 processor.processLine(line);

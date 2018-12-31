@@ -62,7 +62,7 @@ namespace pnyx.net.impl.csv
                 
         private enum  CsvState { StartOfLine, Quoted, Data, Seeking }
         
-        protected virtual string[] readRow(int rowNumber)
+        protected virtual String[] readRow(int rowNumber)
         {
             row.Clear();
             stringBuilder.Clear();

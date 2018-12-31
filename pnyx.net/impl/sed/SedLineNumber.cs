@@ -9,10 +9,10 @@ namespace pnyx.net.impl.sed
     {
         private int lineNumber;
         
-        public string[] bufferingLine(string line)
+        public String[] bufferingLine(String line)
         {
             lineNumber++;            
-            return new string[]
+            return new String[]
             {
                 lineNumber.ToString(),
                 line

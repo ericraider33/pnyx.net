@@ -1,3 +1,5 @@
+using System;
+
 namespace pnyx.net.processors.dest
 {
     public class LineTeeProcessor : ILineProcessor, ILinePart
@@ -10,7 +12,7 @@ namespace pnyx.net.processors.dest
             this.tee = tee;
         }
 
-        public void processLine(string line)
+        public void processLine(String line)
         {
             processor.processLine(line);
             tee.processLine(line);

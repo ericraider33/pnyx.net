@@ -14,13 +14,13 @@ namespace pnyx.net.impl.columns
             processor.processLine(line);
         }
 
-        public void processRow(string[] row)
+        public void processRow(String[] row)
         {
             String line = index < row.Length ? row[index] : "";
             processor.processLine(line);
         }
 
-        public void processLine(string line)
+        public void processLine(String line)
         {
             processor.processLine(line);
         }

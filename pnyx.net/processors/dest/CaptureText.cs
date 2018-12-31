@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using pnyx.net.util;
 
@@ -14,7 +15,7 @@ namespace pnyx.net.processors.dest
             this.capture = capture ?? new StringBuilder();
         }
 
-        public void processLine(string line)
+        public void processLine(String line)
         {
             capture.Append(line);
             capture.Append(streamInformation.getNewline());

@@ -25,7 +25,7 @@ namespace pnyx.net.processors.dest
             this.path = path;
         }
 
-        public void processLine(string line)
+        public void processLine(String line)
         {
             if (previousLine != null)
             {

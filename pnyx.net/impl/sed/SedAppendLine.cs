@@ -9,9 +9,9 @@ namespace pnyx.net.impl.sed
     {
         public String text;
         
-        public string[] bufferingLine(string line)
+        public String[] bufferingLine(String line)
         {
-            return new string[]
+            return new String[]
             {                
                 line,
                 text

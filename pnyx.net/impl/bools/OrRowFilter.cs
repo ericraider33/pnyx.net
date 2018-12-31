@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using pnyx.net.api;
 
@@ -16,7 +17,7 @@ namespace pnyx.net.impl.bools
             filters.AddRange(source);
         }
         
-        public bool shouldKeepRow(string[] row)
+        public bool shouldKeepRow(String[] row)
         {
             bool keep = false;
             foreach (IRowFilter filter in filters)

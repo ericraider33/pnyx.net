@@ -10,7 +10,7 @@ namespace pnyx.net.impl
         public bool caseSensitive { get; private set; }
         private Regex regex;
 
-        public EGrep(string expression, bool caseSensitive)
+        public EGrep(String expression, bool caseSensitive)
         {
             this.expression = expression;
             this.caseSensitive = caseSensitive;
@@ -22,7 +22,7 @@ namespace pnyx.net.impl
             regex = new Regex(expression, options);
         }
 
-        public bool shouldKeepLine(string line)
+        public bool shouldKeepLine(String line)
         {
             return regex.IsMatch(line);   
         }        

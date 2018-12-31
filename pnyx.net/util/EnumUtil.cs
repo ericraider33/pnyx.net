@@ -39,10 +39,10 @@ namespace pnyx.net.util
             return result;
         }
 
-        public static IDictionary<string, T> toDictionary<T>(IEqualityComparer<String> comparer = null) where T : struct, IConvertible
+        public static IDictionary<String, T> toDictionary<T>(IEqualityComparer<String> comparer = null) where T : struct, IConvertible
         {
             comparer = comparer ?? StringComparer.OrdinalIgnoreCase;            
-            Dictionary<string, T> enumValues = new Dictionary<string, T>(comparer);
+            Dictionary<String, T> enumValues = new Dictionary<String, T>(comparer);
             
             Type enumType = typeof(T);
             foreach (var value in Enum.GetValues(enumType))

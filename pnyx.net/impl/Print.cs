@@ -25,7 +25,7 @@ namespace pnyx.net.impl
             processor.processLine(line);            
         }
 
-        public void processLine(string line)
+        public void processLine(String line)
         {
             line = print(line, emptyRow);
             processor.processLine(line);

@@ -10,7 +10,7 @@ namespace pnyx.net.processors.converters
         public IRowProcessor processor;
         private int lineNumber;
         
-        public void processLine(string line)
+        public void processLine(String line)
         {
             lineNumber++;
             
@@ -21,7 +21,7 @@ namespace pnyx.net.processors.converters
                 processor.processRow(row);
         }
 
-        public void processRow(string[] row)
+        public void processRow(String[] row)
         {
             processor.processRow(row);
         }

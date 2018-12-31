@@ -22,7 +22,7 @@ namespace pnyx.net.impl.sed
         private StringBuilder builder = new StringBuilder();
         private bool hasReplacementFormat = false;
         
-        public SedReplace(string pattern, string replacement, string flags)
+        public SedReplace(String pattern, String replacement, String flags)
         {
             this.pattern = pattern;
             this.replacement = replacement;
@@ -109,7 +109,7 @@ namespace pnyx.net.impl.sed
                 throw new InvalidArgumentException("Invalid reference \\{0} on replace RHS", replacementCount);
         }
 
-        public string transformLine(string line)
+        public String transformLine(String line)
         {
             Match match = regex.Match(line);
             if (!match.Success)

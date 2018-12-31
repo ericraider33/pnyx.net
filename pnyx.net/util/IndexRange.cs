@@ -45,7 +45,7 @@ namespace pnyx.net.util
                 high = Math.Min(high, newHight.Value);
         }
 
-        public override string ToString()
+        public override String ToString()
         {
             if (low == high)
                 return low.ToString();
@@ -61,7 +61,7 @@ namespace pnyx.net.util
         public static List<IndexRange> parse(String text)
         {
             List<IndexRange> result = new List<IndexRange>();
-            if (string.IsNullOrEmpty(text))
+            if (String.IsNullOrEmpty(text))
                 return result;
             
             String[] parts = text.Split(',');

@@ -1,3 +1,4 @@
+using System;
 using pnyx.net.api;
 using pnyx.net.util;
 
@@ -16,7 +17,7 @@ namespace pnyx.net.processors.sources
             this.limit = limit;
         }
         
-        public bool shouldKeepLine(string line)
+        public bool shouldKeepLine(String line)
         {
             lineNumber++;
             if (!streamInformation.active)
@@ -26,7 +27,7 @@ namespace pnyx.net.processors.sources
             return streamInformation.active;
         }
 
-        public bool shouldKeepRow(string[] row)
+        public bool shouldKeepRow(String[] row)
         {
             lineNumber++;
             if (!streamInformation.active)

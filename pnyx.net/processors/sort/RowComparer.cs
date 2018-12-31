@@ -18,7 +18,7 @@ namespace pnyx.net.processors.sort
             this.definitions = new List<ColumnDefinition>(definitions);
         }
         
-        public int Compare(string[] x, string[] y)
+        public int Compare(String[] x, String[] y)
         {
             foreach (ColumnDefinition cd in definitions)
             {

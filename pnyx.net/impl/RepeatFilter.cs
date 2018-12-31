@@ -9,7 +9,7 @@ namespace pnyx.net.impl
         private String previousLine;
         private String[] previousRow;
         
-        public bool shouldKeepLine(string line)
+        public bool shouldKeepLine(String line)
         {
             if (line.Equals(previousLine))
                 return false;
@@ -18,7 +18,7 @@ namespace pnyx.net.impl
             return true;
         }
 
-        public bool shouldKeepRow(string[] row)
+        public bool shouldKeepRow(String[] row)
         {
             if (RowUtil.isEqual(row, previousRow))
                 return false;

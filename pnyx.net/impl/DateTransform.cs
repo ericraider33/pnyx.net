@@ -10,7 +10,7 @@ namespace pnyx.net.impl
         public String formatDestination;
         public bool strict;
 
-        public string transformLine(string line)
+        public String transformLine(String line)
         {
             if (line.Length == 0)
                 return line;

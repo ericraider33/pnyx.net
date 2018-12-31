@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using pnyx.net.api;
 
@@ -16,7 +17,7 @@ namespace pnyx.net.impl.bools
             filters.AddRange(source);
         }        
         
-        public bool shouldKeepLine(string line)
+        public bool shouldKeepLine(String line)
         {
             bool keep = false;
             foreach (ILineFilter filter in filters)

@@ -12,12 +12,12 @@ namespace pnyx.net.impl
         public String delimiter;
         private readonly StringBuilder builder = new StringBuilder();
         
-        public string[] lineToRow(string line)
+        public String[] lineToRow(String line)
         {
             return line.Split(delimiter);
         }
 
-        public string rowToLine(string[] row)
+        public String rowToLine(String[] row)
         {
             builder.Clear();
             if (row.Length == 0)

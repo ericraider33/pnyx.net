@@ -7,7 +7,7 @@ namespace pnyx.net.shims
     {
         public ILineFilter lineFilter;
         
-        public bool shouldKeepRow(string[] row)
+        public bool shouldKeepRow(String[] row)
         {
             foreach (String column in row)
                 if (!lineFilter.shouldKeepLine(column))

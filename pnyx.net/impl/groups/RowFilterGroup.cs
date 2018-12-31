@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using pnyx.net.api;
 
@@ -7,7 +8,7 @@ namespace pnyx.net.impl.groups
     {
         public readonly List<IRowFilter> filters = new List<IRowFilter>();
 
-        public virtual bool shouldKeepRow(string[] rows)
+        public virtual bool shouldKeepRow(String[] rows)
         {
             foreach (IRowFilter filter in filters)
                 if (!filter.shouldKeepRow(rows))

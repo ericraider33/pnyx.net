@@ -145,7 +145,7 @@ namespace pnyx.cmd
             String methodName = name.Value;
             
             // Converts to dictionary
-            Dictionary<String, YamlNode> parameterNodes = new Dictionary<string, YamlNode>();            
+            Dictionary<String, YamlNode> parameterNodes = new Dictionary<String, YamlNode>();            
             foreach (var pairs in values.Children)
             {
                 String parameterName = ((YamlScalarNode) pairs.Key).Value;

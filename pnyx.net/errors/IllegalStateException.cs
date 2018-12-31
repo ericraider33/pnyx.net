@@ -9,15 +9,15 @@ namespace pnyx.net.errors
         {
         }
 
-        public IllegalStateException(string message) : base(message)
+        public IllegalStateException(String message) : base(message)
         {
         }
 
-        public IllegalStateException(string message, params object[] replacements) : base(message, replacements)
+        public IllegalStateException(String message, params object[] replacements) : base(message, replacements)
         {
         }
 
-        public IllegalStateException(string message, Exception innerException) : base(message, innerException)
+        public IllegalStateException(String message, Exception innerException) : base(message, innerException)
         {
         }
 

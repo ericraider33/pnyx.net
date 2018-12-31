@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using pnyx.net.api;
 using pnyx.net.impl.groups;
@@ -15,7 +16,7 @@ namespace pnyx.net.impl.bools
             filters.AddRange(source);
         }
         
-        public override bool shouldKeepRow(string[] row)
+        public override bool shouldKeepRow(String[] row)
         {
             return !base.shouldKeepRow(row);
         }        

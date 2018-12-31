@@ -9,15 +9,15 @@ namespace pnyx.net.errors
         {
         }
 
-        public InvalidArgumentException(string message) : base(message)
+        public InvalidArgumentException(String message) : base(message)
         {
         }
 
-        public InvalidArgumentException(string message, params object[] replacements) : base(message, replacements)
+        public InvalidArgumentException(String message, params object[] replacements) : base(message, replacements)
         {
         }
 
-        public InvalidArgumentException(string message, Exception innerException) : base(message, innerException)
+        public InvalidArgumentException(String message, Exception innerException) : base(message, innerException)
         {
         }
 

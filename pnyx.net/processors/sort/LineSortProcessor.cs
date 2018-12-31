@@ -31,7 +31,7 @@ namespace pnyx.net.processors.sort
             tempFileKey = TextUtil.extractAlphaNumeric(Guid.NewGuid().ToString());
         }
 
-        public void processLine(string line)
+        public void processLine(String line)
         {
             buffer.Add(line, line);
 

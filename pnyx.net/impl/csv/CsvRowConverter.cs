@@ -31,7 +31,7 @@ namespace pnyx.net.impl.csv
 
         private enum  CsvState { StartOfLine, Quoted, Data, Seeking }
         
-        public string[] lineToRow(string source)
+        public String[] lineToRow(String source)
         {
             if (source == null)
                 return null;
@@ -143,7 +143,7 @@ namespace pnyx.net.impl.csv
             return row.ToArray();            
         }
 
-        public string rowToLine(string[] source)
+        public String rowToLine(String[] source)
         {
             if (source == null)
                 return null;

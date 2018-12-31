@@ -7,7 +7,7 @@ namespace pnyx.net.shims
     {
         public Func<String[],bool> rowFilterFunc;
         
-        public bool shouldKeepRow(string[] row)
+        public bool shouldKeepRow(String[] row)
         {
             return rowFilterFunc(row);
         }        

@@ -10,7 +10,7 @@ namespace pnyx.cmd
 {
     public class Program
     {
-        public static int Main(string[] args)
+        public static int Main(String[] args)
         {
             try
             {
@@ -133,7 +133,7 @@ namespace pnyx.cmd
             Console.WriteLine("optional arguments:");
             Console.WriteLine("-h, --help              show this help message and exit");
             Console.WriteLine("-cs, --csharp           flag to specify that commands are CSharp scripts instead of YAML");            
-            Console.WriteLine("-i, --inline            flag to specify that first parameter is an inline YAML/CS string instead of a file path");
+            Console.WriteLine("-i, --inline            flag to specify that first parameter is an inline YAML/CS String instead of a file path");
             Console.WriteLine("-vs, --verboseSettings  flag to display settings. program after displaying settings");
             Console.WriteLine();
             Console.WriteLine("required arguments:");

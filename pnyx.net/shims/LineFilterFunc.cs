@@ -7,7 +7,7 @@ namespace pnyx.net.shims
     {
         public Func<String, bool> lineFilterFunc;
         
-        public bool shouldKeepLine(string line)
+        public bool shouldKeepLine(String line)
         {
             return lineFilterFunc(line);
         }

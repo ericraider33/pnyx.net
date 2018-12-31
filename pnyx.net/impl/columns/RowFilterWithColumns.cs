@@ -18,7 +18,7 @@ namespace pnyx.net.impl.columns
             subColumns = new String[indexes.Length];
         }
 
-        public bool shouldKeepRow(string[] row)
+        public bool shouldKeepRow(String[] row)
         {
             for (int i = 0; i < indexes.Length; i++)
             {

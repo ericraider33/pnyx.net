@@ -19,7 +19,7 @@ namespace pnyx.net.impl.columns
             maxColumnNumber = columnNumbers.Max(x => x);
         }
 
-        public bool shouldKeepRow(string[] row)
+        public bool shouldKeepRow(String[] row)
         {
             if (row.Length < maxColumnNumber)
                 return false;
