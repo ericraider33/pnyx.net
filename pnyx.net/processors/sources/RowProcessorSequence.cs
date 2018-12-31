@@ -17,7 +17,7 @@ namespace pnyx.net.processors.sources
             this.streamInformation = streamInformation;
         }
 
-        public void setNext(IRowProcessor next)
+        public void setNextRowProcessor(IRowProcessor next)
         {
             this.next = next;
         }
@@ -26,7 +26,7 @@ namespace pnyx.net.processors.sources
         {
             RowProcessorCollector collector = new RowProcessorCollector(next);
             foreach (IRowPart part in processors)
-                part.setNext(collector);
+                part.setNextRowProcessor(collector);
             
             while (index < processors.Count && streamInformation.active)
             {

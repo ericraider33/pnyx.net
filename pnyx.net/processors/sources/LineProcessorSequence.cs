@@ -17,7 +17,7 @@ namespace pnyx.net.processors.sources
             this.streamInformation = streamInformation;
         }
 
-        public void setNext(ILineProcessor next)
+        public void setNextLineProcessor(ILineProcessor next)
         {
             this.next = next;
         }
@@ -26,7 +26,7 @@ namespace pnyx.net.processors.sources
         {
             LineProcessorCollector collector = new LineProcessorCollector(next);
             foreach (ILinePart part in processors)
-                part.setNext(collector);
+                part.setNextLineProcessor(collector);
             
             while (index < processors.Count && streamInformation.active)
             {

@@ -24,7 +24,7 @@ namespace pnyx.net.processors.dest
             tee.endOfFile();
         }
 
-        public void setNext(ILineProcessor next)
+        public void setNextLineProcessor(ILineProcessor next)
         {
             processor = next;
         }

@@ -113,7 +113,7 @@ namespace pnyx.net.processors.sources
             streamFactory = null;
         }
 
-        public void setNext(ILineProcessor next)
+        public void setNextLineProcessor(ILineProcessor next)
         {
             lineProcessor = next;
         }

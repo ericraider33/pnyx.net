@@ -20,7 +20,7 @@ namespace pnyx.net.processors.lines
             processor.endOfFile();
         }
 
-        public void setNext(ILineProcessor next)
+        public void setNextLineProcessor(ILineProcessor next)
         {
             processor = next;
         }

@@ -217,7 +217,7 @@ namespace pnyx.net.impl.csv
             this.streamFactory = streamFactory;
         }
 
-        public void setNext(IRowProcessor next)
+        public void setNextRowProcessor(IRowProcessor next)
         {
             rowProcessor = next;
         }

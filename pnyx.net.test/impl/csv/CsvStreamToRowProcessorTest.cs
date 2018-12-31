@@ -72,7 +72,7 @@ namespace pnyx.net.test.impl
             csvProcess.setSource(si, wrapper);
             
             CaptureRowProcessor capture = new CaptureRowProcessor();
-            csvProcess.setNext(capture);
+            csvProcess.setNextRowProcessor(capture);
             
             if (callback != null)
                 callback(csvProcess);

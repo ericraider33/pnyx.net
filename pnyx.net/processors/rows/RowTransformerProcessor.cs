@@ -27,7 +27,7 @@ namespace pnyx.net.processors.rows
             processor.endOfFile();
         }
 
-        public void setNext(IRowProcessor next)
+        public void setNextRowProcessor(IRowProcessor next)
         {
             processor = next;
         }        

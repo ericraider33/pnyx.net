@@ -30,7 +30,7 @@ namespace pnyx.net.processors.dest
             tee.endOfFile();
         }
 
-        public void setNext(IRowProcessor next)
+        public void setNextRowProcessor(IRowProcessor next)
         {
             processor = next;
         }

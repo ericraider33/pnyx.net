@@ -714,12 +714,12 @@ namespace pnyx.net.fluent
                 if (part is IRowPart)
                 {
                     IRowPart currentPart = (IRowPart)part;
-                    currentPart.setNext((IRowProcessor)last);
+                    currentPart.setNextRowProcessor((IRowProcessor)last);
                 }
                 else if (part is ILinePart)
                 {
                     ILinePart currentPart = (ILinePart)part;
-                    currentPart.setNext((ILineProcessor)last);
+                    currentPart.setNextLineProcessor((ILineProcessor)last);
                 }
                 else
                     throw new IllegalStateException("Unknown part {0} should be consumed before compiling", part.GetType().Name);

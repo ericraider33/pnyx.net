@@ -30,7 +30,7 @@ namespace pnyx.net.impl.columns
             processor.endOfFile();
         }
 
-        public void setNext(ILineProcessor next)
+        public void setNextLineProcessor(ILineProcessor next)
         {
             processor = next;
         }

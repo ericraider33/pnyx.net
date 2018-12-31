@@ -62,7 +62,7 @@ namespace pnyx.net.processors.sort
             next.endOfFile();
         }
 
-        public void setNext(ILineProcessor next)
+        public void setNextLineProcessor(ILineProcessor next)
         {
             this.next = next;
         }
