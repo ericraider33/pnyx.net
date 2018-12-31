@@ -12,15 +12,15 @@ namespace pnyx.net.processors.sort
         public IRowProcessor next { get; private set; }       
         public int bufferSize { get; private set; }
         public String tempDirectory { get; private set; }
-        public IComparer<String[]> comparer;
-        private readonly SortedList<String[], String[]> buffer;
+        public IComparer<List<String>> comparer;
+        private readonly SortedList<List<String>, List<String>> buffer;
         private readonly String tempFileKey;
         private int fileNumber;
         private readonly List<String> sortFiles = new List<String>();
         private readonly List<String> tempFiles = new List<String>();
 
         public RowSortProcessor(String tempDirectory = null,
-            IComparer<String[]> comparer = null, 
+            IComparer<List<String>> comparer = null, 
             int bufferSize = 10000
             )
         {
@@ -28,16 +28,16 @@ namespace pnyx.net.processors.sort
             this.tempDirectory = tempDirectory ?? Directory.GetCurrentDirectory();
             this.comparer = comparer;
             
-            buffer = new SortedList<String[], String[]>(bufferSize, comparer);            
+            buffer = new SortedList<List<String>, List<String>>(bufferSize, comparer);            
             tempFileKey = TextUtil.extractAlphaNumeric(Guid.NewGuid().ToString());
         }
 
-        public void rowHeader(String[] header)
+        public void rowHeader(List<String> header)
         {
             next.rowHeader(header);
         }
 
-        public void processRow(String[] row)
+        public void processRow(List<String> row)
         {
             buffer.Add(row, row);
 
@@ -58,7 +58,7 @@ namespace pnyx.net.processors.sort
                 {
                     using (CsvReader reader = new CsvReader(stream, Encoding.UTF8))
                     {
-                        String[] row;
+                        List<String> row;
                         while ((row = reader.readRow()) != null)
                             next.processRow(row);
                     }
@@ -96,7 +96,7 @@ namespace pnyx.net.processors.sort
             {
                 using (CsvWriter writer = new CsvWriter(stream, Encoding.UTF8))
                 {
-                    foreach (String[] row in buffer.Values)                        
+                    foreach (List<String> row in buffer.Values)                        
                         writer.writeRow(row);
                 }
             }
@@ -143,8 +143,8 @@ namespace pnyx.net.processors.sort
                 readerB = new CsvReader(streamB, Encoding.UTF8);
                 writer = new CsvWriter(streamC, Encoding.UTF8);
 
-                String[] rowA = null;
-                String[] rowB = null;
+                List<String> rowA = null;
+                List<String> rowB = null;
                 while (!readerA.EndOfStream || !readerB.EndOfStream)
                 {
                     if (!readerA.EndOfStream && rowA == null)

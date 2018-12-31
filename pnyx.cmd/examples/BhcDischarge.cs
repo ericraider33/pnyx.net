@@ -1,5 +1,4 @@
 using System;
-using pnyx.net.api;
 using pnyx.net.fluent;
 using pnyx.net.impl;
 using pnyx.net.util;
@@ -93,7 +92,7 @@ namespace pnyx.cmd.examples
                 });
                 p.rowTransformerFunc(row =>
                 {
-                    for (int i = 0; i < row.Length; i++)
+                    for (int i = 0; i < row.Count; i++)
                         row[i] = TextUtil.enocdeSqlValue(row[i]);                    
                     return row;
                 });

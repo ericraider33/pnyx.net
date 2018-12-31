@@ -29,7 +29,7 @@ namespace pnyx.net.impl
         }
     }
     
-    public class BeforeAfterRowBuffering : BeforeAfterBase<String[]>, IRowBuffering
+    public class BeforeAfterRowBuffering : BeforeAfterBase<List<String>>, IRowBuffering
     {
         public IRowFilter rowFilter { get; }
         
@@ -38,25 +38,24 @@ namespace pnyx.net.impl
             this.rowFilter = rowFilter;
         }
 
-        protected override bool shouldKeep(String[] source)
+        protected override bool shouldKeep(List<String> source)
         {
             return rowFilter.shouldKeepRow(source);
         }
 
-        public String[] rowHeader(String[] header)
+        public List<String> rowHeader(List<String> header)
         {
             return header;
         }
 
-        public String[][] bufferingRow(String[] row)
+        public List<List<String>> bufferingRow(List<String> row)
         {
-            List<String[]> result = bufferingT(row);
-           return result == null ? null : result.ToArray();
+            return bufferingT(row);
         }
 
-        public String[][] endOfFile()
+        public List<List<String>> endOfFile()
         {
-            return endOfFileT().ToArray();
+            return endOfFileT();
         }
     }
     
@@ -65,10 +64,10 @@ namespace pnyx.net.impl
         public int before { get; }
         public int after { get; }
 
-        private T[] buffer;
-        private bool[] include;
-        private int lineNumber;
+        private readonly T[] buffer;
+        private readonly bool[] include;
         private readonly List<T> resultBuffer = new List<T> { null }; 
+        private int lineNumber;
 
         protected BeforeAfterBase(int before, int after)
         {

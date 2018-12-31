@@ -1,10 +1,11 @@
 using System;
+using System.Collections.Generic;
 
 namespace pnyx.net.api
 {
     public interface IRowTransformer
     {
-        String[] transformHeader(String[] header);
-        String[] transformRow(String[] row);
+        List<String> transformHeader(List<String> header);
+        List<String> transformRow(List<String> row);
     }
 }

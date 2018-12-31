@@ -14,12 +14,12 @@ namespace pnyx.net.impl.columns
             columnNumbers = new HashSet<int>(columns);
         }
 
-        public String[] transformHeader(String[] header)
+        public List<String> transformHeader(List<String> header)
         {
             return RowUtil.removeColumns(header, columnNumbers);
         }
 
-        public String[] transformRow(String[] row)
+        public List<String> transformRow(List<String> row)
         {
             return RowUtil.removeColumns(row, columnNumbers);
         }

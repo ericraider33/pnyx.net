@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using pnyx.net.api;
 using pnyx.net.util;
 
@@ -27,7 +28,7 @@ namespace pnyx.net.processors.sources
             return streamInformation.active;
         }
 
-        public bool shouldKeepRow(String[] row)
+        public bool shouldKeepRow(List<String> row)
         {
             lineNumber++;
             if (!streamInformation.active)

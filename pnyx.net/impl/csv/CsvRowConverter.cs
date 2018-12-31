@@ -17,7 +17,6 @@ namespace pnyx.net.impl.csv
         public bool allowUnquotedNewlines { get; set; }
         
         private readonly StringBuilder stringBuilder = new StringBuilder();
-        private readonly List<String> row = new List<String>();
         
         public CsvRowConverter setStrict(bool strict)
         {
@@ -31,12 +30,12 @@ namespace pnyx.net.impl.csv
 
         private enum  CsvState { StartOfLine, Quoted, Data, Seeking }
         
-        public String[] lineToRow(String source)
+        public List<String> lineToRow(String source)
         {
             if (source == null)
                 return null;
             
-            row.Clear();
+            List<String> row = new List<String>();
             stringBuilder.Clear();
             
             CsvState state = CsvState.StartOfLine;
@@ -140,10 +139,10 @@ namespace pnyx.net.impl.csv
             }
             
             row.Add(stringBuilder.ToString());                                    
-            return row.ToArray();            
+            return row;            
         }
 
-        public String rowToLine(String[] source)
+        public String rowToLine(List<String> source)
         {
             if (source == null)
                 return null;

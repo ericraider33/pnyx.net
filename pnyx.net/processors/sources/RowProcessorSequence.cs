@@ -48,7 +48,7 @@ namespace pnyx.net.processors.sources
                 this.next = next;
             }
 
-            public void rowHeader(String[] header)
+            public void rowHeader(List<String> header)
             {
                 if (hasRowHeader)
                     return;
@@ -57,7 +57,7 @@ namespace pnyx.net.processors.sources
                 hasRowHeader = true;
             }
 
-            public void processRow(String[] row)
+            public void processRow(List<String> row)
             {
                 next.processRow(row);
             }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using pnyx.net.api;
 
 namespace pnyx.net.processors.rows
@@ -8,12 +9,12 @@ namespace pnyx.net.processors.rows
         public IRowFilter filter;
         public IRowProcessor processor;
 
-        public void rowHeader(String[] header)
+        public void rowHeader(List<String> header)
         {
             processor.rowHeader(header);
         }
 
-        public void processRow(String[] row)
+        public void processRow(List<String> row)
         {
             if (filter.shouldKeepRow(row))
                 processor.processRow(row);

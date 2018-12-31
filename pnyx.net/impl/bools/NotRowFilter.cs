@@ -16,7 +16,7 @@ namespace pnyx.net.impl.bools
             filters.AddRange(source);
         }
         
-        public override bool shouldKeepRow(String[] row)
+        public override bool shouldKeepRow(List<String> row)
         {
             return !base.shouldKeepRow(row);
         }        

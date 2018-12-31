@@ -8,12 +8,12 @@ namespace pnyx.net.impl.groups
     {
         public readonly List<IRowTransformer> transformers = new List<IRowTransformer>();
 
-        public String[] transformHeader(String[] header)
+        public List<String> transformHeader(List<String> header)
         {
             return header;
         }
 
-        public String[] transformRow(String[] row)
+        public List<String> transformRow(List<String> row)
         {
             foreach (IRowTransformer transformer in transformers)
             {

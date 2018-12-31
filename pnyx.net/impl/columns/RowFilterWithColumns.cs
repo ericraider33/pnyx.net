@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using pnyx.net.api;
 
 namespace pnyx.net.impl.columns
@@ -8,23 +9,23 @@ namespace pnyx.net.impl.columns
         public int[] indexes { get; private set; }   
         public IRowFilter rowFilter  { get; private set; }
 
-        private String[] subColumns;
+        private readonly List<String> subColumns;
         
         public RowFilterWithColumns(int[] indexes, IRowFilter rowFilter)
         {
             this.indexes = indexes;
             this.rowFilter = rowFilter;
             
-            subColumns = new String[indexes.Length];
+            subColumns = new List<String>(indexes.Length);
         }
 
-        public bool shouldKeepRow(String[] row)
+        public bool shouldKeepRow(List<String> row)
         {
-            for (int i = 0; i < indexes.Length; i++)
+            subColumns.Clear();
+            foreach (int columnIndex in indexes)
             {
-                int columnIndex = indexes[i];
-                String column = columnIndex < row.Length ? row[columnIndex] : "";
-                subColumns[i] = column;
+                String column = columnIndex < row.Count ? row[columnIndex] : "";
+                subColumns.Add(column);
             }
 
             return rowFilter.shouldKeepRow(subColumns);

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using pnyx.net.api;
 
 namespace pnyx.net.impl.columns
@@ -10,17 +9,17 @@ namespace pnyx.net.impl.columns
         private readonly List<List<String>> buffer = new List<List<String>>();
         private int lineNumber = 0;
 
-        public String[] rowHeader(String[] header)
+        public List<String> rowHeader(List<String> header)
         {
             bufferingRow(header);
             return null;
         }
 
-        public String[][] bufferingRow(String[] row)
+        public List<List<String>> bufferingRow(List<String> row)
         {
             lineNumber++;
 
-            for (int i = buffer.Count; i < row.Length; i++)
+            for (int i = buffer.Count; i < row.Count; i++)
             {
                 List<String> outRow = new List<String>();
                 buffer.Add(outRow);
@@ -31,7 +30,7 @@ namespace pnyx.net.impl.columns
 
             for (int i = 0; i < buffer.Count; i++)
             {
-                String column = i < row.Length ? row[i] : "";
+                String column = i < row.Count ? row[i] : "";
                 List<String> outRow = buffer[i];
                 outRow.Add(column);
             }
@@ -39,10 +38,9 @@ namespace pnyx.net.impl.columns
             return null;
         }
 
-        public String[][] endOfFile()
+        public List<List<String>> endOfFile()
         {
-            String[][] result = buffer.Select(x => x.ToArray()).ToArray();
-            return result;
+            return buffer;
         }
     }
 }

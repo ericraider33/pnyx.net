@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using pnyx.net.api;
 
 namespace pnyx.net.impl.columns
@@ -8,46 +9,46 @@ namespace pnyx.net.impl.columns
         public int[] indexes { get; private set; }   
         public IRowTransformer rowTransformer  { get; private set; }
 
-        private String[] subColumns;
+        private readonly List<String> subColumns;
         
         public RowTransformerWithColumns(int[] indexes, IRowTransformer rowTransformer)
         {
             this.indexes = indexes;
             this.rowTransformer = rowTransformer;
             
-            subColumns = new String[indexes.Length];
+            subColumns = new List<String>(indexes.Length);
         }
 
-        public String[] transformHeader(String[] header)
+        public List<String> transformHeader(List<String> header)
         {
             subColumnsIn(header);
-            String[] transformed = rowTransformer.transformHeader(subColumns);
+            List<String> transformed = rowTransformer.transformHeader(subColumns);
             return subColumnsOut(transformed, header);
         }
 
-        public String[] transformRow(String[] row)
+        public List<String> transformRow(List<String> row)
         {
             subColumnsIn(row);
-            String[] transformed = rowTransformer.transformRow(subColumns);
+            List<String> transformed = rowTransformer.transformRow(subColumns);
             return subColumnsOut(transformed, row);
         }
 
-        private void subColumnsIn(String[] row)
+        private void subColumnsIn(List<String> row)
         {
-            for (int i = 0; i < indexes.Length; i++)
+            subColumns.Clear();
+            foreach (int columnIndex in indexes)
             {
-                int columnIndex = indexes[i];
-                String column = columnIndex < row.Length ? row[columnIndex] : "";
-                subColumns[i] = column;
-            }            
+                String column = columnIndex < row.Count ? row[columnIndex] : "";
+                subColumns.Add(column);
+            }
         }
 
-        private String[] subColumnsOut(String[] transformed, String[] row)
+        private List<String> subColumnsOut(List<String> transformed, List<String> row)
         {
             for (int i = 0; i < indexes.Length; i++)
             {
                 int columnIndex = indexes[i];
-                if (columnIndex >= row.Length)
+                if (columnIndex >= row.Count)
                     continue;
 
                 if (transformed == null)

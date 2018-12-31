@@ -53,17 +53,17 @@ namespace pnyx.net.test.impl
         
         private void verifyRows(String source, String[] rowA, String[] rowB, Action<CsvStreamToRowProcessor> callback = null)
         {
-            String[] actualA = null, actualB = null;
+            List<String> actualA = null, actualB = null;
             
-            List<String[]> rows = parseRows(source, callback);
+            List<List<String>> rows = parseRows(source, callback);
             if (rows.Count > 0) actualA = rows[0];
             if (rows.Count > 1) actualB = rows[1];
             
-            Assert.True(EqualsUtil.areArraysEquals(actualA, rowA));
-            Assert.True(EqualsUtil.areArraysEquals(actualB, rowB));
+            Assert.True(RowUtil.isEqual(actualA, rowA.asRow()));
+            Assert.True(RowUtil.isEqual(actualB, rowB.asRow()));
         }
 
-        private List<String[]> parseRows(String source, Action<CsvStreamToRowProcessor> callback = null)
+        private List<List<String>> parseRows(String source, Action<CsvStreamToRowProcessor> callback = null)
         {
             StreamInformation si = new StreamInformation();
             CsvStreamToRowProcessor csvProcess = new CsvStreamToRowProcessor();

@@ -17,7 +17,7 @@ namespace pnyx.net.impl.bools
             filters.AddRange(source);
         }
         
-        public bool shouldKeepRow(String[] row)
+        public bool shouldKeepRow(List<String> row)
         {
             bool keep = false;
             foreach (IRowFilter filter in filters)

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace pnyx.net.processors.converters
 {
@@ -6,12 +7,12 @@ namespace pnyx.net.processors.converters
     {
         public IRowProcessor processor;
 
-        public void rowHeader(String[] header)
+        public void rowHeader(List<String> header)
         {
             processor.rowHeader(header);
         }
 
-        public void processRow(String[] row)
+        public void processRow(List<String> row)
         {
             processor.processRow(row);
         }

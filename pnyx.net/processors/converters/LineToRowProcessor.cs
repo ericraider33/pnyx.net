@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using pnyx.net.api;
 
 namespace pnyx.net.processors.converters
@@ -14,14 +15,14 @@ namespace pnyx.net.processors.converters
         {
             lineNumber++;
             
-            String[] row = rowConverter.lineToRow(line);
+            List<String> row = rowConverter.lineToRow(line);
             if (lineNumber == 1 && hasHeader)
                 processor.rowHeader(row);
             else
                 processor.processRow(row);
         }
 
-        public void processRow(String[] row)
+        public void processRow(List<String> row)
         {
             processor.processRow(row);
         }

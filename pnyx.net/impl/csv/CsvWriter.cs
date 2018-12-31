@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using pnyx.net.errors;
@@ -25,12 +26,12 @@ namespace pnyx.net.impl.csv
             return result;
         }        
         
-        public override void rowHeader(String[] header)
+        public override void rowHeader(List<String> header)
         {
             throw new IllegalStateException("Use writeRow method instead");            
         }        
 
-        public override void processRow(String[] row)
+        public override void processRow(List<String> row)
         {
             throw new IllegalStateException("Use writeRow method instead");            
         }
@@ -40,7 +41,7 @@ namespace pnyx.net.impl.csv
             throw new IllegalStateException("Use writeRow method instead");            
         }
 
-        public void writeRow(String[] row)
+        public void writeRow(List<String> row)
         {
             writeRow_(row);
             writer.WriteLine();

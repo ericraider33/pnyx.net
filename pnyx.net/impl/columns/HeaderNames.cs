@@ -13,20 +13,20 @@ namespace pnyx.net.impl.columns
             this.nameMap = nameMap;
         }
 
-        public String[] transformHeader(String[] header)
+        public List<String> transformHeader(List<String> header)
         {
             foreach (KeyValuePair<int, String> namePair in nameMap)
             {
                 int index = namePair.Key;
                 String name = namePair.Value;
-                if (index < header.Length)
+                if (index < header.Count)
                     header[index] = name;
             }
 
             return header;
         }
 
-        public String[] transformRow(String[] row)
+        public List<String> transformRow(List<String> row)
         {
             return row;
         }

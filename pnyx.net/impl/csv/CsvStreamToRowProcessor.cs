@@ -19,7 +19,6 @@ namespace pnyx.net.impl.csv
         public IStreamFactory streamFactory { get; protected set; }
         
         private readonly StringBuilder stringBuilder = new StringBuilder();
-        private readonly List<String> row = new List<String>();
         private bool endOfFile;
 
         public CsvStreamToRowProcessor()
@@ -43,8 +42,8 @@ namespace pnyx.net.impl.csv
             reader = new StreamReader(stream, streamInformation.defaultEncoding, streamInformation.detectEncodingFromByteOrderMarks);
             
             endOfFile = false;
-            String[] current;
-            while ((current = readRow(streamInformation.lineNumber))!= null && streamInformation.active)
+            List<String> current;
+            while ((current = readRow(streamInformation.lineNumber)) != null && streamInformation.active)
             {
                 streamInformation.lineNumber++;
                 if (streamInformation.lineNumber == 1 && hasHeader)
@@ -62,9 +61,9 @@ namespace pnyx.net.impl.csv
                 
         private enum  CsvState { StartOfLine, Quoted, Data, Seeking }
         
-        protected virtual String[] readRow(int rowNumber)
+        protected virtual List<String> readRow(int rowNumber)
         {
-            row.Clear();
+            List<String> row = new List<String>();
             stringBuilder.Clear();
             if (endOfFile)
                 return null;            
@@ -85,7 +84,7 @@ namespace pnyx.net.impl.csv
                                 updateStreamInformation(rowNumber, "\n");
                                 if (state != CsvState.StartOfLine)
                                     row.Add(stringBuilder.ToString());                                    
-                                return row.ToArray();
+                                return row;
 
                             case 13:
                                 if (reader.Peek() == 10)
@@ -98,7 +97,7 @@ namespace pnyx.net.impl.csv
                         
                                 if (state != CsvState.StartOfLine)
                                     row.Add(stringBuilder.ToString());                                    
-                                return row.ToArray();
+                                return row;
                             
                             case ',':
                                 row.Add(stringBuilder.ToString());
@@ -185,7 +184,7 @@ namespace pnyx.net.impl.csv
             }
             
             row.Add(stringBuilder.ToString());                                    
-            return row.ToArray();
+            return row;
         }
 
         private void updateStreamInformation(int lineNumber, String newLine)

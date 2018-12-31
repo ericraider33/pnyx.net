@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using pnyx.net.api;
 
 namespace pnyx.net.shims
@@ -7,27 +8,28 @@ namespace pnyx.net.shims
     {
         public ILineTransformer lineTransformer;
 
-        public String[] transformHeader(String[] header)
+        public List<String> transformHeader(List<String> header)
         {
             return header;
         }
         
-        public String[] transformRow(String[] row)
+        public List<String> transformRow(List<String> row)
         {
             bool keep = false;
-            String[] result = new String[row.Length];
-            for (int i = 0; i < row.Length; i++)
+            List<String> result = new List<String>(row.Count);
+            foreach (String original in row)
             {
-                String column = lineTransformer.transformLine(row[i]);
+                String column = lineTransformer.transformLine(original);
                 if (column == null)
                 {
-                    result[i] = "";
+                    result.Add("");                
                 }
                 else
                 {
-                    result[i] = column;
+                    result.Add(column);                
                     keep = true;
                 }
+
             }
             
             return keep ? result : null;

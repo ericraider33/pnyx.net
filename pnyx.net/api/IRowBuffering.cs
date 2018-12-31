@@ -1,11 +1,12 @@
 using System;
+using System.Collections.Generic;
 
 namespace pnyx.net.api
 {
     public interface IRowBuffering
     {
-        String[] rowHeader(String[] header);        
-        String[][] bufferingRow(String[] row);
-        String[][] endOfFile();
+        List<String> rowHeader(List<String> header);        
+        List<List<String>> bufferingRow(List<String> row);
+        List<List<String>> endOfFile();
     }
 }

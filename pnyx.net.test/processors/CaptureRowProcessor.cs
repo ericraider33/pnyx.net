@@ -6,21 +6,21 @@ namespace pnyx.net.test.processors
 {
     public class CaptureRowProcessor : IRowProcessor
     {
-        public String[] header { get; private set; }
-        public List<String[]> rows { get; }
+        public List<String> header { get; private set; }
+        public List<List<String>> rows { get; }
         public bool eof { get; private set; }
 
         public CaptureRowProcessor()
         {
-            rows = new List<String[]>();        
+            rows = new List<List<String>>();        
         }
 
-        public void rowHeader(String[] header)
+        public void rowHeader(List<String> header)
         {
             this.header = header;
         }
 
-        public void processRow(String[] row)
+        public void processRow(List<String> row)
         {
             rows.Add(row);
         }

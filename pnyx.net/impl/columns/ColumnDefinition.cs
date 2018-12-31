@@ -45,11 +45,11 @@ namespace pnyx.net.impl.columns
             flag = Flags.MaxWidth;
         }
 
-        public String[] rowHeader(String[] header)
+        public List<String> rowHeader(List<String> header)
         {
             lineNumber++;
 
-            for (int i = 0; i < header.Length; i++)
+            for (int i = 0; i < header.Count; i++)
             {
                 String column = header[i];
                 ColumnInformation info = infoList[i];
@@ -61,14 +61,14 @@ namespace pnyx.net.impl.columns
             return null;
         }
 
-        public String[][] bufferingRow(String[] row)
+        public List<List<String>> bufferingRow(List<String> row)
         {
             lineNumber++;
 
-            for (int i = infoList.Count; i < row.Length; i++)
+            for (int i = infoList.Count; i < row.Count; i++)
                 infoList.Add(new ColumnInformation());
                 
-            for (int i = 0; i < row.Length; i++)
+            for (int i = 0; i < row.Count; i++)
             {
                 String column = row[i];
                 ColumnInformation info = infoList[i];
@@ -92,9 +92,9 @@ namespace pnyx.net.impl.columns
             return null;
         }
 
-        public String[][] endOfFile()
+        public List<List<String>> endOfFile()
         {
-            List<String[]> result = new List<String[]>();
+            List<List<String>> result = new List<List<String>>();
 
             if (flag.HasFlag(Flags.Header))
                 result.Add(buildOutput("Header", list => list.Select(ci => ci.header)));
@@ -108,15 +108,15 @@ namespace pnyx.net.impl.columns
             if (flag.HasFlag(Flags.Nullable))
                 result.Add(buildOutput("Nullable", list => list.Select(ci => ci.minWidth > 0 ? "not null" : "null")));
             
-            return result.ToArray();
+            return result;
         }
 
-        private String[] buildOutput(String title, Func<List<ColumnInformation>, IEnumerable<String>> action)
+        private List<String> buildOutput(String title, Func<List<ColumnInformation>, IEnumerable<String>> action)
         {
             List<String> row = new List<String>(infoList.Count + 1);
             row.Add(title);
             row.AddRange(action(infoList));
-            return row.ToArray();            
+            return row;            
         }
     }
 }

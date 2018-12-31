@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using pnyx.net.processors;
 
 namespace pnyx.net.impl.columns
@@ -8,15 +9,15 @@ namespace pnyx.net.impl.columns
         public int index;                                        // zero based
         public ILineProcessor processor;
 
-        public void rowHeader(String[] header)
+        public void rowHeader(List<String> header)
         {
-            String line = index < header.Length ? header[index] : "";
+            String line = index < header.Count ? header[index] : "";
             processor.processLine(line);
         }
 
-        public void processRow(String[] row)
+        public void processRow(List<String> row)
         {
-            String line = index < row.Length ? row[index] : "";
+            String line = index < row.Count ? row[index] : "";
             processor.processLine(line);
         }
 

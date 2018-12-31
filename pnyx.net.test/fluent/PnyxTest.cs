@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using pnyx.net.errors;
@@ -239,7 +240,7 @@ valueX1,valueX1
                 p.streamInformation.setDefaultNewline(NewLineEnum.Windows);
                 p.readString(EARTH);
                 p.parseCsv();
-                p.sedAppendRow(new[] {"The Lord","is", "my shepherd"});
+                p.sedAppendRow(new List<String> {"The Lord","is", "my shepherd"});
                 actual = p.processToString();
             }
 

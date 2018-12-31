@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using pnyx.net.api;
 
 namespace pnyx.net.processors.rows
@@ -8,14 +9,14 @@ namespace pnyx.net.processors.rows
         public IRowBuffering buffering;
         public IRowProcessor processor;
 
-        public void rowHeader(String[] header)
+        public void rowHeader(List<String> header)
         {
             header = buffering.rowHeader(header);
             if (header != null)
                 processor.rowHeader(header);
         }
 
-        public void processRow(String[] row)
+        public void processRow(List<String> row)
         {
             forward(buffering.bufferingRow(row));
         }
@@ -26,12 +27,12 @@ namespace pnyx.net.processors.rows
             processor.endOfFile();
         }
 
-        private void forward(String[][] rows)
+        private void forward(List<List<String>> rows)
         {
             if (rows == null)
                 return;
             
-            foreach (String[] row in rows)
+            foreach (List<String> row in rows)
                 processor.processRow(row);
         }
 

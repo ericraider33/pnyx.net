@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using pnyx.net.errors;
@@ -26,9 +27,9 @@ namespace pnyx.net.impl.csv
             throw new IllegalStateException("Use readRow method instead");
         }
 
-        public String[] readRow()
+        public List<String> readRow()
         {
-            String[] result = readRow(streamInformation.lineNumber);
+            List<String> result = readRow(streamInformation.lineNumber);
             streamInformation.lineNumber++;
             return result;
         }

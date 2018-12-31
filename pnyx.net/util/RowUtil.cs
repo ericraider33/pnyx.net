@@ -1,83 +1,74 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace pnyx.net.util
 {
     public static class RowUtil
     {
-        public static String[] replaceColumn(String[] row, int columnNumber, params String[] replacement)
+        public static List<String> replaceColumn(List<String> row, int columnNumber, params String[] replacement)
         {
-            String[] result = new String[row.Length - 1 + replacement.Length];
-
             int columnIndex = columnNumber - 1;
-            for (int i = 0; i < row.Length; i++)
-            {
-                if (i < columnIndex)
-                    result[i] = row[i];
-                else if (i > columnIndex)
-                    result[i + replacement.Length - 1] = row[i];
-                else
-                {
-                    for (int j = 0; j < replacement.Length; j++)
-                        result[i + j] = replacement[j];
-                }
-            }
+            if (columnIndex > row.Count)
+                return row;
+            
+            if (columnIndex < row.Count)
+                row.RemoveAt(columnIndex);
+            
+            for (int i = 0; i < replacement.Length; i++)
+                row.Insert(columnIndex+i, replacement[i]);
                         
-            return result;
+            return row;
         }
         
-        public static String[] insertColumns(String[] row, int columnNumber, params String[] replacement)
+        public static List<String> insertColumns(List<String> row, int columnNumber, params String[] replacement)
         {
             int columnIndex = columnNumber - 1;
-            String[] result = new String[Math.Max(row.Length,columnIndex) + replacement.Length];
-
-            for (int i = 0; i < Math.Min(row.Length, columnIndex); i++)
-                result[i] = row[i];
-
-            for (int i = 0; i < replacement.Length; i++)
-                result[i + columnIndex] = replacement[i];
+            if (columnIndex > row.Count)
+                return row;
             
-            for (int i = Math.Min(row.Length, columnIndex); i < row.Length; i++)
-                result[i + replacement.Length] = row[i];
+            for (int i = 0; i < replacement.Length; i++)
+                row.Insert(columnIndex+i, replacement[i]);
                         
-            return result;
+            return row;
         }
 
-        public static String[] insertBlankColumns(String[] row, ISet<int> columnNumbers, String pad = "")
+        public static List<String> insertBlankColumns(List<String> row, ISet<int> columnNumbers, String pad = "")
         {
-            String[] result = new String[row.Length + columnNumbers.Count];
-            for (int i = 0, source = 0; i < result.Length; i++)
+            int finalSize = row.Count + columnNumbers.Count;
+            List<String> result = new List<String>(finalSize);
+            for (int source = 0; result.Count < finalSize; source++)
             {
                 if (columnNumbers.Contains(source + 1))
-                    result[i++] = pad;
+                    result.Add(pad);
 
-                if (i < result.Length)
-                    result[i] = row[source++];
+                if (result.Count < finalSize)
+                    result.Add(row[source]);
             }
 
             return result;
         }
 
-        public static String[] duplicateColumns(String[] row, ISet<int> columnNumbers, String pad = "")
+        public static List<String> duplicateColumns(List<String> row, ISet<int> columnNumbers, String pad = "")
         {
-            String[] result = new String[row.Length + columnNumbers.Count];
-            for (int i = 0, source = 0; i < result.Length; i++)
+            int finalSize = row.Count + columnNumbers.Count;
+            List<String> result = new List<String>(finalSize);
+            for (int source = 0; result.Count < finalSize; source++)
             {
                 if (columnNumbers.Contains(source + 1))
-                    result[i++] = source < row.Length ? row[source] : pad;
+                    result.Add(source < row.Count ? row[source] : pad);
 
-                if (i < result.Length)
-                    result[i] = row[source++];
+                if (result.Count < finalSize)
+                    result.Add(row[source]);
             }
-
+            
             return result;
         }
 
-        public static String[] removeColumns(String[] row, ISet<int> columnNumbers)
+        public static List<String> removeColumns(List<String> row, ISet<int> columnNumbers)
         {
-            List<String> result = new List<String>(row.Length);
-            for (int i = 0; i < row.Length; i++)
+            List<String> result = new List<String>(row.Count);
+            for (int i = 0; i < row.Count; i++)
             {
                 if (columnNumbers.Contains(i + 1))
                     continue;
@@ -85,38 +76,51 @@ namespace pnyx.net.util
                 result.Add(row[i]);
             }
 
-            return result.ToArray();
+            return result;
         }
 
-        public static String[] fixWidth(String[] row, int columns, String pad = "")
+        public static List<String> fixWidth(List<String> row, int columns, String pad = "")
         {
-            String[] result = new String[columns];
+            List<String> result = new List<String>(columns);
 
-            for (int i = 0; i < result.Length; i++)
+            for (int i = 0; i < columns; i++)
             {
-                if (i < row.Length)
-                    result[i] = row[i];
+                if (i < row.Count)
+                    result.Add(row[i]);
                 else
-                    result[i] = pad;
+                    result.Add(pad);
             }
                         
             return result;
         }
 
-        public static bool isEqual(String[] rowA, String[] rowB)
-        {            
-            return ((IStructuralEquatable)rowA).Equals(rowB, StructuralComparisons.StructuralEqualityComparer);
+        public static bool isEqual(List<String> rowA, List<String> rowB)
+        {
+            if (rowA == null && rowB == null)
+                return true;
+            else if (rowA == null || rowB == null)
+                return false;
+            else
+                return rowA.SequenceEqual(rowB);
         }
 
-        public static String[] setDefaultHeaderNames(String[] header)
+        public static List<String> setDefaultHeaderNames(List<String> header)
         {
-            for (int i = 0; i < header.Length; i++)
+            for (int i = 0; i < header.Count; i++)
             {
                 if (String.IsNullOrEmpty(header[i]))
                     header[i] = "Header" + (i + 1);
             }
 
             return header;
+        }
+
+        public static List<String> asRow(this String[] source)
+        {
+            if (source == null)
+                return null;
+
+            return new List<String>(source);
         }
     }
 }

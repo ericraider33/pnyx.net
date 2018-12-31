@@ -15,13 +15,13 @@ namespace pnyx.net.impl.columns
             columnNumbers = new HashSet<int>(columns);
         }
 
-        public String[] transformHeader(String[] header)
+        public List<String> transformHeader(List<String> header)
         {
             header = RowUtil.duplicateColumns(header, columnNumbers, pad);
             return RowUtil.setDefaultHeaderNames(header);
         }
 
-        public String[] transformRow(String[] row)
+        public List<String> transformRow(List<String> row)
         {
             return RowUtil.duplicateColumns(row, columnNumbers, pad);
         }

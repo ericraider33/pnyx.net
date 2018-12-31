@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using pnyx.net.api;
 
 namespace pnyx.net.shims
@@ -7,7 +8,7 @@ namespace pnyx.net.shims
     {
         public ILineFilter lineFilter;
         
-        public bool shouldKeepRow(String[] row)
+        public bool shouldKeepRow(List<String> row)
         {
             foreach (String column in row)
                 if (lineFilter.shouldKeepLine(column))

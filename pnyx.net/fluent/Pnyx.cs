@@ -637,12 +637,12 @@ namespace pnyx.net.fluent
             return rowPart(new RowTransformerProcessor { transform = transform });
         }
         
-        public Pnyx rowFilterFunc(Func<String[], bool> filter)
+        public Pnyx rowFilterFunc(Func<List<String>, bool> filter)
         {
             return rowFilter(new RowFilterFunc { rowFilterFunc = filter });
         }
         
-        public Pnyx rowTransformerFunc(Func<String[], String[]> transform, bool treatHeaderAsRow = false)
+        public Pnyx rowTransformerFunc(Func<List<String>, List<String>> transform, bool treatHeaderAsRow = false)
         {
             return rowTransformer(new RowTransformerFunc { rowTransformerFunc = transform, treatHeaderAsRow = treatHeaderAsRow });
         }           
@@ -677,7 +677,7 @@ namespace pnyx.net.fluent
             return lineBuffering(new SedLineNumber());
         }
 
-        public Pnyx sedAppendRow(String[] toAppend)
+        public Pnyx sedAppendRow(List<String> toAppend)
         {
             return rowBuffering(new SedAppendRow { text = toAppend });
         }
@@ -1123,7 +1123,7 @@ namespace pnyx.net.fluent
                 });
             }
             
-            IComparer<String[]> comparer = new RowComparer(definitions);             
+            IComparer<List<String>> comparer = new RowComparer(definitions);             
             RowSortProcessor sortProcessor = new RowSortProcessor(tempDirectory, comparer, bufferLines.Value);
             return rowPart(sortProcessor);
         }

@@ -15,13 +15,13 @@ namespace pnyx.net.impl.columns
             columnNumbers = new HashSet<int>(columns);
         }
 
-        public String[] transformHeader(String[] header)
+        public List<String> transformHeader(List<String> header)
         {
             header = RowUtil.insertBlankColumns(header, columnNumbers, "");
             return RowUtil.setDefaultHeaderNames(header);
         }
 
-        public String[] transformRow(String[] row)
+        public List<String> transformRow(List<String> row)
         {
             return RowUtil.insertBlankColumns(row, columnNumbers, pad);
         }

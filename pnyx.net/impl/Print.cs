@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using pnyx.net.api;
 using pnyx.net.processors;
@@ -11,15 +12,15 @@ namespace pnyx.net.impl
         public ILineProcessor processor;
         public IRowConverter rowConverter;
         private readonly StringBuilder formatBuilder = new StringBuilder();
-        private readonly String[] emptyRow = new String[0];
+        private readonly List<String> emptyRow = new List<String>();
 
-        public void rowHeader(String[] header)
+        public void rowHeader(List<String> header)
         {
             String line = print(null, header);
             processor.processLine(line);            
         }
 
-        public void processRow(String[] row)
+        public void processRow(List<String> row)
         {
             String line = print(null, row);
             processor.processLine(line);            
@@ -43,7 +44,7 @@ namespace pnyx.net.impl
         
         private enum State { Text, Slash, Dollar, Number }
         
-        public String print(String line, String[] row)
+        public String print(String line, List<String> row)
         {
             if (row == null)
                 return null;
@@ -153,7 +154,7 @@ namespace pnyx.net.impl
             return formatBuilder.ToString();
         }
 
-        private void replace(int column, ref String line, String[] row)
+        private void replace(int column, ref String line, List<String> row)
         {
             if (column == 0)
             {
@@ -162,7 +163,7 @@ namespace pnyx.net.impl
                 
                 formatBuilder.Append(line);                
             }
-            else if (column <= row.Length)
+            else if (column <= row.Count)
             {
                 formatBuilder.Append(row[column - 1]);
             }

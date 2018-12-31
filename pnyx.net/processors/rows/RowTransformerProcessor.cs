@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using pnyx.net.api;
 
 namespace pnyx.net.processors.rows
@@ -8,14 +9,14 @@ namespace pnyx.net.processors.rows
         public IRowTransformer transform;
         public IRowProcessor processor;
 
-        public void rowHeader(String[] header)
+        public void rowHeader(List<String> header)
         {
             header = transform.transformHeader(header);
             if (header != null)
                 processor.rowHeader(header);            
         }
 
-        public void processRow(String[] row)
+        public void processRow(List<String> row)
         {
             row = transform.transformRow(row);
             if (row != null)

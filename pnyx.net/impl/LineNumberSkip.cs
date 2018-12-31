@@ -24,7 +24,7 @@ namespace pnyx.net.impl
             return shouldKeep();
         }
 
-        public bool shouldKeepRow(String[] values)
+        public bool shouldKeepRow(List<String> values)
         {
             return shouldKeep();
         }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using pnyx.net.api;
 
 namespace pnyx.net.impl.sed
@@ -7,23 +8,23 @@ namespace pnyx.net.impl.sed
     // http://www.grymoire.com/Unix/Sed.html#uh-0    
     public class SedAppendRow : IRowBuffering
     {
-        public String[] text;
+        public List<String> text;
 
-        public String[] rowHeader(String[] header)
+        public List<String> rowHeader(List<String> header)
         {
             return header;
         }
 
-        public String[][] bufferingRow(String[] row)
+        public List<List<String>> bufferingRow(List<String> row)
         {
-            return new String[][]
+            return new List<List<String>>
             {                
                 row,
                 text
             };            
         }
 
-        public String[][] endOfFile()
+        public List<List<String>> endOfFile()
         {
             return null;
         }

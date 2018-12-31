@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using pnyx.net.api;
 using pnyx.net.util;
 
@@ -7,7 +8,7 @@ namespace pnyx.net.impl
     public class RepeatFilter : ILineFilter, IRowFilter
     {
         private String previousLine;
-        private String[] previousRow;
+        private List<String> previousRow;
         
         public bool shouldKeepLine(String line)
         {
@@ -18,7 +19,7 @@ namespace pnyx.net.impl
             return true;
         }
 
-        public bool shouldKeepRow(String[] row)
+        public bool shouldKeepRow(List<String> row)
         {
             if (RowUtil.isEqual(row, previousRow))
                 return false;

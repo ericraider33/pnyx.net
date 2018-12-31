@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace pnyx.net.processors.dest
 {
@@ -12,13 +13,13 @@ namespace pnyx.net.processors.dest
             this.tee = tee;
         }
 
-        public void rowHeader(String[] header)
+        public void rowHeader(List<String> header)
         {
             processor.processRow(header);
             tee.processRow(header);            
         }
 
-        public void processRow(String[] row)
+        public void processRow(List<String> row)
         {
             processor.processRow(row);
             tee.processRow(row);

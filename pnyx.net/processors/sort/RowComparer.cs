@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace pnyx.net.processors.sort
 {
-    public class RowComparer : IComparer<String[]>
+    public class RowComparer : IComparer<List<String>>
     {
         public class ColumnDefinition
         {
@@ -18,12 +18,12 @@ namespace pnyx.net.processors.sort
             this.definitions = new List<ColumnDefinition>(definitions);
         }
         
-        public int Compare(String[] x, String[] y)
+        public int Compare(List<String> x, List<String> y)
         {
             foreach (ColumnDefinition cd in definitions)
             {
-                String colX = cd.columnNumber <= x.Length ? x[cd.columnNumber - 1] : "";
-                String colY = cd.columnNumber <= y.Length ? y[cd.columnNumber - 1] : "";
+                String colX = cd.columnNumber <= x.Count ? x[cd.columnNumber - 1] : "";
+                String colY = cd.columnNumber <= y.Count ? y[cd.columnNumber - 1] : "";
 
                 int result = cd.comparer.Compare(colX, colY);
                 if (result != 0)

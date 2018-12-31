@@ -22,26 +22,26 @@ namespace pnyx.net.processors.sources
         }
     }
     
-    public class TailRowBuffer : BaseTailBuffer<String[]>, IRowBuffering
+    public class TailRowBuffer : BaseTailBuffer<List<String>>, IRowBuffering
     {
         public TailRowBuffer(int bufferSize) : base(bufferSize)
         {
         }
 
-        public String[] rowHeader(String[] header)
+        public List<String> rowHeader(List<String> header)
         {
             return header;
         }
 
-        public String[][] bufferingRow(String[] row)
+        public List<List<String>> bufferingRow(List<String> row)
         {
             addLineToBuffer(row);
             return null;
         }
 
-        public String[][] endOfFile()
+        public List<List<String>> endOfFile()
         {
-            return getBuffer().ToArray();
+            return getBuffer();
         }
     }
 
@@ -76,6 +76,5 @@ namespace pnyx.net.processors.sources
 
             return result;
         }
-    }
-    
+    }    
 }

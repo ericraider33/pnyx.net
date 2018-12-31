@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using pnyx.net.impl;
 using pnyx.net.impl.csv;
 using Xunit;
@@ -26,7 +27,7 @@ namespace pnyx.net.test.impl
         [InlineData("\\anythingelse", "\\anythingelse")]
         public void printRow(String format, String expected)
         {
-            String[] row = new[] { "AA", "BB", "CC", "DD", "EE", "FF", "GG", "HH", "II", "JJ", "KK", "LL", "MM" };
+            List<String> row = new List<String> { "AA", "BB", "CC", "DD", "EE", "FF", "GG", "HH", "II", "JJ", "KK", "LL", "MM" };
             Print p = new Print { format = format, rowConverter = new CsvRowConverter() };
             String actual = p.print(null, row);
             Assert.Equal(expected, actual);
@@ -41,7 +42,7 @@ namespace pnyx.net.test.impl
         {
             String line = "Adam Smith";
             Print p = new Print { format = format };
-            String actual = p.print(line, new String[0]);
+            String actual = p.print(line, new List<String>());
             Assert.Equal(expected, actual);
         }
     }
