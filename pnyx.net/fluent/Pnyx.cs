@@ -247,14 +247,7 @@ namespace pnyx.net.fluent
             if (limit < 1)
                 throw new InvalidArgumentException("Head limit must be greater than zero");
 
-            requireStart(line: true, row: true);
-            
-            if (state == FluentState.Start || state == FluentState.Line)
-                lineFilter(new HeadFilter(streamInformation, limit));
-            else if (state == FluentState.Row)
-                rowFilter(new HeadFilter(streamInformation, limit));
-            
-            return this;
+            return lineFilter(new HeadFilter(streamInformation, limit));            
         }
 
         public Pnyx tail(int limit = 1)
@@ -262,10 +255,30 @@ namespace pnyx.net.fluent
             if (limit < 1)
                 throw new InvalidArgumentException("Tail limit must be greater than zero");
 
+            if (state == FluentState.Row)
+                return rowBuffering(new TailRowBuffer(limit));
+
+            return lineBuffering(new TailLineBuffer(limit));
+        }
+
+        public Pnyx tailStream(Action<Pnyx> block, int limit = 1)
+        {
+            if (limit < 1)
+                throw new InvalidArgumentException("Tail limit must be greater than zero");
+
             if (state != FluentState.New && state != FluentState.Start)
                 throw new IllegalStateException("Pnyx is not in New,Start state: {0}", state.ToString());
 
+            int indexToCheck = parts.Count;
             parts.Add(new TailModifier(limit, streamInformation));
+            
+            // Runs block
+            block(this);
+            
+            // Verify that tail is consumed
+            if (parts[indexToCheck].GetType() == typeof(TailModifier))
+                throw new IllegalStateException("Tail must be consumed by nested block");
+            
             return this;
         }
         

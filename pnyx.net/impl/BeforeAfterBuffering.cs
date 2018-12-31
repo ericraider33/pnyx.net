@@ -80,7 +80,7 @@ namespace pnyx.net.impl
 
         protected abstract bool shouldKeep(T source);
 
-        public T[] bufferingT(T line)
+        protected T[] bufferingT(T line)
         {
             lineNumber++;
             bool keep = shouldKeep(line);

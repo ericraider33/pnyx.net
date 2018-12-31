@@ -733,8 +733,7 @@ Ares,Mars,""Hated god of war""
             String actual;
             using (Pnyx p = new Pnyx())
             {
-                p.tail(2);
-                p.readString(MAGNA_CARTA);
+                p.tailStream(p2 => p2.readString(MAGNA_CARTA), 2);
                 actual = p.processToString();
             }
 
@@ -742,17 +741,26 @@ Ares,Mars,""Hated god of war""
                 @"Matthew Fitz Herbert, Thomas Basset, Alan Basset, Philip Daubeny, Robert de Roppeley,
 John Marshal, John Fitz Hugh, and other loyal subjects:";
             
-            Assert.Equal(expected, actual);                       
+            Assert.Equal(expected, actual);
+            
+
+            // Uses buffer instead of manipulating the stream
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(MAGNA_CARTA);
+                p.tail(2);
+                actual = p.processToString();
+            }
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
-        public void tailRow()
+        public void tailStreamRow()
         {
             String actual;
             using (Pnyx p = new Pnyx())
             {
-                p.tail(2);
-                p.readString(PLANETS_GODS);
+                p.tailStream(p2 => p2.readString(PLANETS_GODS), 2);
                 p.parseCsv();
                 actual = p.processToString();
             }
@@ -761,6 +769,17 @@ John Marshal, John Fitz Hugh, and other loyal subjects:";
                 @"Uranus,Uranus,""Father of the Titans""
 Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
 "; 
+            Assert.Equal(expected, actual);                       
+            
+
+            // Uses buffer instead of manipulating the stream
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(PLANETS_GODS);
+                p.parseCsv();
+                p.tail(2);
+                actual = p.processToString();
+            }
             Assert.Equal(expected, actual);                       
         }
 
