@@ -1,6 +1,7 @@
 *.user
 *.suo
 .idea
+.out
 obj
 bin
 pnyx.net.test/out
