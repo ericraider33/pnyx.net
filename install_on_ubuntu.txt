@@ -1,0 +1,22 @@
+Directions:
+https://dotnet.microsoft.com/download/linux-package-manager/ubuntu16-04/runtime-current
+
+Or simplified, step:
+wget -q https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+sudo apt-get update
+sudo apt-get install aspnetcore-runtime-2.2
+
+
+
+cd /opt
+mkdir pnyx
+cd pnyx
+wget xxxx
+unzip pnyx.zip
+sudo chown -R root:root pnyx
+
+cd /usr/local/bin/
+sudo ln -s /opt/pnyx/pnyx.bsh pnyx
+
