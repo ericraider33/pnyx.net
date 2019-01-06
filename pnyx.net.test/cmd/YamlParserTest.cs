@@ -1,9 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using pnyx.cmd;
 using pnyx.net.errors;
-using pnyx.net.fluent;
 using Xunit;
 
 namespace pnyx.net.test.cmd

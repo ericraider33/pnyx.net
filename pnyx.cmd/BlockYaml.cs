@@ -5,18 +5,18 @@ namespace pnyx.cmd
 {
     public class BlockYaml
     {
-        private PnyxYaml pnyxYaml;
+        private YamlParser yamlParser;
         private YamlSequenceNode block;
 
-        public BlockYaml(PnyxYaml pnyxYaml, YamlSequenceNode block)
+        public BlockYaml(YamlParser yamlParser, YamlSequenceNode block)
         {
-            this.pnyxYaml = pnyxYaml;
+            this.yamlParser = yamlParser;
             this.block = block;
         }
 
         public void action(Pnyx pnyx)
         {
-            pnyxYaml.parseBlock(pnyx, block);
+            yamlParser.parseBlock(pnyx, block);
         }
     }
 }

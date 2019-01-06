@@ -13,7 +13,7 @@ namespace pnyx.net.test.cmd
         {
             StringReader test = new StringReader(sourceYaml);
             
-            PnyxYaml parser = new PnyxYaml();
+            YamlParser parser = new YamlParser();
             List<Pnyx> toExecute = parser.parseYaml(test);
             
             Assert.Single(toExecute);

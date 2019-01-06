@@ -93,7 +93,7 @@ namespace pnyx.cmd
 
             using (yamlInput)
             {
-                PnyxYaml parser = new PnyxYaml();
+                YamlParser parser = new YamlParser();
                 List<Pnyx> toExecute = parser.parseYaml(yamlInput);
                 foreach (Pnyx pnyx in toExecute)
                 {

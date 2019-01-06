@@ -17,11 +17,11 @@ namespace pnyx.cmd
     // https://yaml-multiline.info/
     // https://github.com/aaubry/YamlDotNet            
     // https://www.nuget.org/packages/YamlDotNet/     
-    public class PnyxYaml
+    public class YamlParser
     {
         private readonly MethodInfo[] methods;
 
-        public PnyxYaml()
+        public YamlParser()
         {
             methods = typeof(Pnyx).GetMethods(BindingFlags.Instance | BindingFlags.Public);            
         }            
@@ -44,6 +44,7 @@ namespace pnyx.cmd
         protected Pnyx parseDocument(YamlDocument document)
         {
             Pnyx p = new Pnyx();
+            p.setSettings(stdIoDefault: true);              // forces STD-IN/OUT as defaults                         
             
             if (document.RootNode.NodeType != YamlNodeType.Sequence)
                 throw new InvalidArgumentException("Expected a YAML sequence as the document root, but found: {0}", document.RootNode.NodeType.ToString());                
