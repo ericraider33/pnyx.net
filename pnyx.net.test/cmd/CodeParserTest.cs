@@ -50,7 +50,7 @@ namespace pnyx.net.test.cmd
         public void codeFunc()
         {
             CodeParser parser = new CodeParser();
-            Pnyx p = parser.parseCode("readString(\"test\").lineFilterFunc(line => true)", compile: false);
+            Pnyx p = parser.parseCode("readString(\"test\").lineFilterFunc(line => true)", compilePnyx: false);
             String actual = p.processToString();
             Assert.Equal("test", actual);
         }        
@@ -59,9 +59,31 @@ namespace pnyx.net.test.cmd
         public void codeBlock()
         {
             CodeParser parser = new CodeParser();
-            Pnyx p = parser.parseCode("asCsv(p2 => p2.readString(\"a,b\")).print(\"$2\")", compile: false);
+            Pnyx p = parser.parseCode("asCsv(p2 => p2.readString(\"a,b\")).print(\"$2\")", compilePnyx: false);
             String actual = p.processToString();
             Assert.Equal("b", actual);                        
+        }       
+        
+        [Fact]
+        public void nameUtil()
+        {
+            const string code = @"
+asCsv(p2 => p2.readString(""Jock Lock Blank III""));
+rowTransformerFunc(row =>
+{
+	var fullName = row[0];
+	var name = pnyx.net.util.NameUtil.parseFullName(fullName);
+	if (name == null)
+		return null;
+
+	return pnyx.net.util.RowUtil.replaceColumn(row, 1, name.firstName, name.middleName, name.lastName, name.suffix);
+});
+"; 
+            
+            CodeParser parser = new CodeParser();
+            Pnyx p = parser.parseCode(code, compilePnyx: false);
+            String actual = p.processToString();
+            Assert.Equal("Jock,Lock,Blank,Iii", actual);                        
         }       
     }
 }
