@@ -12,11 +12,11 @@ namespace pnyx.net.util
             if (columnIndex > row.Count)
                 return row;
             
-            if (columnIndex < row.Count)
+            if (columnIndex >= 0 && columnIndex < row.Count)
                 row.RemoveAt(columnIndex);
             
             for (int i = 0; i < replacement.Length; i++)
-                row.Insert(columnIndex+i, replacement[i]);
+                row.Insert(columnIndex+i, replacement[i] ?? "");
                         
             return row;
         }
@@ -28,7 +28,7 @@ namespace pnyx.net.util
                 return row;
             
             for (int i = 0; i < replacement.Length; i++)
-                row.Insert(columnIndex+i, replacement[i]);
+                row.Insert(columnIndex+i, replacement[i] ?? "");
                         
             return row;
         }

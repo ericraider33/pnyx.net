@@ -71,5 +71,34 @@ namespace pnyx.net.test.util
             String actualText = String.Join(",", actual);
             Assert.Equal(expectedText, actualText);
         }
+        
+        [Theory]
+        [InlineData(1, 1, "x,y", "x,y")]
+        [InlineData(2, 1, "x,y", "x,y,2")]
+        [InlineData(3, 2, "x,y", "1,x,y,3")]
+        [InlineData(3, 3, "x,y", "1,2,x,y")]
+        [InlineData(3, 4, "x,y", "1,2,3,x,y")]
+        [InlineData(3, 5, "x,y", "1,2,3")]
+        [InlineData(3, -1, "x,y", null)]
+        public void replaceColumns(int original, int columnNumber, String replacementText, String expectedText)
+        {
+            List<String> source = new List<String>(original);
+            for (int i = 0; i < original; i++)
+                source.Add((i + 1).ToString());
+
+            String[] replacements = replacementText.Split(',');
+
+            try
+            {
+                List<String> actual = RowUtil.replaceColumn(source, columnNumber, replacements);
+
+                String actualText = String.Join(",", actual);
+                Assert.Equal(expectedText, actualText);
+            }
+            catch (Exception)
+            {
+                Assert.Null(expectedText);
+            }
+        }
     }
 }

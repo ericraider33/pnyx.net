@@ -10,10 +10,13 @@ namespace pnyx.cmd
     // https://github.com/dotnet/roslyn/wiki/Scripting-API-Samples#multi   
     public class CodeParser
     {
-        public Pnyx parseCode(String source, bool compile = true)
+        public Pnyx parseCode(String source, bool compilePnyx = true)
         {
             // Compiles
-            Script script = CSharpScript.Create(source, globalsType: typeof(Pnyx));
+            Script script = CSharpScript.Create(source, 
+                globalsType: typeof(Pnyx), 
+                options: ScriptOptions.Default.WithReferences(typeof(Pnyx).Assembly)
+                );
             
             Pnyx p = new Pnyx();
             p.setSettings(stdIoDefault: true);              // forces STD-IN/OUT as defaults                         
@@ -21,7 +24,7 @@ namespace pnyx.cmd
             Task<ScriptState> parseTask = script.RunAsync(p);
             if (parseTask.IsCompletedSuccessfully)
             {
-                if (p.state != FluentState.Compiled && compile)
+                if (p.state != FluentState.Compiled && compilePnyx)
                     p.compile();                            // builds processor
 
                 return p;

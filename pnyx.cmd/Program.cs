@@ -147,6 +147,7 @@ namespace pnyx.cmd
             switch (example.ToLower())
             {
                 case "bhcdischarge": return BhcDischarge.main();
+                case "altitude": return Altitude.main();
                 default: return printUsage("Unknown example: " + example, 69);                    
             }
         }        
