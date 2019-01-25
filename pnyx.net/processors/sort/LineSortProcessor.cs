@@ -12,7 +12,7 @@ namespace pnyx.net.processors.sort
         public int bufferSize { get; private set; }
         public String tempDirectory { get; private set; }
         public IComparer<String> comparer { get; private set; }
-        private readonly SortedList<String, String> buffer;
+        private readonly PnyxSortedList<String> buffer;
         private readonly String tempFileKey;
         private int fileNumber;
         private readonly List<String> sortFiles = new List<String>();
@@ -28,21 +28,21 @@ namespace pnyx.net.processors.sort
             this.tempDirectory = tempDirectory ?? Directory.GetCurrentDirectory();
             this.comparer = comparer;
             
-            buffer = new SortedList<String, String>(bufferSize, comparer);            
+            buffer = new PnyxSortedList<String>(bufferSize, comparer, unique);            
             tempFileKey = TextUtil.extractAlphaNumeric(Guid.NewGuid().ToString());
         }
 
         public void processLine(String line)
         {
-            buffer.Add(line, line);
+            buffer.add(line);
 
-            if (buffer.Count >= bufferSize)
+            if (buffer.count >= bufferSize)
                 emptyBuffer();
         }
 
         public void endOfFile()
         {
-            if (buffer.Count > 0)
+            if (buffer.count > 0)
                 emptyBuffer();
 
             sort();
@@ -91,12 +91,11 @@ namespace pnyx.net.processors.sort
             {
                 using (StreamWriter writer = new StreamWriter(stream, Encoding.UTF8))
                 {
-                    foreach (String line in buffer.Values)                        
-                        writer.WriteLine(line);
+                    buffer.visit(line => writer.WriteLine(line));
                 }
             }
             
-            buffer.Clear();
+            buffer.clear();
         }
 
         private void sort()
