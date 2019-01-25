@@ -1085,6 +1085,7 @@ namespace pnyx.net.fluent
         public Pnyx sortLine(
             bool descending = false, 
             bool caseSensitive = false,
+            bool unique = false,
             String tempDirectory = null,
             int? bufferLines = null
             )
@@ -1095,7 +1096,7 @@ namespace pnyx.net.fluent
             bufferLines = bufferLines ?? settings.bufferLines;
             
             IComparer<String> comparer = new PnyxStringComparer(descending, caseSensitive);             
-            LineSortProcessor sortProcessor = new LineSortProcessor(tempDirectory, comparer, bufferLines.Value);
+            LineSortProcessor sortProcessor = new LineSortProcessor(unique, tempDirectory, comparer, bufferLines.Value);
             return linePart(sortProcessor);
         }
 

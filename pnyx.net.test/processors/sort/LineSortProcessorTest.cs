@@ -11,9 +11,11 @@ namespace pnyx.net.test.processors.sort
     public class LineSortProcessorTest
     {
         [Theory]
-        [InlineData("us_census_surnames.csv", false, false, "us_census_surnames_sorted.csv")]
-        [InlineData("us_census_surnames.csv", true, false, "us_census_surnames_descending.csv")]
-        public void sort(String source, bool descending, bool caseSensitive, String expected)
+        [InlineData("us_census_surnames.csv", false, false, false, "us_census_surnames_sorted.csv")]
+        [InlineData("us_census_surnames.csv", true, false, false, "us_census_surnames_descending.csv")]
+        [InlineData("super_bowl_winners.csv", false, false, false, "super_bowl_winners_sorted.csv")]
+        [InlineData("super_bowl_winners.csv", false, false, true, "super_bowl_winners_sorted_unique.csv")]
+        public void sort(String source, bool descending, bool caseSensitive, bool unique, String expected)
         {  
             String inPath = Path.Combine(TestUtil.findTestFileLocation(), "csv", source);
             String outPath = Path.Combine(TestUtil.findTestOutputLocation(), "csv", "line_" + expected);
@@ -23,7 +25,7 @@ namespace pnyx.net.test.processors.sort
             {                
                 p.read(inPath);
                 p.lineFilter(new LineNumberSkip(1));
-                p.sortLine(descending, caseSensitive, tempDirectory: Path.Combine(TestUtil.findTestOutputLocation(), "csv"));
+                p.sortLine(descending, caseSensitive, unique, tempDirectory: Path.Combine(TestUtil.findTestOutputLocation(), "csv"));
                 p.write(outPath);
                 p.process();                                
             }

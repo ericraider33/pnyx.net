@@ -18,7 +18,8 @@ namespace pnyx.net.processors.sort
         private readonly List<String> sortFiles = new List<String>();
         private readonly List<String> tempFiles = new List<String>();
 
-        public LineSortProcessor(String tempDirectory = null,
+        public LineSortProcessor(bool unique = false,
+            String tempDirectory = null,
             IComparer<String> comparer = null, 
             int bufferSize = 10000
             )
