@@ -1,4 +1,6 @@
 using pnyx.net.fluent;
+using pnyx.net.impl;
+using pnyx.net.util;
 
 namespace pnyx.cmd.examples
 {
@@ -18,10 +20,25 @@ namespace pnyx.cmd.examples
                     if (name == null)
                         return null;
 
-                    return pnyx.net.util.RowUtil.replaceColumn(row, 1, name.firstName, name.middleName ?? "", name.lastName);
+                    return pnyx.net.util.RowUtil.replaceColumn(row, 1, name.firstName, name.middleName, name.lastName);
                 });
                 p.sortRow(new[] {1, 3});
                 p.writeCsv(@"C:\dev\asclepius\prod_import\alt.csv");
+            }
+
+            using (Pnyx p = new Pnyx())
+            {
+                p.read(@"C:\dev\asclepius\prod_import\alt_names.csv");
+                p.parseCsv();
+                p.withColumns(p2 => p2.lineTransformer(new DateTransform { formatSource = DateUtil.FORMAT_MDYYYY, formatDestination = DateUtil.FORMAT_ISO_8601_DATE  }), 3);
+                p.rowTransformerFunc(row =>
+                {
+                    for (int i = 0; i < row.Count; i++)
+                        row[i] = TextUtil.enocdeSqlValue(row[i]);                    
+                    return row;
+                });
+                p.print("insert into to_import value($1,$2,$3);");
+                p.write(@"C:\dev\asclepius\prod_import\names.sql");
             }
 
             return 0;

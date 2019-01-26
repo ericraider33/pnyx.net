@@ -13,13 +13,14 @@ namespace pnyx.net.processors.sort
         public int bufferSize { get; private set; }
         public String tempDirectory { get; private set; }
         public IComparer<List<String>> comparer;
-        private readonly SortedList<List<String>, List<String>> buffer;
+        private readonly PnyxSortedList<List<String>> buffer;
         private readonly String tempFileKey;
         private int fileNumber;
         private readonly List<String> sortFiles = new List<String>();
         private readonly List<String> tempFiles = new List<String>();
 
-        public RowSortProcessor(String tempDirectory = null,
+        public RowSortProcessor(bool unique = false,
+            String tempDirectory = null,
             IComparer<List<String>> comparer = null, 
             int bufferSize = 10000
             )
@@ -28,7 +29,7 @@ namespace pnyx.net.processors.sort
             this.tempDirectory = tempDirectory ?? Directory.GetCurrentDirectory();
             this.comparer = comparer;
             
-            buffer = new SortedList<List<String>, List<String>>(bufferSize, comparer);            
+            buffer = new PnyxSortedList<List<String>>(bufferSize, comparer, unique);            
             tempFileKey = TextUtil.extractAlphaNumeric(Guid.NewGuid().ToString());
         }
 
@@ -39,15 +40,15 @@ namespace pnyx.net.processors.sort
 
         public void processRow(List<String> row)
         {
-            buffer.Add(row, row);
+            buffer.add(row);
 
-            if (buffer.Count >= bufferSize)
+            if (buffer.count >= bufferSize)
                 emptyBuffer();
         }
 
         public void endOfFile()
         {
-            if (buffer.Count > 0)
+            if (buffer.count > 0)
                 emptyBuffer();
 
             sort();                        
@@ -96,12 +97,11 @@ namespace pnyx.net.processors.sort
             {
                 using (CsvWriter writer = new CsvWriter(stream, Encoding.UTF8))
                 {
-                    foreach (List<String> row in buffer.Values)                        
-                        writer.writeRow(row);
+                    buffer.visit(row => writer.writeRow(row));
                 }
             }
             
-            buffer.Clear();
+            buffer.clear();
         }
 
         private void sort()

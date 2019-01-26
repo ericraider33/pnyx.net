@@ -2,7 +2,6 @@
 File parsing and transforming automation scripting platform, Native .net
 
 ## Roadmap
-1. Fix duplicates in sort, and add Sort unique
 1. Command line installers
 1. Build website for library, API, command line
 1. License, billing
@@ -50,4 +49,5 @@ File parsing and transforming automation scripting platform, Native .net
 1. 2018-12-26: Inline code scriptlets
 1. 2018-12-28: Verbose mode to easily show settings and location of settings file
 1. 2018-12-30: Command line interface, more robust YAML argument / method bindings
+1. 2019-01-26: Fix duplicates in sort, and add Sort unique
 

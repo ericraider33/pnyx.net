@@ -12,8 +12,10 @@ namespace pnyx.net.test.processors.sort
     public class RowSortProcessorTest
     {
         [Theory]
-        [InlineData("us_census_surnames.csv", false, false, "us_census_surnames_sorted.csv")]
-        public void sort(String source, bool descending, bool caseSensitive, String expected)
+        [InlineData("us_census_surnames.csv", new[] {1}, true, false, false, false, "us_census_surnames_sorted.csv")]
+        [InlineData("super_bowl_winners.csv", new[] {1,2}, false, false, false, false, "super_bowl_winners_sorted.csv")]
+        [InlineData("super_bowl_winners.csv", new[] {1,2}, false, true, false, true, "super_bowl_winners_sorted_unique.csv")]        
+        public void sort(String source, int[] columnNumbers, bool hasHeader, bool unique, bool descending, bool caseSensitive, String expected)
         {  
             String inPath = Path.Combine(TestUtil.findTestFileLocation(), "csv", source);
             String outPath = Path.Combine(TestUtil.findTestOutputLocation(), "csv", "row_" + expected);
@@ -22,9 +24,10 @@ namespace pnyx.net.test.processors.sort
             using (Pnyx p = new Pnyx())
             {                
                 p.read(inPath);
-                p.lineFilter(new LineNumberSkip(1));
-                p.parseCsv();                
-                p.sortRow(descending: descending, caseSensitive: caseSensitive, tempDirectory: Path.Combine(TestUtil.findTestOutputLocation(), "csv"));
+                p.parseCsv();   
+                if (hasHeader)
+                    p.lineFilter(new LineNumberSkip(1));                
+                p.sortRow(columnNumbers, descending: descending, caseSensitive: caseSensitive, unique: unique, tempDirectory: Path.Combine(TestUtil.findTestOutputLocation(), "csv"));
                 p.write(outPath);
                 p.process();                                
             }

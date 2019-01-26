@@ -1104,6 +1104,7 @@ namespace pnyx.net.fluent
             int[] columnNumbers = null,
             bool descending = false, 
             bool caseSensitive = false,
+            bool unique = false,
             String tempDirectory = null,
             int? bufferLines = null
             )
@@ -1125,7 +1126,7 @@ namespace pnyx.net.fluent
             }
             
             IComparer<List<String>> comparer = new RowComparer(definitions);             
-            RowSortProcessor sortProcessor = new RowSortProcessor(tempDirectory, comparer, bufferLines.Value);
+            RowSortProcessor sortProcessor = new RowSortProcessor(unique, tempDirectory, comparer, bufferLines.Value);
             return rowPart(sortProcessor);
         }
     }

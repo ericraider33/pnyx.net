@@ -15,7 +15,7 @@ namespace pnyx.net.test.processors.sort
         [InlineData("us_census_surnames.csv", true, true, false, false, "us_census_surnames_descending.csv")]
         [InlineData("super_bowl_winners.csv", false, false, false, false, "super_bowl_winners_sorted.csv")]
         [InlineData("super_bowl_winners.csv", false, false, false, true, "super_bowl_winners_sorted_unique.csv")]
-        public void sort(String source, bool skipHeader, bool descending, bool caseSensitive, bool unique, String expected)
+        public void sort(String source, bool hasHeader, bool descending, bool caseSensitive, bool unique, String expected)
         {  
             String inPath = Path.Combine(TestUtil.findTestFileLocation(), "csv", source);
             String outPath = Path.Combine(TestUtil.findTestOutputLocation(), "csv", "line_" + expected);
@@ -24,7 +24,7 @@ namespace pnyx.net.test.processors.sort
             using (Pnyx p = new Pnyx())
             {                
                 p.read(inPath);
-                if (skipHeader)
+                if (hasHeader)
                     p.lineFilter(new LineNumberSkip(1));
                 p.sortLine(descending, caseSensitive, unique, tempDirectory: Path.Combine(TestUtil.findTestOutputLocation(), "csv"));
                 p.write(outPath);
