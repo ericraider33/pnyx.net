@@ -17,6 +17,9 @@ def verifyDependencyDotNet():
     subprocess.run(['dotnet','--info'], check=True, capture_output=True)
     print("Verified Dependency: DotNet")    
 
+def verifyDependencyNuget():
+    subprocess.run(['nuget','help'], check=True, capture_output=True)
+    print("Verified Dependency: Nuget")    
 
 def copyDir(source, dest):
     for toCopy in glob.glob(source + "/*"):
@@ -51,6 +54,18 @@ def buildCmd():
     packageDir('pnyx.cmd/.out/', 'cmd.zip')
     
 def buildNuget():
+    verifyDependencyDotNet()    
+    verifyDependencyNuget()
+    resetDirectory('pnyx.net/.out')
+       
+    # Cleans build
+    print("\n\nRunning Step: Clean")
+    subprocess.run(['dotnet','clean','--configuration','Release'], check=True)
+       
+    # Publish build
+    print("\n\nRunning Step: Publish")
+    subprocess.run(['dotnet','publish','--configuration','Release','--output','.out/lib','pnyx.net/pnyx.net.csproj'], check=True)
+    
     return
 
 
