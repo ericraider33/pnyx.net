@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>https://github.com/ericraider33/pnyx.net/blob/master/LICENSE.md</licenseUrl>
+    <projectUrl>https://github.com/ericraider33/pnyx.net</projectUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>Pnyx brings all of your favorite unix tools like grep, sed and awk to your preferred programming language.</description>
+    <releaseNotes>Continual imporvement of initial release</releaseNotes>
+    <copyright>Copyright 2018-2019</copyright>
+    <tags>ETL Pnyx awk sed grep linux tool csv parse file</tags>
+  </metadata>
+</package>

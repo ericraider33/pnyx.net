@@ -4,7 +4,7 @@ File parsing and transforming automation scripting platform, Native .net
 ## Roadmap
 1. Command line installers
 1. Build website for library, API, command line
-1. License, billing
+1. billing
 1. Initial release
 1. Online course of linux tools https://tomwoods.lpages.co/online-course-profits/
 1. Find 100 StackOverflow questions where Pnyx command line would help
@@ -50,4 +50,4 @@ File parsing and transforming automation scripting platform, Native .net
 1. 2018-12-28: Verbose mode to easily show settings and location of settings file
 1. 2018-12-30: Command line interface, more robust YAML argument / method bindings
 1. 2019-01-26: Fix duplicates in sort, and add Sort unique
-
+1. 2019-01-28: Add License document
