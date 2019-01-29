@@ -1,6 +1,6 @@
 #!python3
 # Refernces: 
-# https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package-using-visual-studio-net-framework
+# https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package-using-the-dotnet-cli
 # https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet?tabs=netcore21
 import subprocess, argparse, os, zipfile, shutil, glob
 
@@ -68,7 +68,6 @@ def buildNuget():
     # Pack build
     print("\n\nRunning Step: Publish")
     version = '0.9.1'
-#    subprocess.run(['dotnet','pack','--version-suffix','19','--output','.out/lib','pnyx.net/pnyx.net.csproj'], check=True)
     subprocess.run(['dotnet','pack','--output','.out/lib','pnyx.net/pnyx.net.csproj'], check=True)
     
     return
