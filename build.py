@@ -58,16 +58,17 @@ def buildCmd():
     
 def buildNuget():
     verifyDependencyDotNet()    
-#    verifyDependencyNuget()
     resetDirectory('pnyx.net/.out')
        
     # Cleans build
     print("\n\nRunning Step: Clean")
     subprocess.run(['dotnet','clean','--configuration','Release'], check=True)
-       
+
+    print("\n\nRunning Step: Restore")
+    subprocess.run(['dotnet','restore','pnyx.net/pnyx.net.csproj'], check=True)
+	
     # Pack build
-    print("\n\nRunning Step: Publish")
-    version = '0.9.1'
+    print("\n\nRunning Step: Pack")
     subprocess.run(['dotnet','pack','--output','.out/lib','pnyx.net/pnyx.net.csproj'], check=True)
     
     return
