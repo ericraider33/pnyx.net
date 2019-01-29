@@ -16,7 +16,7 @@ namespace pnyx.net.impl
         
         public List<String> lineToRow(String line)
         {
-            return line.Split(delimiter).ToList();
+            return line.Split(new [] { delimiter }, StringSplitOptions.None).ToList();
         }
 
         public String rowToLine(List<String> row)

@@ -1,4 +1,7 @@
 #!python3
+# Refernces: 
+# https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package-using-visual-studio-net-framework
+# https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet?tabs=netcore21
 import subprocess, argparse, os, zipfile, shutil, glob
 
 parser = argparse.ArgumentParser(description='Builds pnyx.net')
@@ -55,16 +58,18 @@ def buildCmd():
     
 def buildNuget():
     verifyDependencyDotNet()    
-    verifyDependencyNuget()
+#    verifyDependencyNuget()
     resetDirectory('pnyx.net/.out')
        
     # Cleans build
     print("\n\nRunning Step: Clean")
     subprocess.run(['dotnet','clean','--configuration','Release'], check=True)
        
-    # Publish build
+    # Pack build
     print("\n\nRunning Step: Publish")
-    subprocess.run(['dotnet','publish','--configuration','Release','--output','.out/lib','pnyx.net/pnyx.net.csproj'], check=True)
+    version = '0.9.1'
+#    subprocess.run(['dotnet','pack','--version-suffix','19','--output','.out/lib','pnyx.net/pnyx.net.csproj'], check=True)
+    subprocess.run(['dotnet','pack','--output','.out/lib','pnyx.net/pnyx.net.csproj'], check=True)
     
     return
 
