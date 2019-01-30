@@ -148,6 +148,7 @@ namespace pnyx.cmd
             {
                 case "bhcdischarge": return BhcDischarge.main();
                 case "altitude": return Altitude.main();
+                case "ga": return GaCleanup.main();
                 default: return printUsage("Unknown example: " + example, 69);                    
             }
         }        
