@@ -11,7 +11,7 @@
     <PackageDescription>Pnyx brings all of your favorite unix file transform tools like grep, sed and awk to your preferred programming language.</PackageDescription>
     <Copyright>Copyright 2018-2019</Copyright>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageProjectUrl>https://github.com/ericraider33/pnyx.net</PackageProjectUrl>
+    <PackageProjectUrl>http://pnyx.me/</PackageProjectUrl>
     <PackageTags>ETL Pnyx awk sed grep linux tool csv parse file</PackageTags>	
     <PackageReleaseNotes>Continual improvement</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>	
