@@ -428,6 +428,14 @@ namespace pnyx.net.util
             return source.Substring(0, source.Length - ending.Length);
         }
 
+        public static String replaceEnding(String source, String oldEnding, String newEnding)
+        {
+            if (source == null || oldEnding == null || !source.EndsWith(oldEnding))
+                return source;
+
+            return source.Substring(0, source.Length - oldEnding.Length) + newEnding;
+        }
+
         public static String camelToSpace(Object val)
         {
             if (val == null)
