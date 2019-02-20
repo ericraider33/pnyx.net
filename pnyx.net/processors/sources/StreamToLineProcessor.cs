@@ -98,7 +98,7 @@ namespace pnyx.net.processors.sources
             if (lineNumber > 0)
                 return;
 
-            streamInformation.newLine = newLine;
+            streamInformation.updateNewLine(newLine);
             streamInformation.encoding = reader.CurrentEncoding;
         }
         

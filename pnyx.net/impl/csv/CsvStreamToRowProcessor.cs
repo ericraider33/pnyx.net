@@ -192,7 +192,7 @@ namespace pnyx.net.impl.csv
             if (lineNumber > 0)
                 return;
 
-            streamInformation.newLine = newLine;
+            streamInformation.updateNewLine(newLine);
             streamInformation.encoding = reader.CurrentEncoding;
         }
         

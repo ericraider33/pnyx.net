@@ -9,9 +9,15 @@ namespace pnyx.cmd.examples
         {
             using (Pnyx p = new Pnyx())
             {
+                p.streamInformation.setNewLine(NewLineEnum.Unix);
                 p.read(@"c:/dev/asclepius/prod_import/American Academy of Private Physicians.csv");
                 p.parseCsv(hasHeader: true);
                 p.hasColumns(true, 2);
+                p.rowTransformerFunc(row =>
+                {
+                    row[7] = ZipUtil.parseZipCode(row[7], true);
+                    return row;
+                });
                 p.rowTransformerFunc(row =>
                 {
                     row[8] = PhoneUtil.parsePhone(row[8]);
@@ -22,6 +28,7 @@ namespace pnyx.cmd.examples
                     row[9] = EmailUtil.validateAndRepair(row[9]);
                     return row;
                 });
+                p.widthColumns(11);
                 p.write(@"c:/dev/asclepius/prod_import/aapp.csv");
             }
 

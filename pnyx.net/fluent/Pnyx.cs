@@ -63,7 +63,7 @@ namespace pnyx.net.fluent
             if (tempDirectory != null) settings.tempDirectory = tempDirectory;
             if (bufferLines != null) settings.bufferLines = bufferLines.Value;
             if (defaultEncoding != null) { settings.defaultEncoding = defaultEncoding; streamInformation.defaultEncoding = defaultEncoding; }
-            if (defaultNewline != null) { settings.defaultNewline = defaultNewline; streamInformation.defaultNewline = defaultNewline; }
+            if (defaultNewline != null) { settings.defaultNewline = defaultNewline; streamInformation.defaultNewLine = defaultNewline; }
             if (backupRewrite != null) settings.backupRewrite = backupRewrite.Value;
             if (processOnDispose != null) settings.processOnDispose = processOnDispose.Value;
 

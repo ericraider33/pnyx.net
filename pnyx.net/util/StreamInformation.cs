@@ -6,23 +6,23 @@ namespace pnyx.net.util
     public class StreamInformation
     {
         public Encoding encoding;
-        public String newLine;
+        public String newLine { get; private set; }
         public bool endsWithNewLine;
         public Encoding defaultEncoding;
         public bool detectEncodingFromByteOrderMarks = true;
-        public String defaultNewline;
+        public String defaultNewLine;
         public int lineNumber = 0;
         public bool active = true;        
 
-        public StreamInformation(Encoding defaultEncoding = null, String defaultNewline = null)
+        public StreamInformation(Encoding defaultEncoding = null, String defaultNewLine = null)
         {
             this.defaultEncoding = defaultEncoding ?? Encoding.ASCII;
-            this.defaultNewline = defaultNewline ?? Environment.NewLine;
+            this.defaultNewLine = defaultNewLine ?? Environment.NewLine;
         }
 
         public String getNewline()
         {
-            return newLine ?? defaultNewline;
+            return newLine ?? defaultNewLine;
         }
         
         public NewLineEnum retrieveNewLineEnum()
@@ -39,9 +39,19 @@ namespace pnyx.net.util
             }
         }
 
-        public void setDefaultNewline(NewLineEnum defaultValue)
+        public void setNewLine(NewLineEnum newLineValue)
         {
-            defaultNewline = newlineString(defaultValue);
+            newLine = newlineString(newLineValue);
+        }
+
+        public void setDefaultNewline(NewLineEnum newLineValue)
+        {
+            defaultNewLine = newlineString(newLineValue);
+        }                
+
+        public void updateNewLine(String newLineValue)
+        {
+            newLine = newLine ?? newLineValue;
         }
 
         public static String newlineString(NewLineEnum x)
