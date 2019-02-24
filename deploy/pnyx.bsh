@@ -14,4 +14,4 @@ get_script_dir () {
 }
 
 DLL="$(get_script_dir)/lib/pnyx.cmd.dll"
-dotnet $DLL $*
+dotnet $DLL "$@"
