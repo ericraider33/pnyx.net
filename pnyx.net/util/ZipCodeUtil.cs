@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 namespace pnyx.net.util
 {
     // https://www.zip-codes.com/learn-about/why-are-there-3-and-4-digit-zip-codes-in-the-united-states.asp
-    public static class ZipUtil
+    public static class ZipCodeUtil
     {
         private static readonly Regex ZERO_PAD_EXPRESSION = new Regex("^[\\d]{3,5}[-]?([\\d]{4})?$");
         private static readonly Regex ZIP_CODE_EXPRESSION = new Regex("^[\\d]{5}[-]?([\\d]{4})?$");

@@ -14,6 +14,8 @@ namespace pnyx.cmd.examples
                 p.read(@"c:/dev/asclepius/prod_import/American Academy of Private Physicians.csv");
                 p.parseCsv(hasHeader: true);
                 p.hasColumns(true, 2);
+                p.withColumns(p2 => { p2.lineTransformerFunc(line => line == "" ? "-66" : line); }, 1, 2, 3, 4, 5);
+                
                 p.rowTransformerFunc(row =>
                 {
                     row[3] = TextUtil.extractAlpha(row[3]);            // removes periods from title
@@ -21,7 +23,7 @@ namespace pnyx.cmd.examples
                 });                
                 p.rowTransformerFunc(row =>
                 {
-                    row[7] = ZipUtil.parseZipCode(row[7], true);
+                    row[7] = ZipCodeUtil.parseZipCode(row[7], true);
                     return row;
                 });
                 p.rowTransformerFunc(row =>
@@ -65,6 +67,7 @@ namespace pnyx.cmd.examples
                 p.columnDefinition(hasHeaderRow: true, maxWidth: true, nullable: true);
                 p.swapColumnsAndRows();
                 p.writeStdout();
+
             }
 
             return 0;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using pnyx.cmd.examples;
 using pnyx.net.errors;
 using pnyx.net.fluent;
@@ -18,6 +19,8 @@ namespace pnyx.cmd
 
                 if (switches.hasAny("-h", "--help"))
                     return printUsage();
+                if (switches.hasAny("-v", "--version"))
+                    return runVersion();
                 if (switches.hasAny("-vs", "--verboseSettings"))
                     return runVerboseSettings(switches, args);
                 if (args.Length > 1)
@@ -117,9 +120,24 @@ namespace pnyx.cmd
             sy.serializeSettings(Console.Out, SettingsHome.settingsFactory.buildSettings());
             return 0;
         }
-        
-        public static int printUsage(String message = null, int errorCode = 0)
+
+        private static int runVersion()
         {
+            printVersion();
+            return 0;
+        }
+
+        private static void printVersion()
+        {
+            AssemblyName assemblyName = Assembly.GetAssembly(typeof(Pnyx)).GetName();
+            Console.WriteLine("pnyx.cmd {0}", assemblyName.Version);            
+        }
+        
+        private static int printUsage(String message = null, int errorCode = 0)
+        {
+            if (message == null && errorCode == 0)
+                printVersion();        // shows version when user asks for Help
+            
             Console.WriteLine("usage: pnyx [-h] commands");
             if (message != null)
             {
@@ -132,6 +150,7 @@ namespace pnyx.cmd
             Console.WriteLine();
             Console.WriteLine("optional arguments:");
             Console.WriteLine("-h, --help              show this help message and exit");
+            Console.WriteLine("-v, --version           shows version of application");            
             Console.WriteLine("-cs, --csharp           flag to specify that commands are CSharp scripts instead of YAML");            
             Console.WriteLine("-i, --inline            flag to specify that first parameter is an inline YAML/CS String instead of a file path");
             Console.WriteLine("-vs, --verboseSettings  flag to display settings. program after displaying settings");
