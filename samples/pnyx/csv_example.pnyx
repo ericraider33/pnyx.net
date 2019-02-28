@@ -1,0 +1,4 @@
+- readString: ax,bx,cx,dx
+- sed: ['x','y','ig']
+- parseCsv:
+- print: $4|$3|$2|$1
