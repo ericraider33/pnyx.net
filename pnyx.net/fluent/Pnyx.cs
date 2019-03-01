@@ -57,7 +57,7 @@ namespace pnyx.net.fluent
             String defaultNewline = null,
             bool? backupRewrite = null,
             bool? processOnDispose = null,
-            bool? stdIoDefault = false
+            bool? stdIoDefault = null
             )
         {
             if (tempDirectory != null) settings.tempDirectory = tempDirectory;
@@ -66,7 +66,6 @@ namespace pnyx.net.fluent
             if (defaultNewline != null) { settings.defaultNewline = defaultNewline; streamInformation.defaultNewLine = defaultNewline; }
             if (backupRewrite != null) settings.backupRewrite = backupRewrite.Value;
             if (processOnDispose != null) settings.processOnDispose = processOnDispose.Value;
-
             if (stdIoDefault != null) settings.stdIoDefault = stdIoDefault.Value;
 
             return this;

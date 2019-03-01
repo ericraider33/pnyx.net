@@ -241,6 +241,7 @@ namespace pnyx.cmd
                 case "Int32": return Int32.Parse(scalarValue);
                 case "Boolean": return TextUtil.parseBool(scalarValue);
                 case "String": return scalarValue;
+                case "Encoding": return EncodingTypeConverter.parseText(scalarValue);
                 default:
                     throw new InvalidArgumentException("Type conversion hasn't been built yet for: {0}", parameterInfo.ParameterType.FullName);            
             }

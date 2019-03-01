@@ -20,18 +20,22 @@ namespace pnyx.cmd
         {            
             Scalar valueNode = parser.Expect<Scalar>();
             String valueText = valueNode.Value;
-            
-            EncodingInfo match = Encoding.GetEncodings().FirstOrDefault(enc => TextUtil.isEqualsIgnoreCase(enc.Name, valueText));
-            if (match == null)
-                throw new InvalidArgumentException("Could not convert text '{0}' to an encoding", valueText);
-            
-            return match.GetEncoding();
+            return parseText(valueText);
         }
 
         public void WriteYaml(IEmitter emitter, Object value, Type type)
         {
             Encoding encoding = (Encoding) value;
             emitter.Emit(new Scalar(encoding.WebName));
+        }
+
+        public static Encoding parseText(String valueText)
+        {
+            EncodingInfo match = Encoding.GetEncodings().FirstOrDefault(enc => TextUtil.isEqualsIgnoreCase(enc.Name, valueText));
+            if (match == null)
+                throw new InvalidArgumentException("Could not convert text '{0}' to an encoding", valueText);
+            
+            return match.GetEncoding();
         }
     }
 }
