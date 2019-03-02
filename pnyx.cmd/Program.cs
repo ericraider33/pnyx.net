@@ -23,9 +23,7 @@ namespace pnyx.cmd
                     return runVersion();
                 if (switches.hasAny("-vs", "--verboseSettings"))
                     return runVerboseSettings(switches, args);
-                if (args.Length > 1)
-                    return printUsage("unknown arguments specified. Pnyx only expected 1 parameter but found: " + args.Length, 4);
-
+                                
                 // Reads settings file
                 SettingsYaml.parseSetting();
 
@@ -33,7 +31,10 @@ namespace pnyx.cmd
                 String example = switches.value("-e", "--example");
                 if (example != null)
                     return runExample(example, switches, args);
-
+                
+                if (args.Length > 1)
+                    return printUsage("unknown arguments specified. Pnyx only expected 1 parameter but found: " + args.Length, 4);                
+                
                 if (switches.hasAny("-cs", "--csharp"))
                     return runCSharp(switches, args);
                 else
@@ -162,15 +163,39 @@ namespace pnyx.cmd
         }
 
         private static int runExample(String example, Dictionary<String, String> switches, String[] args)
-        {
+        {                        
             switch (example.ToLower())
             {
                 case "bhcdischarge": return BhcDischarge.main();
                 case "altitude": return Altitude.main();
                 case "ga": return GaCleanup.main();
                 case "column": return ColumnDefinitionExample.main();
+                case "documentation": return runDocumentationExample(switches, args);
                 default: return printUsage("Unknown example: " + example, 69);                    
             }
-        }        
+        }
+
+        private static int runDocumentationExample(Dictionary<String, String> switches, String[] args)
+        {
+            if (args.Length != 2)
+                return printUsage("Invalid Parameters: Documentation examples require a class name and a method name as parameters");
+            
+            String typeName = args[0];
+            String methodName = args[1];
+
+            // Finds type
+            Assembly cmdAssembly = typeof(Program).Assembly;
+            Type type = cmdAssembly.GetType(typeName);
+            
+            MethodInfo method = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static);
+            if (method == null)
+                throw new InvalidArgumentException("Static method {0} can not be found on type: {1}", methodName, typeName);
+            
+            // Runs example
+            method.Invoke(null, new Object[0]);
+
+            return 0;
+        }
+        
     }
 }
