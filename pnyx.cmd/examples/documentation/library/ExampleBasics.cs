@@ -30,12 +30,16 @@ namespace pnyx.cmd.examples.documentation.library
             ILineProcessor sedProcessor = new LineTransformerProcessor { transform = sedTransformer, processor = grepProcessor };
             
             // Reads from source
-            IStreamFactory streamFactory = new StringStreamFactory("Hello World.");
-            IProcessor source = new StreamToLineProcessor(streamInformation, streamFactory);
-            ((ILinePart)source).setNextLineProcessor(sedProcessor);            
+            using (StringStreamFactory streamFactory = new StringStreamFactory("Hello World."))
+            {
+                using (StreamToLineProcessor source = new StreamToLineProcessor(streamInformation, streamFactory))
+                {
+                    source.setNextLineProcessor(sedProcessor);            
             
-            // Runs 
-            source.process();
+                    // Runs 
+                    source.process();                // All I/O occurs on this step
+                }
+            }
 
             // outputs: Hello World, with love from Pnyx...            
         }
