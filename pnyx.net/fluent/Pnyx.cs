@@ -566,17 +566,17 @@ namespace pnyx.net.fluent
             return linePart(new LineTransformerProcessor { transform = transform });
         }                         
         
-        public Pnyx lineBuffering(ILineBuffering transform)
+        public Pnyx lineBuffering(ILineBuffering buffering)
         {
             if (state == FluentState.Row)
             {
-                if (transform is IRowBuffering)
-                    return rowBuffering((IRowBuffering) transform);
+                if (buffering is IRowBuffering)
+                    return rowBuffering((IRowBuffering) buffering);
                 else                        
                     throw new IllegalStateException("Convert to Line before using lineBuffering");                
             }
             
-            return linePart(new LineBufferingProcessor { transform = transform });
+            return linePart(new LineBufferingProcessor { buffering = buffering });
         }             
         
         public Pnyx lineFilterFunc(Func<String, bool> filter)
