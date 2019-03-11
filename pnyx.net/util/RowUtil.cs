@@ -37,7 +37,7 @@ namespace pnyx.net.util
         {
             int finalSize = row.Count + columnNumbers.Count;
             List<String> result = new List<String>(finalSize);
-            for (int source = 0; result.Count < finalSize; source++)
+            for (int source = 0; source < row.Count; source++)
             {
                 if (columnNumbers.Contains(source + 1))
                     result.Add(pad);
@@ -45,23 +45,25 @@ namespace pnyx.net.util
                 if (result.Count < finalSize)
                     result.Add(row[source]);
             }
+            if (columnNumbers.Contains(row.Count + 1))
+                result.Add(pad);
 
             return result;
         }
 
-        public static List<String> duplicateColumns(List<String> row, ISet<int> columnNumbers, String pad = "")
+        public static List<String> duplicateColumns(List<String> row, ISet<int> columnNumbers)
         {
             int finalSize = row.Count + columnNumbers.Count;
             List<String> result = new List<String>(finalSize);
-            for (int source = 0; result.Count < finalSize; source++)
+            for (int source = 0; source < row.Count; source++)
             {
                 if (columnNumbers.Contains(source + 1))
-                    result.Add(source < row.Count ? row[source] : pad);
+                    result.Add(row[source]);
 
                 if (result.Count < finalSize)
                     result.Add(row[source]);
             }
-            
+
             return result;
         }
 

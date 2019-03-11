@@ -14,6 +14,10 @@ namespace pnyx.net.test.util
         [InlineData(4, "1,2", "_,1,_,2,3,4")]
         [InlineData(4, "1,2,3", "_,1,_,2,_,3,4")]
         [InlineData(4, "1,2,3,4", "_,1,_,2,_,3,_,4")]
+
+        // Junk
+        [InlineData(4, "6", "1,2,3,4")]
+        [InlineData(4, "0", "1,2,3,4")]        
         public void insertBlankColumns(int original, String columnNumbersText, String expectedText)
         {
             List<String> source = new List<String>(original);
@@ -27,13 +31,16 @@ namespace pnyx.net.test.util
             Assert.Equal(expectedText, actualText);
         }
 
-        [Theory]
-        [InlineData(0, "1", "_")]
+        [Theory]        
         [InlineData(4, "1", "1,1,2,3,4")]
-        [InlineData(4, "5", "1,2,3,4,_")]
         [InlineData(4, "1,2", "1,1,2,2,3,4")]
         [InlineData(4, "1,2,3", "1,1,2,2,3,3,4")]
         [InlineData(4, "1,2,3,4", "1,1,2,2,3,3,4,4")]
+        
+        // Junk
+        [InlineData(0, "1", "")]        
+        [InlineData(4, "0", "1,2,3,4")]
+        [InlineData(4, "5", "1,2,3,4")]
         public void duplicateColumns(int original, String columnNumbersText, String expectedText)
         {
             List<String> source = new List<String>(original);
@@ -41,7 +48,7 @@ namespace pnyx.net.test.util
                 source.Add((i + 1).ToString());
 
             HashSet<int> columnNumbers = new HashSet<int>(TextUtil.parseInts(columnNumbersText));
-            List<String> actual = RowUtil.duplicateColumns(source, columnNumbers, pad: "_");
+            List<String> actual = RowUtil.duplicateColumns(source, columnNumbers);
 
             String actualText = String.Join(",", actual);
             Assert.Equal(expectedText, actualText);
@@ -53,6 +60,8 @@ namespace pnyx.net.test.util
         [InlineData(4, "1,2", "3,4")]
         [InlineData(4, "1,2,3", "4")]
         [InlineData(4, "1,2,3,4", "")]
+
+        [InlineData(4, "5", "1,2,3,4")]        
 
         [InlineData(0, "1,3,5", "")]
         [InlineData(1, "1,3,5", "")]

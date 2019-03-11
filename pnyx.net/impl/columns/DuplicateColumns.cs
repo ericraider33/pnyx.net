@@ -7,7 +7,6 @@ namespace pnyx.net.impl.columns
 {
     public class DuplicateColumns : IRowTransformer
     {
-        public String pad = "";
         public readonly HashSet<int> columnNumbers;
 
         public DuplicateColumns(IEnumerable<int> columns)
@@ -17,13 +16,12 @@ namespace pnyx.net.impl.columns
 
         public List<String> transformHeader(List<String> header)
         {
-            header = RowUtil.duplicateColumns(header, columnNumbers, pad);
-            return RowUtil.setDefaultHeaderNames(header);
+            return RowUtil.duplicateColumns(header, columnNumbers);
         }
 
         public List<String> transformRow(List<String> row)
         {
-            return RowUtil.duplicateColumns(row, columnNumbers, pad);
+            return RowUtil.duplicateColumns(row, columnNumbers);
         }
     }
 }

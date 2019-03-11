@@ -372,11 +372,6 @@ namespace pnyx.net.fluent
             return rowTransformer(new InsertColumns(columnNumbers));
         }
 
-        public Pnyx duplicateColumnsWithPadding(String pad = "", params int[] columnNumbers)
-        {
-            return rowTransformer(new DuplicateColumns(columnNumbers) { pad = pad });
-        }
-
         public Pnyx duplicateColumns(params int[] columnNumbers)
         {
             return rowTransformer(new DuplicateColumns(columnNumbers));
