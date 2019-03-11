@@ -49,6 +49,9 @@ namespace pnyx.net.impl.columns
         {
             lineNumber++;
 
+            for (int i = infoList.Count; i < header.Count; i++)
+                infoList.Add(new ColumnInformation());
+
             for (int i = 0; i < header.Count; i++)
             {
                 String column = header[i];

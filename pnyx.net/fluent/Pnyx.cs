@@ -487,7 +487,7 @@ namespace pnyx.net.fluent
             }
             else if (state == FluentState.Line)
             {
-                CsvRowConverter rc = new CsvRowConverter();
+                CsvRowConverter rc = new CsvRowConverter();   
                 rc.setStrict(strict);
                 lineToRow(rc, hasHeader);
             }
@@ -646,9 +646,9 @@ namespace pnyx.net.fluent
             return rowTransformer(new RowTransformerFunc { rowTransformerFunc = transform, treatHeaderAsRow = treatHeaderAsRow });
         }           
         
-        public Pnyx rowBuffering(IRowBuffering transform)
+        public Pnyx rowBuffering(IRowBuffering buffering)
         {
-            return rowPart(new RowBufferingProcessor { buffering = transform });
+            return rowPart(new RowBufferingProcessor { buffering = buffering });
         }
 
         public Pnyx grep(String textToFind, bool caseSensitive = true)

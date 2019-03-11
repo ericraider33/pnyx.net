@@ -889,5 +889,25 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
 ";
             Assert.Equal(expected, actual);
         }
+
+        [Theory]
+        [InlineData(true,  false, false, false, "MaxWidth\t1\t11\t4\r\n")]
+        [InlineData(false, true,  false, false, "Header\t1\tHong Kong\t90.2\r\n")]
+        [InlineData(false, false, true,  false, "MinWidth\t1\t9\t4\r\n")]
+        [InlineData(false, false, false, true,  "Nullable\tnot null\tnot null\tnot null\r\n")]
+        [InlineData(false, false, false, false, "")]
+        public void columnDefinition(bool maxWidth, bool hasHeaderRow, bool minWidth, bool nullable, String expected)
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(ECONOMIC_FREEDOM);
+                p.parseTab(hasHeader: hasHeaderRow);
+                p.columnDefinition(null, maxWidth, hasHeaderRow, minWidth, nullable);
+                actual = p.processToString();
+            }
+
+            Assert.Equal(expected, actual);
+        }
     }
 }
