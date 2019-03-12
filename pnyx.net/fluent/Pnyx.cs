@@ -1053,6 +1053,11 @@ namespace pnyx.net.fluent
 
         public Pnyx beforeAfterFilter(int before, int after, Action<Pnyx> block)
         {
+            if (before < 0)
+                throw new InvalidArgumentException("'before' count must be positive: {0}", before);
+            if (after < 0)
+                throw new InvalidArgumentException("'after' count must be positive: {0}", after);
+            
             and(block);
 
             Object partRaw = parts[parts.Count - 1];
@@ -1100,13 +1105,13 @@ namespace pnyx.net.fluent
             bool caseSensitive = false,
             bool unique = false,
             String tempDirectory = null,
-            int? bufferLines = null
+            int? bufferRows = null
             )
         {
             requireStart(line: false, row: true);
 
             tempDirectory = tempDirectory ?? settings.tempDirectory;
-            bufferLines = bufferLines ?? settings.bufferLines;
+            bufferRows = bufferRows ?? settings.bufferLines;
 
             columnNumbers = columnNumbers ?? new int[] { 1 };            
             List<RowComparer.ColumnDefinition> definitions = new List<RowComparer.ColumnDefinition>();
@@ -1120,7 +1125,7 @@ namespace pnyx.net.fluent
             }
             
             IComparer<List<String>> comparer = new RowComparer(definitions);             
-            RowSortProcessor sortProcessor = new RowSortProcessor(unique, tempDirectory, comparer, bufferLines.Value);
+            RowSortProcessor sortProcessor = new RowSortProcessor(unique, tempDirectory, comparer, bufferRows.Value);
             return rowPart(sortProcessor);
         }
     }
