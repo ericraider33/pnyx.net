@@ -139,7 +139,7 @@ namespace pnyx.net.util
             return result.ToString();
         }
 
-        public static String multiple(String text, int count, String delimiter = " ")
+        public static String multiply(String text, int count, String delimiter = " ")
         {
             delimiter = delimiter ?? "";
 
