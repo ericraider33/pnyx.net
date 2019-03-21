@@ -40,7 +40,7 @@ namespace pnyx.net.impl.sed
         private static readonly Regex FLAG_PATTERN = new Regex("^([ig]*)([0-9,-]*)$");
         private void compileFlags(String flags)
         {
-            if (flags == null)
+            if (String.IsNullOrEmpty(flags))
             {
                 replaceIndex = 1;
                 return;
@@ -79,6 +79,9 @@ namespace pnyx.net.impl.sed
                         throw new InvalidArgumentException("Invalid index: {0}. Must be greater than zero", toCheck.low);
                 }
             }
+            
+            if (replaceIndex == null && replaceRanges == null && !global)
+                replaceIndex = 1;            // defaults to replace first match, if nothing is explicitly specified
         }
 
         private void compileReplacementFormat()

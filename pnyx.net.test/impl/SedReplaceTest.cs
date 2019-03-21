@@ -30,6 +30,19 @@ namespace pnyx.net.test.impl
             Assert.Equal("my eoe XXX XXX", replace.transformLine("my eoe eoe eoe"));
             Assert.Equal("eoeXXXXXX", replace.transformLine("eoeeoeeoe"));
         }
+        
+        [Fact]
+        // https://github.com/ericraider33/pnyx.net/issues/1
+        public void bug1()
+        {
+            SedReplace replace = new SedReplace("set[ ]*", "_", "");
+            Assert.Equal("y _x", replace.transformLine("y set x"));                        
+            Assert.Equal("_x", replace.transformLine("set x"));                        
+
+            replace = new SedReplace("set[ ]*", "_", "i");
+            Assert.Equal("y _x", replace.transformLine("y set x"));                        
+            Assert.Equal("_x", replace.transformLine("set x"));                        
+        }
 
         [Fact]
         public void caseSensitive()
