@@ -13,10 +13,9 @@ namespace pnyx.cmd
     {
         public static int Main(String[] args)
         {
+            Dictionary<String, String> switches = ArgsUtil.parseDictionary(ref args);
             try
             {
-                Dictionary<String, String> switches = ArgsUtil.parseDictionary(ref args);
-
                 if (switches.hasAny("-h", "--help"))
                     return printUsage();
                 if (switches.hasAny("-v", "--version"))
@@ -42,7 +41,11 @@ namespace pnyx.cmd
             }
             catch (Exception e)
             {
+                while (e.InnerException != null)
+                    e = e.InnerException;
                 Console.WriteLine(e.Message);
+                if (switches.hasAny("-d", "--debug"))
+                    Console.WriteLine(e.StackTrace);
                 return 1;
             }
         }
@@ -151,6 +154,7 @@ namespace pnyx.cmd
             Console.WriteLine();
             Console.WriteLine("optional arguments:");
             Console.WriteLine("-h, --help              show this help message and exit");
+            Console.WriteLine("-d, --debug             prints stack trace upon exception");
             Console.WriteLine("-v, --version           shows version of application");            
             Console.WriteLine("-cs, --csharp           flag to specify that commands are CSharp scripts instead of YAML");            
             Console.WriteLine("-i, --inline            flag to specify that first parameter is an inline YAML/CS String instead of a file path");
