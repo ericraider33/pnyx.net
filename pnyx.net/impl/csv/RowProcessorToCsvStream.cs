@@ -30,7 +30,7 @@ namespace pnyx.net.impl.csv
             if (previousRow != null)
             {
                 writeRow_(previousRow);
-                writer.Write(streamInformation.getNewline());
+                writer.Write(streamInformation.getOutputNewline());
             }
             else
             {
@@ -46,11 +46,11 @@ namespace pnyx.net.impl.csv
             {              
                 writeRow_(previousRow);
                 if (streamInformation.endsWithNewLine)
-                    writer.Write(streamInformation.getNewline());
+                    writer.Write(streamInformation.getOutputNewline());
             }
             else
             {
-                writer = new StreamWriter(stream, streamInformation.encoding);                        
+                writer = new StreamWriter(stream, streamInformation.getOutputEncoding());                        
             }
 
             previousRow = null;

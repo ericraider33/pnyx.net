@@ -112,7 +112,7 @@ to the honour of God, the exaltation of the holy Church, and the better ordering
             String actual;
             using (Pnyx p = new Pnyx())
             {
-                p.streamInformation.setDefaultNewline(NewLineEnum.Windows);
+                p.setSettings(defaultNewline: StreamInformation.newlineString(NewLineEnum.Windows));
                 p.readString(EARTH);
                 p.sedAppendLine("The Lord is my shepherd");
                 actual = p.processToString();
@@ -237,7 +237,7 @@ valueX1,valueX1
             String actual;
             using (Pnyx p = new Pnyx())
             {
-                p.streamInformation.setDefaultNewline(NewLineEnum.Windows);
+                p.setSettings(defaultNewline: StreamInformation.newlineString(NewLineEnum.Windows));
                 p.readString(EARTH);
                 p.parseCsv();
                 p.sedAppendRow(new List<String> {"The Lord","is", "my shepherd"});
@@ -829,7 +829,7 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
                 });
                 actualA = p.processToString();
             }
-            String actualB = p.streamInformation.encoding.GetString(capture.ToArray());
+            String actualB = p.streamInformation.getOutputEncoding().GetString(capture.ToArray());
             
             Assert.Equal(actualA, PLANETS_GODS);
             Assert.Equal(actualB, PLANETS_GODS);

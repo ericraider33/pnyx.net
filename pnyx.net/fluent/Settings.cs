@@ -10,7 +10,9 @@ namespace pnyx.net.fluent
         public String tempDirectory { get; set; }
         public int bufferLines { get; set; }
         public Encoding defaultEncoding { get; set; }
+        public Encoding outputEncoding { get; set; }
         public String defaultNewline { get; set; }  
+        public String outputNewline { get; set; }  
         public bool backupRewrite { get; set; }
         public bool processOnDispose { get; set; }
         public bool stdIoDefault { get; set; }
@@ -20,7 +22,9 @@ namespace pnyx.net.fluent
             tempDirectory = Path.GetTempPath();
             bufferLines = 10000;
             defaultEncoding = Encoding.ASCII;
+            outputEncoding = null;
             defaultNewline = Environment.NewLine;
+            outputNewline = null;
             backupRewrite = true;
             processOnDispose = true;
             stdIoDefault = false;
@@ -28,7 +32,7 @@ namespace pnyx.net.fluent
 
         public StreamInformation buildStreamInformation()
         {
-            return new StreamInformation(defaultEncoding, defaultNewline);
+            return new StreamInformation(this);
         }
 
         public Object Clone()

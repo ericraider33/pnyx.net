@@ -35,7 +35,7 @@ namespace pnyx.net.test
                 p.write(outPath);
                 p.process();
                 
-                String actualEncoding = String.Format("{0}-{1}", p.streamInformation.encoding.WebName, p.streamInformation.retrieveNewLineEnum().ToString());
+                String actualEncoding = String.Format("{0}-{1}", p.streamInformation.streamEncoding.WebName, p.streamInformation.retrieveStreamNewLineEnum().ToString());
                 Assert.Equal(expectedEncoding, actualEncoding);
             }
             

@@ -10,7 +10,7 @@ namespace pnyx.cmd.examples
         {
             using (Pnyx p = new Pnyx())
             {
-                p.streamInformation.setNewLine(NewLineEnum.Unix);
+                p.setSettings(outputNewline: StreamInformation.newlineString(NewLineEnum.Unix));
                 p.read(@"c:/dev/asclepius/prod_import/American Academy of Private Physicians.csv");
                 p.parseCsv(hasHeader: true);
                 p.hasColumns(true, 2);

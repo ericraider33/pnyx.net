@@ -37,7 +37,7 @@ namespace pnyx.net.processors.dest
                 }
                 
                 writer.Write(previousLine);
-                writer.Write(streamInformation.getNewline());
+                writer.Write(streamInformation.getOutputNewline());
             }
             else
             {
@@ -65,7 +65,7 @@ namespace pnyx.net.processors.dest
                 combined = Path.Combine(path, fileName);
                 
             FileStream fs = new FileStream(combined, FileMode.Create, FileAccess.Write);
-            writer = new StreamWriter(fs, streamInformation.encoding);            
+            writer = new StreamWriter(fs, streamInformation.getOutputEncoding());            
         }
 
         public void endOfFile()
@@ -81,7 +81,7 @@ namespace pnyx.net.processors.dest
                 
                 writer.Write(previousLine);
                 if (streamInformation.endsWithNewLine)
-                    writer.Write(streamInformation.getNewline());
+                    writer.Write(streamInformation.getOutputNewline());
             }
 
             previousLine = null;

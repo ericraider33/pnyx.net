@@ -18,13 +18,13 @@ namespace pnyx.net.processors.dest
         public void processLine(String line)
         {
             capture.Append(line);
-            capture.Append(streamInformation.getNewline());
+            capture.Append(streamInformation.getOutputNewline());
         }
 
         public void endOfFile()
         {
             if (!streamInformation.endsWithNewLine && capture.Length > 0)
-                capture.Length = capture.Length - streamInformation.getNewline().Length;
+                capture.Length = capture.Length - streamInformation.getOutputNewline().Length;
         }
     }
 }

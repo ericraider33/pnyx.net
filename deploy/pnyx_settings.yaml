@@ -4,10 +4,22 @@
 #bufferLines: 10000
 
 # Accepts names .net names of encodings, for example: utf-7, utf-8, utf-32, us-ascii
+# This value is used whenever input files have no BOM markers
 #defaultEncoding: us-ascii
 
+# When set, forces the output of all files to use the specified encoding. When not set,
+# the encoding of the input file is used for output.
+# Accepts names .net names of encodings, for example: utf-7, utf-8, utf-32, us-ascii
+#outputEncoding:
+
 # One of: Unix, Windows, Native
+# This value is used whenever input files have no newlines
 #defaultNewline: native
+
+# When set, forces the output of all files to use the specified newline. When not set,
+# the newline of the input file is used for output.
+# One of: Unix, Windows, Native
+#outputNewline:
 
 # When set to true (default), a backup is copied to tempDirectory whenever a file "rewrite" is used
 #backupRewrite: true

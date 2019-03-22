@@ -24,11 +24,11 @@ namespace pnyx.net.processors.dest
             if (previousLine != null)
             {
                 writer.Write(previousLine);
-                writer.Write(streamInformation.getNewline());
+                writer.Write(streamInformation.getOutputNewline());
             }
             else
             {
-                writer = new StreamWriter(stream, streamInformation.encoding);
+                writer = new StreamWriter(stream, streamInformation.getOutputEncoding());
             }
 
             previousLine = line;
@@ -40,11 +40,11 @@ namespace pnyx.net.processors.dest
             {              
                 writer.Write(previousLine);
                 if (streamInformation.endsWithNewLine)
-                    writer.Write(streamInformation.getNewline());
+                    writer.Write(streamInformation.getOutputNewline());
             }
             else
             {
-                writer = new StreamWriter(stream, streamInformation.encoding);                        
+                writer = new StreamWriter(stream, streamInformation.getOutputEncoding());                        
             }
 
             previousLine = null;

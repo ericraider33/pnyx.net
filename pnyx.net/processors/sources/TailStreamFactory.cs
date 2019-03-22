@@ -62,7 +62,7 @@ namespace pnyx.net.processors.sources
             //
             // Sets encoding and turns off BOM detection since Processor will get stream in a mid-file position
             //
-            streamInformation.defaultEncoding = encoding;
+            streamInformation.updateStreamEncoding(encoding);
             streamInformation.detectEncodingFromByteOrderMarks = false;                     
         }
 

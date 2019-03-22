@@ -16,7 +16,7 @@ namespace pnyx.cmd.examples.documentation.library
         // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleProcessorChain processorChain
         public static void processorChain()
         {
-            StreamInformation streamInformation = new StreamInformation();
+            StreamInformation streamInformation = new StreamInformation(new Settings());
                 
             // Writes to STDOUT
             ILineProcessor dest = new LineProcessorToStream(streamInformation, Console.OpenStandardOutput());

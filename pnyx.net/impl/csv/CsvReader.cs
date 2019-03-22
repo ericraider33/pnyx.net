@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using pnyx.net.errors;
+using pnyx.net.fluent;
 using pnyx.net.processors.sources;
 using pnyx.net.util;
 
@@ -11,10 +12,11 @@ namespace pnyx.net.impl.csv
     public class CsvReader : CsvStreamToRowProcessor
     {        
         public CsvReader(Stream stream, Encoding defaultEncoding = null)
-        {            
-            streamInformation = new StreamInformation();
-            if (defaultEncoding != null)
-                streamInformation.defaultEncoding = defaultEncoding;            
+        {        
+            Settings settings = SettingsHome.settingsFactory.buildSettings();
+            settings.defaultEncoding = defaultEncoding ?? settings.defaultEncoding;
+            
+            streamInformation = new StreamInformation(settings);
                 
             streamFactory = new GenericStreamFactory(stream);            
             reader = new StreamReader(stream, streamInformation.defaultEncoding, streamInformation.detectEncodingFromByteOrderMarks);            

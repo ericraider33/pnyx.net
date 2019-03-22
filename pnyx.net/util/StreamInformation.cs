@@ -1,58 +1,59 @@
 using System;
 using System.Text;
+using pnyx.net.fluent;
 
 namespace pnyx.net.util
 {
     public class StreamInformation
     {
-        public Encoding encoding;
-        public Encoding defaultEncoding;
+        public Encoding streamEncoding { get; private set; }        // set from input stream
         public bool detectEncodingFromByteOrderMarks = true;
         
-        public String newLine { get; private set; }
+        public String streamNewLine { get; private set; }        // set from input stream
         public bool endsWithNewLine;
-        public String defaultNewLine;
-        public int lineNumber = 0;
-        public bool active = true;        
 
-        public StreamInformation(Encoding defaultEncoding = null, String defaultNewLine = null)
+        public int lineNumber = 0;
+        public bool active = true;      
+        
+        private readonly Settings settings;
+        public Encoding defaultEncoding => settings.defaultEncoding;
+
+        public StreamInformation(Settings settings)
         {
-            this.defaultEncoding = defaultEncoding ?? Encoding.ASCII;
-            this.defaultNewLine = defaultNewLine ?? Environment.NewLine;
+            this.settings = settings;
+        }        
+
+        public void updateStreamNewLine(String newLineValue)
+        {
+            if (streamNewLine != null)
+                return;
+            
+            streamNewLine = newLineValue;
         }
 
-        public String getNewline()
+        public String getOutputNewline()
         {
-            return newLine ?? defaultNewLine;
+            if (settings.outputNewline != null)
+                return settings.outputNewline;
+            
+            if (streamNewLine != null)
+                return streamNewLine;
+            
+            return settings.defaultNewline;
         }
         
-        public NewLineEnum retrieveNewLineEnum()
+        public NewLineEnum retrieveStreamNewLineEnum()
         {
-            if (newLine == null)
+            if (streamNewLine == null)
                 return NewLineEnum.None;
 
-            switch (newLine)
+            switch (streamNewLine)
             {
                 case "\n": return NewLineEnum.Unix;
                 case "\r\n": return NewLineEnum.Windows;
                 case "\r" : return NewLineEnum.LineFeed;
                 default: return NewLineEnum.None;
             }
-        }
-
-        public void setNewLine(NewLineEnum newLineValue)
-        {
-            newLine = newlineString(newLineValue);
-        }
-
-        public void setDefaultNewline(NewLineEnum newLineValue)
-        {
-            defaultNewLine = newlineString(newLineValue);
-        }                
-
-        public void updateNewLine(String newLineValue)
-        {
-            newLine = newLine ?? newLineValue;
         }
 
         public static String newlineString(NewLineEnum x)
@@ -67,10 +68,24 @@ namespace pnyx.net.util
                 case NewLineEnum.Native: return Environment.NewLine;
             }
         }
-        
+
+        public void updateStreamEncoding(Encoding encoding)
+        {
+            if (streamEncoding != null)
+                return;
+            
+            streamEncoding = encoding;
+        }
+
         public Encoding getOutputEncoding()
         {
-            return encoding ?? defaultEncoding;
+            if (settings.outputEncoding != null)
+                return settings.outputEncoding;
+                
+            if (streamEncoding != null)
+                return streamEncoding;
+            
+            return settings.defaultEncoding;
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using pnyx.net.errors;
+using pnyx.net.fluent;
 using pnyx.net.util;
 
 namespace pnyx.net.impl.csv
@@ -12,18 +13,15 @@ namespace pnyx.net.impl.csv
         public CsvWriter(Stream stream, Encoding defaultEncoding = null) : 
             base(fromDefaultEncoding(defaultEncoding), stream)
         {
-            writer = new StreamWriter(stream, streamInformation.encoding);
+            writer = new StreamWriter(stream, streamInformation.getOutputEncoding());
         }
 
         private static StreamInformation fromDefaultEncoding(Encoding defaultEncoding = null)
         {
-            StreamInformation result = new StreamInformation();
-            if (defaultEncoding != null)
-                result.defaultEncoding = defaultEncoding;
-
-            result.encoding = result.defaultEncoding;    // advances "default" to "actual"
+            Settings settings = SettingsHome.settingsFactory.buildSettings();            
+            settings.outputEncoding = defaultEncoding;
             
-            return result;
+            return new StreamInformation(settings);
         }        
         
         public override void rowHeader(List<String> header)

@@ -54,7 +54,9 @@ namespace pnyx.net.fluent
             String tempDirectory = null,
             int? bufferLines = null,
             Encoding defaultEncoding = null,
+            Encoding outputEncoding = null,            
             String defaultNewline = null,
+            String outputNewline = null,                  
             bool? backupRewrite = null,
             bool? processOnDispose = null,
             bool? stdIoDefault = null
@@ -62,8 +64,10 @@ namespace pnyx.net.fluent
         {
             if (tempDirectory != null) settings.tempDirectory = tempDirectory;
             if (bufferLines != null) settings.bufferLines = bufferLines.Value;
-            if (defaultEncoding != null) { settings.defaultEncoding = defaultEncoding; streamInformation.defaultEncoding = defaultEncoding; }
-            if (defaultNewline != null) { settings.defaultNewline = defaultNewline; streamInformation.defaultNewLine = defaultNewline; }
+            if (defaultEncoding != null) settings.defaultEncoding = defaultEncoding; 
+            if (outputEncoding != null) settings.outputEncoding = outputEncoding; 
+            if (defaultNewline != null) settings.defaultNewline = defaultNewline;
+            if (outputNewline != null) settings.outputNewline = outputNewline;
             if (backupRewrite != null) settings.backupRewrite = backupRewrite.Value;
             if (processOnDispose != null) settings.processOnDispose = processOnDispose.Value;
             if (stdIoDefault != null) settings.stdIoDefault = stdIoDefault.Value;
@@ -891,7 +895,7 @@ namespace pnyx.net.fluent
                 
                 process();
 
-                return streamInformation.encoding.GetString(stream.ToArray());
+                return streamInformation.getOutputEncoding().GetString(stream.ToArray());
             }
         }
 
