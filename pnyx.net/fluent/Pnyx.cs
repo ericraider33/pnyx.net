@@ -246,7 +246,12 @@ namespace pnyx.net.fluent
             if (limit < 1)
                 throw new InvalidArgumentException("Head limit must be greater than zero");
 
-            return lineFilter(new HeadFilter(streamInformation, limit));            
+            HeadFilter head = new HeadFilter(streamInformation, limit);
+            
+            if (state == FluentState.Row)
+                return rowFilter(head);
+            else
+                return lineFilter(head);
         }
 
         public Pnyx tail(int limit = 1)
