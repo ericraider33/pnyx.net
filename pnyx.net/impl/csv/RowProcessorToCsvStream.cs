@@ -34,7 +34,7 @@ namespace pnyx.net.impl.csv
             }
             else
             {
-                writer = new StreamWriter(stream, streamInformation.encoding);
+                writer = new StreamWriter(stream, streamInformation.getOutputEncoding());
             }
 
             previousRow = row;

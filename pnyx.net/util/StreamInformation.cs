@@ -6,10 +6,11 @@ namespace pnyx.net.util
     public class StreamInformation
     {
         public Encoding encoding;
-        public String newLine { get; private set; }
-        public bool endsWithNewLine;
         public Encoding defaultEncoding;
         public bool detectEncodingFromByteOrderMarks = true;
+        
+        public String newLine { get; private set; }
+        public bool endsWithNewLine;
         public String defaultNewLine;
         public int lineNumber = 0;
         public bool active = true;        
@@ -65,6 +66,11 @@ namespace pnyx.net.util
                 case NewLineEnum.LineFeed: return "\r";
                 case NewLineEnum.Native: return Environment.NewLine;
             }
+        }
+        
+        public Encoding getOutputEncoding()
+        {
+            return encoding ?? defaultEncoding;
         }
     }
 }
