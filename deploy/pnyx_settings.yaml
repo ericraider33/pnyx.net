@@ -12,6 +12,12 @@
 # Accepts names .net names of encodings, for example: utf-7, utf-8, utf-32, us-ascii
 #outputEncoding:
 
+# When true, encoding is read from BOM in input stream
+#detectEncodingFromByteOrderMarks: true
+
+# When true, BOM markers are written to output stream
+#outputByteOrderMarks: true
+
 # One of: Unix, Windows, Native
 # This value is used whenever input files have no newlines
 #defaultNewline: native

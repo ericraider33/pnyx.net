@@ -54,7 +54,9 @@ namespace pnyx.net.fluent
             String tempDirectory = null,
             int? bufferLines = null,
             Encoding defaultEncoding = null,
-            Encoding outputEncoding = null,            
+            Encoding outputEncoding = null,
+            bool? detectEncodingFromByteOrderMarks = null,
+            bool? outputByteOrderMarks = null,            
             String defaultNewline = null,
             String outputNewline = null,                  
             bool? backupRewrite = null,
@@ -65,7 +67,9 @@ namespace pnyx.net.fluent
             if (tempDirectory != null) settings.tempDirectory = tempDirectory;
             if (bufferLines != null) settings.bufferLines = bufferLines.Value;
             if (defaultEncoding != null) settings.defaultEncoding = defaultEncoding; 
-            if (outputEncoding != null) settings.outputEncoding = outputEncoding; 
+            if (outputEncoding != null) settings.outputEncoding = outputEncoding;            
+            if (detectEncodingFromByteOrderMarks != null) settings.detectEncodingFromByteOrderMarks = detectEncodingFromByteOrderMarks.Value;
+            if (outputByteOrderMarks != null) settings.outputByteOrderMarks = outputByteOrderMarks.Value;                       
             if (defaultNewline != null) settings.defaultNewline = defaultNewline;
             if (outputNewline != null) settings.outputNewline = outputNewline;
             if (backupRewrite != null) settings.backupRewrite = backupRewrite.Value;
@@ -802,6 +806,7 @@ namespace pnyx.net.fluent
 
         public Pnyx writeStdout()
         {
+            setSettings(outputByteOrderMarks: false);        // turns off BOM to STD-OUT            
             return setEnd(Console.OpenStandardOutput());
         }
 

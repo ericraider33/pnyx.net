@@ -59,11 +59,8 @@ namespace pnyx.net.processors.sources
             reader.Read();        // ignores results, simply primes the encoding via BOM characters
             encoding = reader.CurrentEncoding;
             
-            //
-            // Sets encoding and turns off BOM detection since Processor will get stream in a mid-file position
-            //
+            // Sets encoding 
             streamInformation.updateStreamEncoding(encoding);
-            streamInformation.detectEncodingFromByteOrderMarks = false;                     
         }
 
         private void findPosition()

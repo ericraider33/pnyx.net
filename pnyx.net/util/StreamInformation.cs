@@ -7,7 +7,6 @@ namespace pnyx.net.util
     public class StreamInformation
     {
         public Encoding streamEncoding { get; private set; }        // set from input stream
-        public bool detectEncodingFromByteOrderMarks = true;
         
         public String streamNewLine { get; private set; }        // set from input stream
         public bool endsWithNewLine;
@@ -16,6 +15,7 @@ namespace pnyx.net.util
         public bool active = true;      
         
         private readonly Settings settings;
+        public bool detectEncodingFromByteOrderMarks => settings.detectEncodingFromByteOrderMarks;
         public Encoding defaultEncoding => settings.defaultEncoding;
 
         public StreamInformation(Settings settings)
@@ -79,13 +79,15 @@ namespace pnyx.net.util
 
         public Encoding getOutputEncoding()
         {
+            Encoding result = settings.defaultEncoding;
             if (settings.outputEncoding != null)
-                return settings.outputEncoding;
-                
-            if (streamEncoding != null)
-                return streamEncoding;
-            
-            return settings.defaultEncoding;
+                result = settings.outputEncoding;
+            else if (streamEncoding != null)
+                result = streamEncoding;
+            else
+                result = settings.defaultEncoding;
+
+            return new EncodingProxy(result, settings);
         }
     }
 }

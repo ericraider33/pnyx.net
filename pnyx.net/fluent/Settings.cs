@@ -11,6 +11,8 @@ namespace pnyx.net.fluent
         public int bufferLines { get; set; }
         public Encoding defaultEncoding { get; set; }
         public Encoding outputEncoding { get; set; }
+        public bool detectEncodingFromByteOrderMarks { get; set; }
+        public bool outputByteOrderMarks { get; set; }
         public String defaultNewline { get; set; }  
         public String outputNewline { get; set; }  
         public bool backupRewrite { get; set; }
@@ -23,6 +25,8 @@ namespace pnyx.net.fluent
             bufferLines = 10000;
             defaultEncoding = Encoding.ASCII;
             outputEncoding = null;
+            detectEncodingFromByteOrderMarks = true;
+            outputByteOrderMarks = true;
             defaultNewline = Environment.NewLine;
             outputNewline = null;
             backupRewrite = true;
