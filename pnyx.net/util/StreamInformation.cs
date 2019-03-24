@@ -6,6 +6,10 @@ namespace pnyx.net.util
 {
     public class StreamInformation
     {
+        public const String NEWLINE_UNIX = "\n";
+        public const String NEWLINE_WINDOWS = "\r\n";
+        public const String LINEFEED = "\r";
+        
         public Encoding streamEncoding { get; private set; }        // set from input stream
         
         public String streamNewLine { get; private set; }        // set from input stream
@@ -49,9 +53,9 @@ namespace pnyx.net.util
 
             switch (streamNewLine)
             {
-                case "\n": return NewLineEnum.Unix;
-                case "\r\n": return NewLineEnum.Windows;
-                case "\r" : return NewLineEnum.LineFeed;
+                case NEWLINE_UNIX: return NewLineEnum.Unix;
+                case NEWLINE_WINDOWS: return NewLineEnum.Windows;
+                case LINEFEED: return NewLineEnum.LineFeed;
                 default: return NewLineEnum.None;
             }
         }
@@ -62,9 +66,9 @@ namespace pnyx.net.util
             {
                 default:
                 case NewLineEnum.None: return null;
-                case NewLineEnum.Unix: return "\n";
-                case NewLineEnum.Windows: return "\r\n";
-                case NewLineEnum.LineFeed: return "\r";
+                case NewLineEnum.Unix: return NEWLINE_UNIX;
+                case NewLineEnum.Windows: return NEWLINE_WINDOWS;
+                case NewLineEnum.LineFeed: return LINEFEED;
                 case NewLineEnum.Native: return Environment.NewLine;
             }
         }

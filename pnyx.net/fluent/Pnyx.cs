@@ -699,6 +699,15 @@ namespace pnyx.net.fluent
             return lineBuffering(new SedInsert { text = text });
         }
 
+        public Pnyx count(bool checkData = true)
+        {
+            Count part = new Count { checkData = checkData };
+            if (state == FluentState.Row)
+                return rowBuffering(part);
+
+            return lineBuffering(part);
+        }
+
         public Pnyx compile()
         {
             defaultStdOut();
@@ -862,6 +871,25 @@ namespace pnyx.net.fluent
         public Pnyx captureText(StringBuilder builder)
         {
             return setEnd(null, new CaptureText(streamInformation, builder));
+        }
+
+        public Pnyx endRow(IRowProcessor rowProcessor)
+        {
+            requireStart(line: false, row: true);
+            parts.Add(rowProcessor);
+            state = FluentState.End;
+            return this;            
+        }
+
+        public Pnyx endLine(ILineProcessor lineProcessor)
+        {
+            requireStart(line: true, row: true);
+            if (state == FluentState.Row)
+                rowToLine();                    // converts to line
+            
+            parts.Add(lineProcessor);
+            state = FluentState.End;
+            return this;            
         }
 
         public Pnyx tee(Action<Pnyx> block)

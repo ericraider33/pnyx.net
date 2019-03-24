@@ -909,5 +909,37 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
 
             Assert.Equal(expected, actual);
         }
+        
+        [Theory]
+        [InlineData(MAGNA_CARTA, 13)]
+        [InlineData(PLANETS_GODS, 7)]
+        [InlineData(ECONOMIC_FREEDOM, 5)]
+        public void count(String source, int expected)
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(source);
+                p.count();
+                actual = p.processToString();
+            }
+
+            Assert.Equal(expected, int.Parse(actual));            
+        }
+
+        [Fact]
+        public void countRow()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(PLANETS_GODS);
+                p.parseCsv();
+                p.count();
+                actual = p.processToString();
+            }
+
+            Assert.Equal("7,7,7", actual.TrimEnd());                        
+        }
     }
 }
