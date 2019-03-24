@@ -1,4 +1,5 @@
-# Defaults to system's/user's temporary directory
+# Temporary directory for commands the write to file, like sort and  rewrite.
+# Defaults to system's / user's temporary directory
 #tempDirectory: /tmp
 
 #bufferLines: 10000
