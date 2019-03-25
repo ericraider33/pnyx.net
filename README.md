@@ -1,5 +1,5 @@
 # pnyx.net
-File parsing and transforming automation scripting platform, Native .net.  Pnyx is an open source project that brings all of your favorite unix tools like grep, sed and awk to your preferred programming language. When using Pnyx in your project, you can built upon these venerable tools without calling external programs. With a flexible, fluent API, the Pnyx framework is easily extended and simple to verify with Unit tests.
+Pnyx is an open source project that brings all of your favorite unix tools like grep, sed and awk to your preferred programming language (C#). When using Pnyx in your project, you can built upon these venerable tools without calling external programs. With a flexible, fluent API, the Pnyx framework is easily extended and simple to verify with Unit tests.
 
 [View Pnyx Project website](http://pnyx.me/)
 
