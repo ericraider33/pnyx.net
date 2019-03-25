@@ -1,53 +1,30 @@
 # pnyx.net
-File parsing and transforming automation scripting platform, Native .net
+File parsing and transforming automation scripting platform, Native .net.  Pnyx is an open source project that brings all of your favorite unix tools like grep, sed and awk to your preferred programming language. When using Pnyx in your project, you can built upon these venerable tools without calling external programs. With a flexible, fluent API, the Pnyx framework is easily extended and simple to verify with Unit tests.
 
-## Roadmap
-1. Command line installers
-1. Build website for library, API, command line
-1. billing
-1. Initial release
-1. Online course of linux tools https://tomwoods.lpages.co/online-course-profits/
-1. Find 100 StackOverflow questions where Pnyx command line would help
-1. Find 100 StackOverflow questions where Pnyx library would help
+[View Pnyx Project website](http://pnyx.me/)
 
-## Distance Roadmap
-1. Sed duplication
-1. Port to Python, Javascript, and Java
-1. Support character transform
+## Library
+Pnyx is offered as a libary for use in projects that have Extract - Transform - Load (ETL) needs. Pnyx is not intended to replace Unix tools, which are time tested, pervasive and reliable. Instead, it was built to provide file transformation tools to high level programming languages. Some of the benefits of Pnyx as a libary are:
 
-## Done
-1. 2018-09-08: Basic API
-1. 2018-09-15: Plain text Grep
-1. 2018-09-22: Sed
-1. 2018-10-07: Preserve file encoding
-1. 2018-10-07: Preserve newlines of original file
-1. 2018-10-25: CSV read, write
-1. 2018-11-11: Fluent API
-1. 2018-11-16: Awk column selection, filtering
-1. 2018-11-16: Tab-Separated read, write
-1. 2018-11-17: Column specific operations
-1. 2018-11-20: Buffering for lines 'before' and 'after' filter match
-1. 2018-11-20: Boolean filters: Invert, And, Or, Xor
-1. 2018-11-24: Cat, both row and line
-1. 2018-11-25: Head, Tail
-1. 2018-11-26: Tee
-1. 2018-11-26: Chain Pnyx, CompiledServile state
-1. 2018-11-27: Column definition stub
-1. 2018-11-28: Split
-1. 2018-11-30: Row manipulation 
-1. 2018-12-01: Egrep
-1. 2018-12-01: Has Data filter / columns
-1. 2018-12-02: modify and/or syntax to support shims
-1. 2018-12-06: Sorting for line and row
-1. 2018-12-09: Command line interface (initial pass)
-1. 2018-12-14: Port JSP website to .net MVC
-1. 2018-12-15: ReWrite function
-1. 2018-12-16: Settings and defaults for Pnyx
-1. 2018-12-21: Enhancements to NameUtil and bhc example
-1. 2018-12-22: Titles for columns
-1. 2018-12-24: Assume STDIN and STDOUT when not explicitly set / driving by settings
-1. 2018-12-26: Inline code scriptlets
-1. 2018-12-28: Verbose mode to easily show settings and location of settings file
-1. 2018-12-30: Command line interface, more robust YAML argument / method bindings
-1. 2019-01-26: Fix duplicates in sort, and add Sort unique
-1. 2019-01-28: Add License document
+* Business logic for transforming files remains in high-level program languages, and not in scripts
+* Full support for tabular data
+* Combine tabular operations with traditional line-based operations
+* Business logic can be easily Unit Tested, when using Pnyx
+* Pnyx is powerful and easily customized / extended
+* Windows line-feeds are handled gracefully
+* Removes reliance upon environment, and works on any OS
+* Scalable and performant
+
+## Install
+To install, go to [Nuget.org](https://www.nuget.org/packages/pnyx.net/)
+and download, or open Package Manager and type:
+
+```Install-Package pnyx.net```
+
+## Learn More
+Ready to get start? [View Documentation for Library](http://pnyx.me/library)
+
+## CMD
+Pnyx can be used directly from the command-line. Use the CMD interface for quick, one-time usage or for prototyping. The pnyx.cmd project uses a YAML file of commands, which map to commands of the library's fluent API. As an alternative, C# scripts can be used in place of YAML. Whatever your preference, use the CMD to run ad-hoc Pnyx commands. Finally, CMD can be used to expose your project's custom filters and transforms to the command-line and scripting.
+
+Ready to get started? [View Documentation for CMD](http://pnyx.me/cmd)
