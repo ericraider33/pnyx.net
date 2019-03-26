@@ -191,7 +191,8 @@ namespace pnyx.net.util
                 nameParts.RemoveAt(0);                
             }
 
-            result.lastName = String.Join(" ", nameParts);
+            if (nameParts.Count > 0)
+                result.lastName = String.Join(" ", nameParts);
             
             return result;
         }

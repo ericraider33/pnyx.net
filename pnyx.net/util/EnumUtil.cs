@@ -39,7 +39,7 @@ namespace pnyx.net.util
             return result;
         }
 
-        public static IDictionary<String, T> toDictionary<T>(IEqualityComparer<String> comparer = null) where T : struct, IConvertible
+        public static Dictionary<String, T> toDictionary<T>(IEqualityComparer<String> comparer = null) where T : struct, IConvertible
         {
             comparer = comparer ?? StringComparer.OrdinalIgnoreCase;            
             Dictionary<String, T> enumValues = new Dictionary<String, T>(comparer);

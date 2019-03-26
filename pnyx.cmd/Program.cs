@@ -193,7 +193,7 @@ namespace pnyx.cmd
             
             MethodInfo method = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static);
             if (method == null)
-                throw new InvalidArgumentException("Static method {0} can not be found on type: {1}", methodName, typeName);
+                throw new InvalidArgumentException("Static method '{0}' was not be found on type: {1}", methodName, typeName);
             
             // Runs example
             method.Invoke(null, new Object[0]);

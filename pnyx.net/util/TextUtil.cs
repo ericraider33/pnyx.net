@@ -196,6 +196,60 @@ namespace pnyx.net.util
             return DECIMAL_ONLY_EXPRESSION.IsMatch(text);
         }
 
+        private static readonly Regex LETTERS_ONLY_EXPRESSION = new Regex("^[a-zA-Z]+$");
+        public static bool isAllLetters(String text)
+        {
+            if (String.IsNullOrEmpty(text))
+                return false;
+
+            return LETTERS_ONLY_EXPRESSION.IsMatch(text);
+        }
+
+
+        private static readonly Regex LETTER_ANY_EXPRESSION = new Regex("[a-zA-Z]");
+        public static bool hasAnyLetters(String text)
+        {
+            if (String.IsNullOrEmpty(text))
+                return false;
+
+            return LETTER_ANY_EXPRESSION.IsMatch(text);            
+        }
+
+        private static readonly Regex SPECIAL_ANY_EXPRESSION = new Regex("[^0-9a-zA-Z\\s]");
+        public static bool hasAnySpecial(String text)
+        {
+            if (String.IsNullOrEmpty(text))
+                return false;
+
+            return SPECIAL_ANY_EXPRESSION.IsMatch(text);            
+        }
+
+        public static bool hasConsecutiveCharacters(String text, int threshold = 2)
+        {
+            if (String.IsNullOrEmpty(text))
+                return false;
+            
+            if (threshold < 2)
+                throw new ArgumentException("Threshold must be 2 or greater: " + threshold);
+
+            int consecutive = 1;
+            char last = text[0];
+            for (int i = 1; i < text.Length; i++)
+            {
+                var c = text[i];
+                if (c == last)
+                    consecutive++;
+                else
+                    consecutive = 1;
+                last = c;
+                                
+                if (consecutive >= threshold)
+                    return true;
+            }
+
+            return false;
+        }        
+        
         private static readonly Regex CHARACTER_ONLY_EXPRESSION = new Regex("^[a-zA-Z]+$");
         public static bool isAllCharacters(String text)
         {
