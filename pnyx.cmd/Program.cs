@@ -171,6 +171,7 @@ namespace pnyx.cmd
             switch (example.ToLower())
             {
                 case "bhcdischarge": return BhcDischarge.main();
+                case "bhcprocedure": return BhcProcedures.main();
                 case "altitude": return Altitude.main();
                 case "ga": return GaCleanup.main();
                 case "column": return ColumnDefinitionExample.main();
