@@ -9,38 +9,35 @@ namespace pnyx.net.impl.columns
         public int[] indexes { get; private set; }   
         public IRowTransformer rowTransformer  { get; private set; }
 
-        private readonly List<String> subColumns;
-        
         public RowTransformerWithColumns(int[] indexes, IRowTransformer rowTransformer)
         {
             this.indexes = indexes;
-            this.rowTransformer = rowTransformer;
-            
-            subColumns = new List<String>(indexes.Length);
+            this.rowTransformer = rowTransformer;            
         }
 
         public List<String> transformHeader(List<String> header)
         {
-            subColumnsIn(header);
+            List<String> subColumns = subColumnsIn(header);
             List<String> transformed = rowTransformer.transformHeader(subColumns);
             return subColumnsOut(transformed, header);
         }
 
         public List<String> transformRow(List<String> row)
         {
-            subColumnsIn(row);
+            List<String> subColumns = subColumnsIn(row);
             List<String> transformed = rowTransformer.transformRow(subColumns);
             return subColumnsOut(transformed, row);
         }
 
-        private void subColumnsIn(List<String> row)
+        private List<String>  subColumnsIn(List<String> row)
         {
-            subColumns.Clear();
+            List<String> subColumns = new List<String>(indexes.Length);
             foreach (int columnIndex in indexes)
             {
                 String column = columnIndex < row.Count ? row[columnIndex] : "";
                 subColumns.Add(column);
             }
+            return subColumns;
         }
 
         private List<String> subColumnsOut(List<String> transformed, List<String> row)

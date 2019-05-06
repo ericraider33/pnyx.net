@@ -8,20 +8,16 @@ namespace pnyx.net.impl.columns
     {
         public int[] indexes { get; private set; }   
         public IRowFilter rowFilter  { get; private set; }
-
-        private readonly List<String> subColumns;
         
         public RowFilterWithColumns(int[] indexes, IRowFilter rowFilter)
         {
             this.indexes = indexes;
             this.rowFilter = rowFilter;
-            
-            subColumns = new List<String>(indexes.Length);
         }
 
         public bool shouldKeepRow(List<String> row)
         {
-            subColumns.Clear();
+            List<String> subColumns = new List<String>(indexes.Length);
             foreach (int columnIndex in indexes)
             {
                 String column = columnIndex < row.Count ? row[columnIndex] : "";
