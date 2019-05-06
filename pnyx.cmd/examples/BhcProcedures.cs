@@ -44,7 +44,41 @@ namespace pnyx.cmd.examples
                 return row;
             }
         }
-        
+
+        private class SequenceFixer : IRowTransformer
+        {
+            private String lastPatient = "";
+            private String lastDate = "";
+            private int lastSequence = 1;
+            
+            public List<string> transformHeader(List<string> header)
+            {
+                return header;
+            }
+
+            public List<string> transformRow(List<string> row)
+            {
+                if (row.Count < 8)
+                    return row;
+                
+                String patientAccountNumber = row[1];
+                String procedureDate = row[7];
+                
+                if (lastPatient == patientAccountNumber && lastDate == procedureDate)
+                {
+                    lastSequence++;
+                    row[5] = lastSequence.ToString();
+                }
+                else
+                {
+                    lastPatient = patientAccountNumber;
+                    lastDate = procedureDate;
+                    lastSequence = 1;
+                }
+                
+                return row;
+            }
+        }        
 
         private static void transform()
         {
@@ -66,6 +100,7 @@ namespace pnyx.cmd.examples
                     p2.write("C:/dev/asclepius/prod_import/bhc_procedure_base.csv");
                 });
                 p.removeColumns(3,4,5,6);
+                p.rowTransformer(new SequenceFixer());
                 p.write("C:/dev/asclepius/prod_import/bhc_procedure_diagnosis.csv");
                 p.process();
             }

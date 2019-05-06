@@ -15,8 +15,8 @@ namespace pnyx.net.processors.dest
 
         public void rowHeader(List<String> header)
         {
-            processor.processRow(header);
-            tee.processRow(header);            
+            processor.rowHeader(header);
+            tee.rowHeader(header);            
         }
 
         public void processRow(List<String> row)
