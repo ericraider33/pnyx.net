@@ -1,12 +1,22 @@
 using System;
 using System.IO;
 using System.Text;
+using pnyx.net.impl.csv;
 using pnyx.net.util;
 
 namespace pnyx.net.fluent
 {
     public class Settings : ICloneable
     {
+        public const char DEFAULT_CSV_DELIMITER = ',';
+        public const char DEFAULT_CSV_ESCAPE_CHAR = '"';
+        public static Encoding DEFAULT_ENCODING { get; private set; }
+
+        static Settings()
+        {
+            DEFAULT_ENCODING = Encoding.ASCII;            
+        }
+        
         public String tempDirectory { get; set; }
         public int bufferLines { get; set; }
         public Encoding defaultEncoding { get; set; }
@@ -19,11 +29,23 @@ namespace pnyx.net.fluent
         public bool processOnDispose { get; set; }
         public bool stdIoDefault { get; set; }
 
+        private readonly CsvSettings csv;
+        public char csvDelimiter
+        {
+            get => csv.delimiter;
+            set => csv.delimiter = value;
+        }
+        public char csvEscapeChar 
+        {
+            get => csv.escapeChar;
+            set => csv.escapeChar = value;
+        }
+
         public Settings()
         {
             tempDirectory = Path.GetTempPath();
             bufferLines = 10000;
-            defaultEncoding = Encoding.ASCII;
+            defaultEncoding = DEFAULT_ENCODING;
             outputEncoding = null;
             detectEncodingFromByteOrderMarks = true;
             outputByteOrderMarks = true;
@@ -32,6 +54,7 @@ namespace pnyx.net.fluent
             backupRewrite = true;
             processOnDispose = true;
             stdIoDefault = false;
+            csv = new CsvSettings();
         }
 
         public StreamInformation buildStreamInformation()
@@ -39,6 +62,11 @@ namespace pnyx.net.fluent
             return new StreamInformation(this);
         }
 
+        public CsvSettings buildCsvSettings()
+        {
+            return (CsvSettings) csv.Clone();
+        }
+        
         public Object Clone()
         {
             return MemberwiseClone();

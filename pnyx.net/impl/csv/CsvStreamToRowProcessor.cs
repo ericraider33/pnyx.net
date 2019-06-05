@@ -11,7 +11,8 @@ namespace pnyx.net.impl.csv
 {
     public class CsvStreamToRowProcessor : IRowSource, IDisposable
     {
-        public CsvRowConverter rowConverter { get; private set; }
+        public CsvRowConverter rowConverter { get; }
+        public CsvSettings settings  { get; }
         public bool hasHeader { get; set; }
         public StreamReader reader { get; protected set; }
         public IRowProcessor rowProcessor { get; private set; }
@@ -21,19 +22,15 @@ namespace pnyx.net.impl.csv
         private readonly StringBuilder stringBuilder = new StringBuilder();
         private bool endOfFile;
 
-        public CsvStreamToRowProcessor()
+        public CsvStreamToRowProcessor(CsvSettings settings = null)
         {
-            rowConverter = new CsvRowConverter();
+            this.settings = settings ?? new CsvSettings();
+            rowConverter = new CsvRowConverter(this.settings);
         }
 
         public IRowConverter getRowConverter()
         {
             return rowConverter;
-        }
-        
-        public void setStrict(bool strict)
-        {
-            rowConverter.setStrict(strict);
         }
 
         public virtual void process()
@@ -78,84 +75,80 @@ namespace pnyx.net.impl.csv
                     case CsvState.StartOfLine:
                     case CsvState.Seeking:
                     {
-                        switch (num)
+                        if (num == '\n')
                         {
-                            case 10:
-                                updateStreamInformation(rowNumber, "\n");
-                                if (state != CsvState.StartOfLine)
-                                    row.Add(stringBuilder.ToString());                                    
-                                return row;
-
-                            case 13:
-                                if (reader.Peek() == 10)
-                                {
-                                    reader.Read();            // consumes both \r\n
-                                    updateStreamInformation(rowNumber, "\r\n");                            
-                                }
-                                else
-                                    updateStreamInformation(rowNumber, "\r");
+                            updateStreamInformation(rowNumber, "\n");
+                            if (state != CsvState.StartOfLine)
+                                row.Add(stringBuilder.ToString());                                    
+                            return row;
+                        }
+                        else if (num == '\r')
+                        {
+                            if (reader.Peek() == '\n')
+                            {
+                                reader.Read();            // consumes both \r\n
+                                updateStreamInformation(rowNumber, "\r\n");                            
+                            }
+                            else
+                                updateStreamInformation(rowNumber, "\r");
                         
-                                if (state != CsvState.StartOfLine)
-                                    row.Add(stringBuilder.ToString());                                    
-                                return row;
-                            
-                            case ',':
-                                row.Add(stringBuilder.ToString());
-                                stringBuilder.Clear();
-                                state = CsvState.Seeking;                                
-                                break;
-                            
-                            case '"':
-                                if (state == CsvState.Data)
-                                {
-                                    if (rowConverter.allowStrayQuotes)
-                                        stringBuilder.Append('"');
-                                    else 
-                                        throw new IllegalStateException(String.Format("Line {0} contains a quote that isn't wrapped with quotes", rowNumber+1)); 
-                                }
-                                else
-                                    state = CsvState.Quoted;
-                                break;
-                        
-                            default:
-                                state = CsvState.Data;
-                                stringBuilder.Append((char)num);
-                                break;
+                            if (state != CsvState.StartOfLine)
+                                row.Add(stringBuilder.ToString());                                    
+                            return row;
+                        }
+                        else if (num == settings.delimiter)
+                        {
+                            row.Add(stringBuilder.ToString());
+                            stringBuilder.Clear();
+                            state = CsvState.Seeking;                                
+                        }
+                        else if (num == settings.escapeChar)
+                        {
+                            if (state == CsvState.Data)
+                            {
+                                if (settings.allowStrayQuotes)
+                                    stringBuilder.Append(settings.escapeChar);
+                                else 
+                                    throw new IllegalStateException(String.Format("Line {0} contains a quote that isn't wrapped with quotes", rowNumber+1)); 
+                            }
+                            else
+                                state = CsvState.Quoted;
+                        }
+                        else
+                        {
+                            state = CsvState.Data;
+                            stringBuilder.Append((char)num);
                         }
                         break;
                     }
 
                     case CsvState.Quoted:
                     {
-                        if (num == '"')
+                        if (num == settings.escapeChar)
                         {
                             int next = reader.Peek();
-                            switch (next)
+                            if (next == settings.escapeChar)
                             {
-                                case '"': 
-                                    reader.Read();            // consumes second quote
-                                    stringBuilder.Append('"');
-                                    break;
-                                
-                                case ',':
-                                    row.Add(stringBuilder.ToString());
-                                    stringBuilder.Clear();
-                                    reader.Read();            // consumes comma
-                                    state = CsvState.Seeking;                                
-                                    break;
-                                
-                                case 10:
-                                case 13:
-                                case -1:
+                                reader.Read();            // consumes second quote
+                                stringBuilder.Append(settings.escapeChar);
+                            }
+                            else if (next == settings.delimiter)
+                            {
+                                row.Add(stringBuilder.ToString());
+                                stringBuilder.Clear();
+                                reader.Read();            // consumes comma
+                                state = CsvState.Seeking;                                
+                            }
+                            else if (next == '\n' || next == '\r' || next == -1)
+                            {
+                                state = CsvState.Data;
+                            }
+                            else
+                            {
+                                if (settings.allowTextAfterClosingQuote)
                                     state = CsvState.Data;
-                                    break;
-                                
-                                default:
-                                    if (rowConverter.allowTextAfterClosingQuote)
-                                        state = CsvState.Data;
-                                    else
-                                        throw new IllegalStateException(String.Format("Line {0} contains an unexpected character {1} after quote", rowNumber+1, (char)next));
-                                    break;
+                                else
+                                    throw new IllegalStateException(String.Format("Line {0} contains an unexpected character {1} after quote", rowNumber+1, (char)next));
                             }
                         }
                         else
@@ -178,7 +171,7 @@ namespace pnyx.net.impl.csv
                     return null;
                 
                 case CsvState.Quoted:
-                    if (!rowConverter.terminateQuoteOnEndOfFile)
+                    if (!settings.terminateQuoteOnEndOfFile)
                         throw new IllegalStateException("File ends with open quotes");
                     break;
             }

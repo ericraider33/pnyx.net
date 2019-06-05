@@ -48,7 +48,7 @@ namespace pnyx.net.test.impl
         [InlineData("\"ab", new String[] { "ab" })]
         public void settings(String source, String[] rowA)
         {
-            verifyRows(source, rowA, null, x => { x.setStrict(false); });
+            verifyRows(source, rowA, null, x => { x.settings.setDefaults(strict: false); });
         }
         
         private void verifyRows(String source, String[] rowA, String[] rowB, Action<CsvStreamToRowProcessor> callback = null)

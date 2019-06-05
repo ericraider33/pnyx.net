@@ -15,7 +15,7 @@ namespace pnyx.cmd.examples.documentation.library
             {
                 using (CsvReader reader = new CsvReader(stream, Encoding.UTF8))
                 {
-                    reader.setStrict(true); // throw errors for bad formatting
+                    reader.settings.setDefaults(strict: true); // throw errors for bad formatting
                     
                     List<String> row;
                     while ((row = reader.readRow()) != null)

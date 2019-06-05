@@ -11,7 +11,8 @@ namespace pnyx.net.impl.csv
 {
     public class CsvReader : CsvStreamToRowProcessor
     {        
-        public CsvReader(Stream stream, Encoding defaultEncoding = null)
+        public CsvReader(Stream stream, Encoding defaultEncoding = null, CsvSettings csvSettings = null) : 
+            base(csvSettings)
         {        
             Settings settings = SettingsHome.settingsFactory.buildSettings();
             settings.defaultEncoding = defaultEncoding ?? settings.defaultEncoding;

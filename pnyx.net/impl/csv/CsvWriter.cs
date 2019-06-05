@@ -2,46 +2,56 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using pnyx.net.errors;
 using pnyx.net.fluent;
-using pnyx.net.util;
 
 namespace pnyx.net.impl.csv
 {
-    public class CsvWriter : RowToCsvStream
+    public class CsvWriter : IDisposable
     {
-        public CsvWriter(Stream stream, Encoding defaultEncoding = null) : 
-            base(fromDefaultEncoding(defaultEncoding), stream)
-        {
-            writer = new StreamWriter(stream, streamInformation.getOutputEncoding());
-        }
-
-        private static StreamInformation fromDefaultEncoding(Encoding defaultEncoding = null)
-        {
-            Settings settings = SettingsHome.settingsFactory.buildSettings();            
-            settings.outputEncoding = defaultEncoding;
-            
-            return new StreamInformation(settings);
-        }        
+        public TextWriter writer { get; private set; }
+        public char delimiter { get; private set; }
+        public char escapeChar { get; private set; }
+        public char[] charsNeedEscape { get; private set; }          
         
-        public override void rowHeader(List<String> header)
+        public CsvWriter(
+            TextWriter writer,
+            char? delimiter = null,
+            char? escapeChar = null
+            )
         {
-            throw new IllegalStateException("Use writeRow method instead");            
-        }        
-
-        public override void processRow(List<String> row)
+            this.writer = writer;
+            this.delimiter = delimiter ?? Settings.DEFAULT_CSV_DELIMITER;
+            this.escapeChar = escapeChar ?? Settings.DEFAULT_CSV_ESCAPE_CHAR;
+            charsNeedEscape = CsvUtil.createCharsNeedEscape(this.delimiter, this.escapeChar);
+        }
+        
+        public CsvWriter(
+            Stream stream, 
+            Encoding defaultEncoding = null,
+            char? delimiter = null,
+            char? escapeChar = null
+            )
         {
-            throw new IllegalStateException("Use writeRow method instead");            
+            defaultEncoding = defaultEncoding ?? Settings.DEFAULT_ENCODING;
+            writer = new StreamWriter(stream, defaultEncoding);
+            this.delimiter = delimiter ?? Settings.DEFAULT_CSV_DELIMITER;
+            this.escapeChar = escapeChar ?? Settings.DEFAULT_CSV_ESCAPE_CHAR;
+            charsNeedEscape = CsvUtil.createCharsNeedEscape(this.delimiter, this.escapeChar);
         }
 
-        public override void endOfFile()
+        public void Dispose()
         {
-            throw new IllegalStateException("Use writeRow method instead");            
+            if (writer != null)
+            {
+                writer.Flush();
+                writer.Dispose();
+            }
+            writer = null;
         }
-
-        public void writeRow(List<String> row)
+        
+        public void writeRow(IEnumerable<String> row)
         {
-            writeRow_(row);
+            CsvUtil.writeRow(writer, row, delimiter, escapeChar, charsNeedEscape);
             writer.WriteLine();
         }
     }

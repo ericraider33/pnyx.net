@@ -61,7 +61,9 @@ namespace pnyx.net.fluent
             String outputNewline = null,                  
             bool? backupRewrite = null,
             bool? processOnDispose = null,
-            bool? stdIoDefault = null
+            bool? stdIoDefault = null,
+            char? csvDelimiter = null,
+            char? csvEscapeChar = null
             )
         {
             if (tempDirectory != null) settings.tempDirectory = tempDirectory;
@@ -75,7 +77,9 @@ namespace pnyx.net.fluent
             if (backupRewrite != null) settings.backupRewrite = backupRewrite.Value;
             if (processOnDispose != null) settings.processOnDispose = processOnDispose.Value;
             if (stdIoDefault != null) settings.stdIoDefault = stdIoDefault.Value;
-
+            if (csvDelimiter != null) settings.csvDelimiter = csvDelimiter.Value;
+            if (csvEscapeChar != null) settings.csvEscapeChar = csvEscapeChar.Value;
+            
             return this;
         }
 
@@ -203,13 +207,20 @@ namespace pnyx.net.fluent
             return this;
         }
 
-        public Pnyx asCsv(Action<Pnyx> block, bool strict = true, bool hasHeader = false)
+        public Pnyx asCsv(Action<Pnyx> block, 
+            bool strict = true, 
+            bool hasHeader = false,
+            char? delimiter = null,
+            char? escapeChar = null
+            )
         {
             if (state != FluentState.New && state != FluentState.Start)
                 throw new IllegalStateException("Pnyx is not in New,Start state: {0}", state.ToString());
 
+            CsvSettings csvSettings = settings.buildCsvSettings().setDefaults(strict, delimiter, escapeChar);
+            
             int indexModifier = parts.Count;
-            parts.Add(new CsvModifer { strict = strict, hasHeader = hasHeader });
+            parts.Add(new CsvModifer(csvSettings, hasHeader));
 
             block(this);
 
@@ -477,16 +488,20 @@ namespace pnyx.net.fluent
             return indexes;
         }
                 
-        public Pnyx parseCsv(bool strict = true, bool hasHeader = false)
+        public Pnyx parseCsv(bool? strict = true, 
+            bool hasHeader = false, 
+            char? delimiter = null,
+            char? escapeChar = null
+            )
         {
             requireStart(line: true, row: false);
+            CsvSettings csvSettings = settings.buildCsvSettings().setDefaults(strict, delimiter, escapeChar);
             
             ILineSource lineSource = (parts.Count == 0 ? null : parts[parts.Count-1]) as ILineSource;
             if (state == FluentState.Start && lineSource != null)
             {
-                CsvStreamToRowProcessor csv = new CsvStreamToRowProcessor();
+                CsvStreamToRowProcessor csv = new CsvStreamToRowProcessor(csvSettings);
                 csv.hasHeader = hasHeader;
-                csv.setStrict(strict);
                 csv.setSource(streamInformation, lineSource.streamFactory);
                 rowConverter = csv.getRowConverter();
 
@@ -495,8 +510,7 @@ namespace pnyx.net.fluent
             }
             else if (state == FluentState.Line)
             {
-                CsvRowConverter rc = new CsvRowConverter();   
-                rc.setStrict(strict);
+                CsvRowConverter rc = new CsvRowConverter(csvSettings);
                 lineToRow(rc, hasHeader);
             }
 
@@ -803,14 +817,20 @@ namespace pnyx.net.fluent
             return setEnd(output);
         }
 
-        public Pnyx writeCsv(String path, bool strict = true)
+        public Pnyx writeCsv(String path, bool strict = true, char? delimiter = null, char? escapeChar = null)
         {
-            return setEnd(new FileStream(path, FileMode.Create, FileAccess.Write), new CsvRowConverter().setStrict(strict));            
+            CsvSettings csvSettings = settings.buildCsvSettings().setDefaults(strict, delimiter, escapeChar);
+            CsvRowConverter converter = new CsvRowConverter(csvSettings);
+            
+            return setEnd(new FileStream(path, FileMode.Create, FileAccess.Write), converter);            
         }
 
-        public Pnyx writeCsvStream(Stream stream, bool strict = true)
+        public Pnyx writeCsvStream(Stream stream, bool strict = true, char? delimiter = null, char? escapeChar = null)
         {
-            return setEnd(stream, new CsvRowConverter().setStrict(strict));            
+            CsvSettings csvSettings = settings.buildCsvSettings().setDefaults(strict, delimiter, escapeChar);
+            CsvRowConverter converter = new CsvRowConverter(csvSettings);
+            
+            return setEnd(stream, converter);            
         }
 
         public Pnyx writeStdout()
