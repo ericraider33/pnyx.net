@@ -4,6 +4,8 @@ using System.IO;
 using System.Text;
 using pnyx.net.errors;
 using pnyx.net.fluent;
+using pnyx.net.impl;
+using pnyx.net.impl.sed;
 using pnyx.net.util;
 using Xunit;
 
@@ -483,7 +485,57 @@ valueX1,valueX1
 
             Assert.Equal(@"Gaia,Xerra,""Mother goddess of the earth""", actual);
         }
+        
+        [Fact]
+        public void columnFilter()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(PLANETS_GODS);
+                p.parseCsv();
+                p.columnFilter(3, new Grep { textToFind = "titan", caseSensitive = false });
+                actual = p.processToString();
+            }
 
+            Assert.Equal(PLANETS_GODS_TITANS, actual);
+
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(PLANETS_GODS);
+                p.parseCsv();
+                p.columnFilter(1, new Grep { textToFind = "titan", caseSensitive = false });
+                actual = p.processToString();
+            }
+
+            Assert.Equal("", actual);
+        }
+
+        [Fact]
+        public void columnTransformer()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(EARTH);
+                p.parseCsv();
+                p.columnTransformer(3, new SedReplace("t", "X", "gi"));
+                actual = p.processToString();
+            }
+
+            Assert.Equal(@"Gaia,Terra,""MoXher goddess of Xhe earXh""", actual);
+
+            using (Pnyx p = new Pnyx())
+            {
+                p.readString(EARTH);
+                p.parseCsv();
+                p.columnTransformer(2, new SedReplace("t", "X", "gi"));
+                actual = p.processToString();
+            }
+
+            Assert.Equal(@"Gaia,Xerra,""Mother goddess of the earth""", actual);
+        }
+        
         [Fact]
         public void withBoth()
         {

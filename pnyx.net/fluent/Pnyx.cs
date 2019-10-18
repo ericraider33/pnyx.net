@@ -470,7 +470,7 @@ namespace pnyx.net.fluent
             return this;
         }
 
-        private int[] convertColumnNumbersToIndex(int[] columnNumbers)
+        private int[] convertColumnNumbersToIndex(params int[] columnNumbers)
         {
             if (columnNumbers.Length == 0)
                 throw new InvalidArgumentException("Must specify at least one ColumnNumber");
@@ -671,6 +671,32 @@ namespace pnyx.net.fluent
         public Pnyx rowBuffering(IRowBuffering buffering)
         {
             return rowPart(new RowBufferingProcessor { buffering = buffering });
+        }
+        
+        public Pnyx columnFilter(int columnNumber, ILineFilter lineFilter)
+        {
+            int[] indexes = convertColumnNumbersToIndex(columnNumber);
+            return rowFilter(new RowFilterWithColumns(indexes, new RowFilterShimOr { lineFilter = lineFilter }));
+        }
+        
+        public Pnyx columnFilterFunc(int columnNumber, Func<String, bool> filter)
+        {
+            int[] indexes = convertColumnNumbersToIndex(columnNumber);
+            ILineFilter lineFilter = new LineFilterFunc { lineFilterFunc = filter };
+            return rowFilter(new RowFilterWithColumns(indexes, new RowFilterShimOr { lineFilter = lineFilter }));
+        }
+        
+        public Pnyx columnTransformer(int columnNumber, ILineTransformer lineTransformer)
+        {
+            int[] indexes = convertColumnNumbersToIndex(columnNumber);
+            return rowTransformer(new RowTransformerWithColumns(indexes, new RowTransformerShimOr { lineTransformer = lineTransformer }));
+        }
+        
+        public Pnyx columnTransformerFunc(int columnNumber, Func<String, String> transform)
+        {
+            int[] indexes = convertColumnNumbersToIndex(columnNumber);
+            ILineTransformer lineTransformer = new LineTransformerFunc { lineTransformerFunc = transform };
+            return rowTransformer(new RowTransformerWithColumns(indexes, new RowTransformerShimOr { lineTransformer = lineTransformer }));
         }
 
         public Pnyx grep(String textToFind, bool caseSensitive = true)
