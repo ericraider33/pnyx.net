@@ -2,7 +2,20 @@
 # Refernces: 
 # https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package-using-the-dotnet-cli
 # https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet?tabs=netcore21
-import subprocess, argparse, os, zipfile, shutil, glob
+#
+# To release nuget:
+# - From IDE:
+#       - Update pnyx.net NuGet properties version
+#       - Update pnyx.net Assembly version
+#       - Update pnyx.cmd Assembly version
+# - build.py nuget
+# - Using web, upload result on page: https://www.nuget.org/packages/manage/upload
+#
+# To release CMD:
+# - build.py cmd
+# - Using web, upload resulting zip on page: https://s3.console.aws.amazon.com/s3/buckets/bto-web-content/pnyx/cmd/?region=us-east-1&tab=overview
+#
+import subprocess, argparse, os, zipfile, shutil, glob, re
 
 parser = argparse.ArgumentParser(description='Builds pnyx.net')
 parser.add_argument('target', help='Target of either: cmd or nuget')
@@ -36,6 +49,11 @@ def packageDir(path, name):
                     file = os.path.join(root, file)
                     arcname = file.replace(path,'')
                     cmdZip.write(file, arcname=arcname)
+
+def dos2unix(path):                    
+    text = open(path).read()
+    open(path, "w", newline='\n').write(text)                    
+    print('Converted newlines to unix for file: ', path)
             
 def buildCmd():
     verifyDependencyDotNet()    
@@ -52,9 +70,23 @@ def buildCmd():
     # Copys deployment files
     copyDir('deploy','pnyx.cmd/.out/')
     
+    # Reads version number
+    version = subprocess.check_output(['dotnet','pnyx.cmd/.out/lib/pnyx.cmd.dll','-v'], stderr=subprocess.STDOUT).decode()
+    version = version.strip()
+    version = re.sub(".*[ ]", "", version)
+    print('Packaging CMD version:')
+    
+    # Assures bash files are unix
+    for newlineFix in glob.glob('pnyx.cmd/.out/*.bsh'):
+        dos2unix(newlineFix)    
+    
     # Package zip 
-    print("\n\nRunning Step: Package")
-    packageDir('pnyx.cmd/.out/', 'cmd.zip')
+    packageName = 'pnyx.cmd-{0}.zip'.format(version)
+    print("\n\nRunning Step: Package", packageName)
+    packageDir('pnyx.cmd/.out/', packageName)
+    
+    # Print AWS url
+    print("\nUpload cmd.zip file to URL: https://s3.console.aws.amazon.com/s3/buckets/bto-web-content/pnyx/cmd/?region=us-east-1&tab=overview")
     
 def buildNuget():
     verifyDependencyDotNet()    
@@ -71,7 +103,8 @@ def buildNuget():
     print("\n\nRunning Step: Pack")
     subprocess.run(['dotnet','pack','--output','.out/lib','pnyx.net/pnyx.net.csproj'], check=True)
     
-    return
+    # Prints nuget URL
+    print("\nUpload 'nupkg' file to URL: https://www.nuget.org/packages/manage/upload")
 
 
 
