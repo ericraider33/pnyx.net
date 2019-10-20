@@ -39,3 +39,10 @@
 # When true, Pnyx assumes reading from StdIn and writing to StdOut.
 # When false, you must explicitly "read" and "write" before compiling / processes Pnyx
 #stdIoDefault: false
+
+# Character for parsing CSV [comma] delimiter.  Defaults to comma character
+#csvDelimiter: ','
+  
+# Character for parsing CSV quoted text.  Defaults to double quote character
+#csvEscapeChar: '"'
+
