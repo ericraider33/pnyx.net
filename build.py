@@ -65,7 +65,7 @@ def buildCmd():
        
     # Publish build
     print("\n\nRunning Step: Publish")
-    subprocess.run(['dotnet','publish','--configuration','Release','--output','pnyx.cmd/.out/lib','pnyx.cmd/pnyx.cmd.csproj'], check=True)
+    subprocess.run(['dotnet','publish','--configuration','Release','--output','.out/lib','pnyx.cmd/pnyx.cmd.csproj'], check=True)
     
     # Copys deployment files
     copyDir('deploy','pnyx.cmd/.out/')

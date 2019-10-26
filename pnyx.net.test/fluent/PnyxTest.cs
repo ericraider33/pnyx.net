@@ -993,5 +993,51 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
 
             Assert.Equal("7,7,7", actual.TrimEnd());                        
         }
+
+        [Fact]
+        public void readLineFunc()
+        {
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.setSettings(outputNewline: "\n");
+                p.readLineFunc(() => new[] {"a","b","c"});
+                actual = p.processToString();
+            }
+            
+            Assert.Equal("a\nb\nc", actual);
+        }
+
+        [Fact]
+        public void readRowFunc()
+        {
+            Func<IEnumerable<List<String>>> source = () => new[]
+            {
+                new List<String> {"a", "1"},
+                new List<String> {"b", "2"},
+                new List<String> {"c", "3"}
+            };
+            
+            String actual;
+            using (Pnyx p = new Pnyx())
+            {
+                p.setSettings(outputNewline: "\n");
+                p.readRowFunc(source);
+                actual = p.processToString();
+            }
+            
+            String expected = "a,1\nb,2\nc,3";
+            Assert.Equal(expected, actual);
+            
+            using (Pnyx p = new Pnyx())
+            {
+                p.setSettings(outputNewline: "\n");
+                p.readRowFunc(source, header: () => new List<string> { "Letter", "Number" });
+                actual = p.processToString();
+            }
+
+            expected = "Letter,Number\n" + expected;
+            Assert.Equal(expected, actual);
+        }
     }
 }

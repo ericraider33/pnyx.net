@@ -75,7 +75,7 @@ namespace pnyx.cmd.examples.documentation.library
         {
             using (Pnyx p = new Pnyx())
             {
-                p.startRow(new CustomRowSource(p.streamInformation, 40), new CsvRowConverter());
+                p.readRow(new CustomRowSource(p.streamInformation, 40), new CsvRowConverter());
                 p.head(3);
                 p.writeStdout();
             }                        

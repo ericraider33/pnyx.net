@@ -83,7 +83,7 @@ namespace pnyx.net.fluent
             return this;
         }
 
-        public Pnyx startLine(ILinePart lineProcessor)
+        public Pnyx readLine(ILinePart lineProcessor)
         {
             if (state != FluentState.New || parts.Count > 0)
                 throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
@@ -94,7 +94,7 @@ namespace pnyx.net.fluent
             return this;
         }
 
-        public Pnyx startRow(IRowPart rowProcessor, IRowConverter rowConverter)
+        public Pnyx readRow(IRowPart rowProcessor, IRowConverter rowConverter)
         {
             if (state != FluentState.New || parts.Count > 0)
                 throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
@@ -104,6 +104,21 @@ namespace pnyx.net.fluent
             state = FluentState.Row;
             
             return this;            
+        }
+
+        public Pnyx readLineFunc(Func<IEnumerable<String>> source)
+        {
+            return readLine(new LineProcessorFunc(source));
+        }
+
+        public Pnyx readRowFunc(Func<IEnumerable<List<String>>> source, 
+            Func<List<String>> header = null,
+            IRowConverter rowConverter = null
+            )
+        {
+            IRowPart rowProcessor = new RowProcessorFunc(header, source);
+            rowConverter = rowConverter ?? new CsvRowConverter();
+            return readRow(rowProcessor, rowConverter);
         }
 
         public Pnyx readStreamFactory(IStreamFactory streamFactory)
@@ -947,13 +962,13 @@ namespace pnyx.net.fluent
             if (state == FluentState.Start || state == FluentState.Line)
             {
                 LinePassProcessor teePass = new LinePassProcessor();
-                teePnyx.startLine(teePass);
+                teePnyx.readLine(teePass);
                 linePart(new LineTeeProcessor(teePass));
             }
             else if (state == FluentState.Row)
             {
                 RowPassProcessor teePass = new RowPassProcessor();
-                teePnyx.startRow(teePass, rowConverter);
+                teePnyx.readRow(teePass, rowConverter);
                 rowPart(new RowTeeProcessor(teePass));
             }
 
