@@ -25,7 +25,7 @@ args = parser.parse_args()
 def resetDirectory(path):
     if os.path.exists(path):
         shutil.rmtree(path)
-    else:
+    if os.path.exists(path) == False:
         os.mkdir(path)
     print("Verified Dependency: resetDirectory=" + path)
 
