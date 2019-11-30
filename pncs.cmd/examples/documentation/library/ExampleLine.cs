@@ -8,11 +8,11 @@ using pnyx.net.processors;
 using pnyx.net.processors.dest;
 using pnyx.net.util;
 
-namespace pnyx.cmd.examples.documentation.library
+namespace pncs.cmd.examples.documentation.library
 {
     public class ExampleLine
     {
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleLine not
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleLine not
         public static void not()
         {
             const String input = @"Line one: house
@@ -30,7 +30,7 @@ Line three: separation of economics and state
             // Line two: cat, dog            
         }
         
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleLine or
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleLine or
         public static void or()
         {
             const String input = @"Line one: house
@@ -52,7 +52,7 @@ Line three: separation of economics and state
             // Line two: cat, dog            
         }
         
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleLine filterFunc
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleLine filterFunc
         public static void filterFunc()
         {
             const String input = @"Text1with0numbers
@@ -73,7 +73,7 @@ Oliver Twist
             // Text1with0numbers                        
         }
         
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleLine transformerFunc
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleLine transformerFunc
         public static void transformerFunc()
         {
             const String input = @"Text1with0numbers
@@ -94,7 +94,7 @@ Oliver Twist
             // 10                        
         }
         
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleLine parseDelimiter
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleLine parseDelimiter
         public static void parseDelimiter()
         {
             const String input = "a|b|c|d|e|f|g";
@@ -128,7 +128,7 @@ Oliver Twist
             }
         }
         
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleLine rowConverter
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleLine rowConverter
         public static void rowConverter()
         {
             const String input = "set x := (set == 0 ? 0 : 100 / set)";
@@ -142,7 +142,7 @@ Oliver Twist
             // outputs: var x := (set == 0 ? 0 : 100 / set)
         }
                 
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleLine embeddedNewlineParseCsv
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleLine embeddedNewlineParseCsv
         public static void embeddedNewlineParseCsv()
         {
             const String input = "a,\"Long\nText\n\"";
@@ -160,7 +160,7 @@ Oliver Twist
             // ,
         }        
         
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleLine embeddedNewlineAsCsv
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleLine embeddedNewlineAsCsv
         public static void embeddedNewlineAsCsv()
         {
             const String input = "a,\"Long\nText\n\"";
@@ -174,7 +174,7 @@ Oliver Twist
             // "Long\nText\n",a
         }     
         
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleLine embeddedNewlineParseCsv
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleLine embeddedNewlineParseCsv
         public static void embeddedNewlineAutoAsCsv()
         {
             const String input = "a,\"Long\nText\n\"";

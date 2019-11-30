@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 get_script_dir () {
      SOURCE="${BASH_SOURCE[0]}"
@@ -13,5 +13,5 @@ get_script_dir () {
      echo "$DIR"
 }
 
-DLL="$(get_script_dir)/lib/pnyx.cmd.dll"
-dotnet $DLL -cs "$@"
+DLL="$(get_script_dir)/lib/pncs.cmd.dll"
+dotnet $DLL "$@"

@@ -1,11 +1,11 @@
 using System;
 using pnyx.net.fluent;
 
-namespace pnyx.cmd.examples.documentation.library
+namespace pncs.cmd.examples.documentation.library
 {
     public class ExampleSettings
     {        
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleSettings instance
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleSettings instance
         public static void instance()
         {
             const String input = "line one\nline two";
@@ -21,7 +21,7 @@ namespace pnyx.cmd.examples.documentation.library
             // line two
         }            
         
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleSettings global
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleSettings global
         public static void global()
         {
             SettingsHome.settingsFactory = new SettingsHome(
@@ -53,7 +53,7 @@ namespace pnyx.cmd.examples.documentation.library
             }
         }
         
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleSettings factory
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleSettings factory
         public static void factory()
         {
             SettingsHome.settingsFactory = new CustomFactory();

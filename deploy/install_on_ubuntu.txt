@@ -13,7 +13,7 @@ sudo apt-get install dotnet-runtime-2.2
 
 2) Install Pnyx:
 cd /opt
-sudo wget https://s3.us-east-2.amazonaws.com/bto-web-content/pnyx/cmd/pnyx.cmd-0.9.0.zip -O pnyx.cmd.zip
+sudo wget https://s3.us-east-2.amazonaws.com/bto-web-content/pnyx/cmd/pnyx.cmd-<version>.zip -O pnyx.cmd.zip
 sudo unzip pnyx.cmd.zip -d pnyx
 sudo chmod +x pnyx/*.bsh
 sudo rm pnyx.cmd.zip
@@ -25,4 +25,5 @@ sudo ln -s /opt/pnyx/pnyx.bsh pnyx
 sudo ln -s /opt/pnyx/pncs.bsh pncs
 
 4)Verify:
-pnyx -i '[readString: hello world]'
+pnyx -i '[readString: hello world
+pncs -i 'readString("hello world")'

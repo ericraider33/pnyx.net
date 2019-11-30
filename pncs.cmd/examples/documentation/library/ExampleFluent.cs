@@ -6,11 +6,11 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using pnyx.net.fluent;
 using pnyx.net.util;
 
-namespace pnyx.cmd.examples.documentation.library
+namespace pncs.cmd.examples.documentation.library
 {
     public class ExampleFluent
     {
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleFluent builder
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleFluent builder
         public static void builder()
         {
             using (var p = new Pnyx())
@@ -19,7 +19,7 @@ namespace pnyx.cmd.examples.documentation.library
             // outputs: d|c|b|a           
         }
 
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleFluent pnyxMethods
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleFluent pnyxMethods
         public static void pnyxMethods()
         {
             MethodInfo[] methods = typeof(Pnyx).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
@@ -29,6 +29,6 @@ namespace pnyx.cmd.examples.documentation.library
                 p.readString(names).write(@"c:\dev\ee.txt");
         }
 
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleFluent pnyxHtml
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleFluent pnyxHtml
     }
 }

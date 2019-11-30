@@ -9,11 +9,11 @@ using pnyx.net.processors.lines;
 using pnyx.net.processors.sources;
 using pnyx.net.util;
 
-namespace pnyx.cmd.examples.documentation.library
+namespace pncs.cmd.examples.documentation.library
 {
     public class ExampleProcessorChain
     {
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleProcessorChain processorChain
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleProcessorChain processorChain
         public static void processorChain()
         {
             StreamInformation streamInformation = new StreamInformation(new Settings());
@@ -44,7 +44,7 @@ namespace pnyx.cmd.examples.documentation.library
             // outputs: Hello World, with love from Pnyx...            
         }
 
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleProcessorChain sedShim
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleProcessorChain sedShim
         public static void sedShim()
         {
             using (Pnyx p = new Pnyx())

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.RegularExpressions;
+using pnyx.cmd.shared;
 using pnyx.net.errors;
 using pnyx.net.fluent;
 using pnyx.net.util;

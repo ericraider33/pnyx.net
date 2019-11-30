@@ -1,10 +1,10 @@
 using pnyx.net.fluent;
 
-namespace pnyx.cmd.examples.documentation.library
+namespace pncs.cmd.examples.documentation.library
 {
     public class ExampleStateMachine
     {
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleStateMachine cat
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleStateMachine cat
         public static void cat()
         {
             using (Pnyx p = new Pnyx())
@@ -25,7 +25,7 @@ namespace pnyx.cmd.examples.documentation.library
             // Line three
         }
 
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleStateMachine catCsv
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleStateMachine catCsv
         public static void catCsv()
         {
             using (Pnyx p = new Pnyx())
@@ -48,7 +48,7 @@ namespace pnyx.cmd.examples.documentation.library
             // three,Line
         }
 
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleStateMachine tee
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleStateMachine tee
         public static void tee()
         {
             using (Pnyx p = new Pnyx())
@@ -67,7 +67,7 @@ namespace pnyx.cmd.examples.documentation.library
             }
         }
         
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleStateMachine teeMultiple
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleStateMachine teeMultiple
         public static void teeMultiple()
         {
             using (Pnyx p = new Pnyx())

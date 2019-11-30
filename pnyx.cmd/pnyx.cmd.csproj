@@ -1,14 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <AssemblyVersion>0.9.5</AssemblyVersion>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\pnyx.cmd.shared\pnyx.cmd.shared.csproj" />
     <ProjectReference Include="..\pnyx.net\pnyx.net.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="2.10.0" />
-    <PackageReference Include="YamlDotNet" Version="5.3.0" />
   </ItemGroup>
 </Project>

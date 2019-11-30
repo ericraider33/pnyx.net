@@ -1,2 +1,2 @@
 @echo off
-dotnet %~dp0lib\pnyx.cmd.dll -cs %*
+dotnet %~dp0lib\pncs.cmd.dll %*

@@ -4,11 +4,11 @@ using System.Text;
 using pnyx.net.fluent;
 using pnyx.net.util;
 
-namespace pnyx.cmd.examples.documentation.library
+namespace pncs.cmd.examples.documentation.library
 {
     public class ExampleRow
     {
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleRow andShim
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleRow andShim
         public static void andShim()
         {
             const String input = @"Line one,a,,c
@@ -26,7 +26,7 @@ Line three,,,c
             // "Line two",a,b,c            
         }
         
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleRow orShim
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleRow orShim
         public static void orShim()
         {
             const String input = @"Line one,a,,c
@@ -46,7 +46,7 @@ Line three,,,c
             // "Line three",,,c            
         }
 
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleRow filterFunc
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleRow filterFunc
         public static void filterFunc()
         {
             const String input = @"Line one,KEEPER
@@ -63,7 +63,7 @@ Line two,Loser
             // "Line one",KEEPER
         }
         
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleRow transformerFunc
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleRow transformerFunc
         public static void transformerFunc()
         {
             const String input = @"Line one,KEEPER
@@ -81,7 +81,7 @@ Line two,LOSER
             // Loser
         }
 
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleRow printDelimiter
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleRow printDelimiter
         public static void printDelimiter()
         {
             const String input = "col1,\"Column, zwei\""; 
@@ -95,7 +95,7 @@ Line two,LOSER
             // outputs: col1|Column, zwei
         }
 
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExampleRow printDelimiter
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleRow printDelimiter
         public static void print()
         {
             const String input = "Socialism,Communism,Fascism"; 

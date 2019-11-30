@@ -2,7 +2,7 @@ using System;
 using pnyx.net.fluent;
 using pnyx.net.util;
 
-namespace pnyx.cmd.examples
+namespace pncs.cmd.examples
 {
     public class ColumnDefinitionExample
     {

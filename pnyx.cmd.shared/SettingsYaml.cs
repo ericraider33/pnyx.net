@@ -8,7 +8,7 @@ using pnyx.net.util;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace pnyx.cmd
+namespace pnyx.cmd.shared
 {
     public class SettingsYaml
     {
@@ -95,7 +95,7 @@ namespace pnyx.cmd
         public Settings deserializeSettings(TextReader source)
         {
             IDeserializer deserializer = new DeserializerBuilder()
-                .WithNamingConvention(new CamelCaseNamingConvention())
+                .WithNamingConvention(CamelCaseNamingConvention.Instance)
                 .WithTypeConverter(new EncodingTypeConverter())
                 .Build();
 
@@ -114,7 +114,7 @@ namespace pnyx.cmd
         public void serializeSettings(TextWriter destination, Settings settings)
         {
             ISerializer serializer = new SerializerBuilder()
-                .WithNamingConvention(new CamelCaseNamingConvention())
+                .WithNamingConvention(CamelCaseNamingConvention.Instance)
                 .WithTypeConverter(new EncodingTypeConverter())
                 .Build();
 

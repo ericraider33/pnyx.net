@@ -56,8 +56,9 @@ def dos2unix(path):
     print('Converted newlines to unix for file: ', path)
             
 def buildCmd():
+    pathOut = os.path.abspath(".out")
     verifyDependencyDotNet()    
-    resetDirectory('pnyx.cmd/.out')
+    resetDirectory(pathOut)
        
     # Cleans build
     print("\n\nRunning Step: Clean")
@@ -65,25 +66,26 @@ def buildCmd():
        
     # Publish build
     print("\n\nRunning Step: Publish")
-    subprocess.run(['dotnet','publish','--configuration','Release','--output','.out/lib','pnyx.cmd/pnyx.cmd.csproj'], check=True)
+    subprocess.run(['dotnet','publish','--configuration','Release','--output',pathOut+'/lib','pnyx.cmd/pnyx.cmd.csproj'], check=True)
+    subprocess.run(['dotnet','publish','--configuration','Release','--output',pathOut+'/lib','pncs.cmd/pncs.cmd.csproj'], check=True)
     
     # Copys deployment files
-    copyDir('deploy','pnyx.cmd/.out/')
+    copyDir('deploy',pathOut)
     
     # Reads version number
-    version = subprocess.check_output(['dotnet','pnyx.cmd/.out/lib/pnyx.cmd.dll','-v'], stderr=subprocess.STDOUT).decode()
+    version = subprocess.check_output(['dotnet',pathOut+'/lib/pncs.cmd.dll','-v'], stderr=subprocess.STDOUT).decode()
     version = version.strip()
     version = re.sub(".*[ ]", "", version)
     print('Packaging CMD version:')
     
     # Assures bash files are unix
-    for newlineFix in glob.glob('pnyx.cmd/.out/*.bsh'):
+    for newlineFix in glob.glob(pathOut+'/*.bsh'):
         dos2unix(newlineFix)    
     
     # Package zip 
     packageName = 'pnyx.cmd-{0}.zip'.format(version)
     print("\n\nRunning Step: Package", packageName)
-    packageDir('pnyx.cmd/.out/', packageName)
+    packageDir(pathOut, packageName)
     
     # Print AWS url
     print("\nUpload cmd.zip file to URL: https://s3.console.aws.amazon.com/s3/buckets/bto-web-content/pnyx/cmd/?region=us-east-1&tab=overview")

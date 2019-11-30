@@ -4,11 +4,11 @@ using System.IO;
 using System.Text;
 using pnyx.net.impl.csv;
 
-namespace pnyx.cmd.examples.documentation.library
+namespace pncs.cmd.examples.documentation.library
 {
     public class ExamplesUtilities
     {
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExamplesUtilities csvReader
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExamplesUtilities csvReader
         public static void csvReader()
         {
             using (FileStream stream = new FileStream("my.csv", FileMode.Open, FileAccess.Read))
@@ -27,7 +27,7 @@ namespace pnyx.cmd.examples.documentation.library
             }
         }            
         
-        // pnyx -e=documentation pnyx.cmd.examples.documentation.library.ExamplesUtilities csvWriter
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExamplesUtilities csvWriter
         public static void csvWriter()
         {
             using (var stream = new FileStream("o.csv", FileMode.Create, FileAccess.Write))

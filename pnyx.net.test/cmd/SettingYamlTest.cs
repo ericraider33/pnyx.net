@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using pnyx.cmd;
+using pnyx.cmd.shared;
 using pnyx.net.errors;
 using pnyx.net.fluent;
 using Xunit;

@@ -3,7 +3,7 @@ using pnyx.net.fluent;
 using pnyx.net.impl;
 using pnyx.net.util;
 
-namespace pnyx.cmd.examples
+namespace pncs.cmd.examples
 {
     public static class BhcDischarge
     {

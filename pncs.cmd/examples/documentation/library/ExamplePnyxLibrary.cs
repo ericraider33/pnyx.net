@@ -1,6 +1,6 @@
 using pnyx.net.fluent;
      
-namespace pnyx.cmd.examples.documentation.library
+namespace pncs.cmd.examples.documentation.library
 {
     public class ExamplePnyxLibary
     {

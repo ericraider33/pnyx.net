@@ -7,7 +7,7 @@ using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
 
-namespace pnyx.cmd
+namespace pnyx.cmd.shared
 {
     public class EncodingTypeConverter : IYamlTypeConverter
     {
@@ -18,7 +18,7 @@ namespace pnyx.cmd
 
         public Object ReadYaml(IParser parser, Type type)
         {            
-            Scalar valueNode = parser.Expect<Scalar>();
+            Scalar valueNode = parser.Consume<Scalar>();
             String valueText = valueNode.Value;
             return parseText(valueText);
         }

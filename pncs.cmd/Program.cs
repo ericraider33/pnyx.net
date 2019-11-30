@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using pncs.cmd.examples;
 using pnyx.cmd.shared;
+using pnyx.net.errors;
 using pnyx.net.fluent;
 using pnyx.net.util;
 
-namespace pnyx.cmd
+namespace pncs.cmd
 {
     public class Program
     {
@@ -24,11 +26,16 @@ namespace pnyx.cmd
                                 
                 // Reads settings file
                 SettingsYaml.parseSetting();
+
+                // Undocumented flag / used for testing
+                String example = switches.value("-e", "--example");
+                if (example != null)
+                    return runExample(example, switches, args);
                 
                 if (args.Length > 1)
-                    return printUsage("unknown arguments specified. Pnyx only expected 1 parameter but found: " + args.Length, 4);                
+                    return printUsage("unknown arguments specified. Pncs only expected 1 parameter but found: " + args.Length, 4);                
                 
-                return runYaml(switches, args);
+                return runCSharp(switches, args);
             }
             catch (Exception e)
             {
@@ -41,34 +48,32 @@ namespace pnyx.cmd
             }
         }
 
-        private static int runYaml(Dictionary<String, String> switches, String[] args)
+        private static int runCSharp(Dictionary<String, String> switches, String[] args)
         {
-            TextReader yamlInput;
+            String source;
             if (switches.hasAny("-i", "--inline"))
             {
                 if (args.Length == 0)
-                    return printUsage("missing inline YAML text", 3);
+                    return printUsage("missing inline CSharp script", 3);
 
-                yamlInput = new StringReader(args[0]);
+                source = args[0];
             }
             else
             {
                 if (args.Length == 0)
-                    return printUsage("missing YAML file", 2);
+                    return printUsage("missing CSharp file", 2);
 
-                yamlInput = new StreamReader(new FileStream(args[0], FileMode.Open, FileAccess.Read));
+                using (TextReader reader = new StreamReader(new FileStream(args[0], FileMode.Open, FileAccess.Read)))
+                    source = reader.ReadToEnd();
             }
-
-            using (yamlInput)
-            {
-                YamlParser parser = new YamlParser();
-                List<Pnyx> toExecute = parser.parseYaml(yamlInput);
-                foreach (Pnyx pnyx in toExecute)
-                {
-                    using (pnyx)
-                        pnyx.process();
-                }            
-            }
+            
+            CodeParser parser = new CodeParser();
+            Pnyx p = parser.parseCode(source);
+            if (p.state != FluentState.Compiled)
+                throw new IllegalStateException("Pncs wasn't compiled properly");
+                
+            using (p)
+                p.process();
 
             return 0;
         }
@@ -111,19 +116,55 @@ namespace pnyx.cmd
             }
 
             Console.WriteLine();
-            Console.WriteLine("Run a file of Pnyx commands from YAML script");
+            Console.WriteLine("Run a file of Pncs commands from CSharp script");
             Console.WriteLine();
             Console.WriteLine("optional arguments:");
             Console.WriteLine("-h, --help              show this help message and exit");
             Console.WriteLine("-d, --debug             prints stack trace upon exception");
             Console.WriteLine("-v, --version           shows version of application");            
-            Console.WriteLine("-i, --inline            flag to specify that first parameter is an inline YAML String instead of a file path");
+            Console.WriteLine("-i, --inline            flag to specify that first parameter is an inline CSharp String instead of a file path");
             Console.WriteLine("-vs, --verboseSettings  flag to display settings. program after displaying settings");
             Console.WriteLine();
             Console.WriteLine("required arguments:");
-            Console.WriteLine("commands                path to YAML file of Pnyx commands, which are compiled and executed");
+            Console.WriteLine("commands                path to CSharp file of Pnyx commands, which are compiled and executed");
 
             return errorCode;
+        }
+
+        private static int runExample(String example, Dictionary<String, String> switches, String[] args)
+        {                        
+            switch (example.ToLower())
+            {
+                case "bhcdischarge": return BhcDischarge.main();
+                case "bhcprocedure": return BhcProcedures.main();
+                case "altitude": return Altitude.main();
+                case "ga": return GaCleanup.main();
+                case "column": return ColumnDefinitionExample.main();
+                case "documentation": return runDocumentationExample(switches, args);
+                default: return printUsage("Unknown example: " + example, 69);                    
+            }
+        }
+
+        private static int runDocumentationExample(Dictionary<String, String> switches, String[] args)
+        {
+            if (args.Length != 2)
+                return printUsage("Invalid Parameters: Documentation examples require a class name and a method name as parameters");
+            
+            String typeName = args[0];
+            String methodName = args[1];
+
+            // Finds type
+            Assembly cmdAssembly = typeof(Program).Assembly;
+            Type type = cmdAssembly.GetType(typeName);
+            
+            MethodInfo method = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static);
+            if (method == null)
+                throw new InvalidArgumentException("Static method '{0}' could not be found on type: {1}", methodName, typeName);
+            
+            // Runs example
+            method.Invoke(null, new Object[0]);
+
+            return 0;
         }
     }
 }

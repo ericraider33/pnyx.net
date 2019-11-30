@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.Scripting;
 using pnyx.net.errors;
 using pnyx.net.fluent;
 
-namespace pnyx.cmd
+namespace pncs.cmd
 {
     // https://github.com/dotnet/roslyn/wiki/Scripting-API-Samples#multi   
     public class CodeParser

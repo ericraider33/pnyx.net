@@ -1,6 +1,6 @@
 using System;
 using Microsoft.CodeAnalysis.Scripting;
-using pnyx.cmd;
+using pncs.cmd;
 using pnyx.net.fluent;
 using Xunit;
 
