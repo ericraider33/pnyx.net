@@ -26,6 +26,7 @@ namespace pnyx.net.fluent
     {
         public FluentState state { get; private set; }
         public StreamInformation streamInformation { get; private set; }
+        public INumberedInputOutput numberedInputOutput { get; private set; }
         public readonly Settings settings;
         private IProcessor processor;
         private IRowConverter rowConverter;
@@ -80,6 +81,12 @@ namespace pnyx.net.fluent
             if (csvDelimiter != null) settings.csvDelimiter = csvDelimiter.Value;
             if (csvEscapeChar != null) settings.csvEscapeChar = csvEscapeChar.Value;
             
+            return this;
+        }
+
+        public Pnyx setNumberedInputOutput(INumberedInputOutput numberedInputOutput)
+        {
+            this.numberedInputOutput = numberedInputOutput;
             return this;
         }
 
@@ -250,8 +257,8 @@ namespace pnyx.net.fluent
 
         private void requireStart(bool line, bool row)
         {
-            if (state == FluentState.New && settings.stdIoDefault)
-                readStdin();
+            if (state == FluentState.New)
+                defaultInput();
 
             if (line && row)
             {
@@ -765,7 +772,7 @@ namespace pnyx.net.fluent
 
         public Pnyx compile()
         {
-            defaultStdOut();
+            defaultOutput();
             
             if (state == FluentState.Compiled || state == FluentState.CompiledServile)
                 return this;
@@ -993,21 +1000,42 @@ namespace pnyx.net.fluent
             }
         }
 
-        private void defaultStdOut()
+        private void defaultInput()
         {
-            if (!settings.stdIoDefault)
-                return;
-            
+            if (numberedInputOutput != null)
+            {
+                String inputFile = numberedInputOutput.getImpliedInputFileName();
+                if (inputFile != null)
+                    read(inputFile);
+            }
+
+            if (settings.stdIoDefault)
+                readStdin();
+        }
+
+        private void defaultOutput()
+        {
             if (state == FluentState.New)
                 readStdin();
 
-            if ((state == FluentState.Line || state == FluentState.Row || state == FluentState.Start) && settings.stdIoDefault)
+            bool properState = state == FluentState.Line || state == FluentState.Row || state == FluentState.Start;
+            if (!properState)
+                return;
+            
+            if (numberedInputOutput != null)
+            {
+                String outputFile = numberedInputOutput.getImpliedOutputFileName();
+                if (outputFile != null)
+                    write(outputFile);
+            }
+
+            if (settings.stdIoDefault)
                 writeStdout();            
         }
 
         public Pnyx process()
         {
-            defaultStdOut();
+            defaultOutput();
             
             if (state == FluentState.End)
                 compile();
@@ -1033,7 +1061,7 @@ namespace pnyx.net.fluent
         {
             if (settings.processOnDispose)
             {
-                defaultStdOut();
+                defaultOutput();
                 if (state == FluentState.End || state == FluentState.Compiled)
                     process();
             }

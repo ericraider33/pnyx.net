@@ -66,11 +66,14 @@ namespace pncs.cmd
                 using (TextReader reader = new StreamReader(new FileStream(args[0], FileMode.Open, FileAccess.Read)))
                     source = reader.ReadToEnd();
             }
-            
+                        
+            Pnyx p = new Pnyx();
+            p.setSettings(stdIoDefault: true);              // forces STD-IN/OUT as defaults                         
+
             CodeParser parser = new CodeParser();
-            Pnyx p = parser.parseCode(source);
+            parser.parseCode(p, source, compilePnyx: true);
             if (p.state != FluentState.Compiled)
-                throw new IllegalStateException("Pncs wasn't compiled properly");
+                throw new IllegalStateException("Pnyx wasn't compiled properly");
                 
             using (p)
                 p.process();
@@ -100,7 +103,7 @@ namespace pncs.cmd
         private static void printVersion()
         {
             AssemblyName assemblyName = Assembly.GetAssembly(typeof(Pnyx)).GetName();
-            Console.WriteLine("pnyx.cmd {0}", assemblyName.Version);            
+            Console.WriteLine("pncs.cmd {0}", assemblyName.Version);            
         }
         
         private static int printUsage(String message = null, int errorCode = 0)
@@ -108,7 +111,7 @@ namespace pncs.cmd
             if (message == null && errorCode == 0)
                 printVersion();        // shows version when user asks for Help
             
-            Console.WriteLine("usage: pnyx [-h] commands");
+            Console.WriteLine("usage: pncs [-h] commands");
             if (message != null)
             {
                 Console.WriteLine("error: {0}", message);

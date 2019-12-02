@@ -6,13 +6,30 @@ using Xunit;
 
 namespace pnyx.net.test.cmd
 {
-    public class CodeParserTest
+    public class CodeParserTest : IDisposable
     {
+        private Pnyx p;
+        
+        public CodeParserTest()
+        {
+            p = new Pnyx();
+            p.setSettings(stdIoDefault: true, processOnDispose: false);
+        }
+
+        public void Dispose()
+        {
+            if (p != null)
+            {
+                p.Dispose();
+                p = null;
+            }
+        }
+        
         [Fact]
         public void helloWorld()
         {
             CodeParser parser = new CodeParser();
-            Pnyx p = parser.parseCode("readString(\"hello world\")");
+            parser.parseCode(p, "readString(\"hello world\")");
             Assert.Equal(FluentState.Compiled, p.state);
         }
         
@@ -20,7 +37,7 @@ namespace pnyx.net.test.cmd
         public void grep()
         {
             CodeParser parser = new CodeParser();
-            Pnyx p = parser.parseCode("readString(\"hello world\").grep(\"ll\").writeStdout()");
+            parser.parseCode(p, "readString(\"hello world\").grep(\"ll\").writeStdout()");
             Assert.Equal(FluentState.Compiled, p.state);
         }
         
@@ -28,21 +45,21 @@ namespace pnyx.net.test.cmd
         public void unknownMethod()
         {
             CodeParser parser = new CodeParser();
-            Assert.Throws<CompilationErrorException>(() => parser.parseCode("unknown()"));
+            Assert.Throws<CompilationErrorException>(() => parser.parseCode(p,"unknown()"));
         }
         
         [Fact]
         public void invalidSyntax()
         {
             CodeParser parser = new CodeParser();
-            Assert.Throws<CompilationErrorException>(() => parser.parseCode("().;."));
+            Assert.Throws<CompilationErrorException>(() => parser.parseCode(p, "().;."));
         }
                 
         [Fact]
         public void semicolon()
         {
             CodeParser parser = new CodeParser();
-            Pnyx p = parser.parseCode("readString(\"hello world\");\ngrep(\"ll\");\nwriteStdout();");
+            parser.parseCode(p, "readString(\"hello world\");\ngrep(\"ll\");\nwriteStdout();");
             Assert.Equal(FluentState.Compiled, p.state);
         }
 
@@ -50,7 +67,7 @@ namespace pnyx.net.test.cmd
         public void codeFunc()
         {
             CodeParser parser = new CodeParser();
-            Pnyx p = parser.parseCode("readString(\"test\").lineFilterFunc(line => true)", compilePnyx: false);
+            parser.parseCode(p, "readString(\"test\").lineFilterFunc(line => true)", compilePnyx: false);
             String actual = p.processToString();
             Assert.Equal("test", actual);
         }        
@@ -59,7 +76,7 @@ namespace pnyx.net.test.cmd
         public void codeBlock()
         {
             CodeParser parser = new CodeParser();
-            Pnyx p = parser.parseCode("asCsv(p2 => p2.readString(\"a,b\")).print(\"$2\")", compilePnyx: false);
+            parser.parseCode(p, "asCsv(p2 => p2.readString(\"a,b\")).print(\"$2\")", compilePnyx: false);
             String actual = p.processToString();
             Assert.Equal("b", actual);                        
         }       
@@ -81,9 +98,9 @@ rowTransformerFunc(row =>
 "; 
             
             CodeParser parser = new CodeParser();
-            Pnyx p = parser.parseCode(code, compilePnyx: false);
+            parser.parseCode(p, code, compilePnyx: false);
             String actual = p.processToString();
             Assert.Equal("Jock,Lock,Blank,Iii", actual);                        
-        }       
+        }
     }
 }
