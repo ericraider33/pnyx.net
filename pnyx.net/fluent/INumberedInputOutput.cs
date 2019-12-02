@@ -7,5 +7,6 @@ namespace pnyx.net.fluent
         String getImpliedInputFileName();
         String getImpliedOutputFileName();
         String getFileName(int argNumber);            // 1 is min value
+        bool verifyAllUsed();
     }
 }

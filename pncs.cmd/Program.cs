@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using pncs.cmd.examples;
 using pnyx.cmd.shared;
@@ -70,6 +71,10 @@ namespace pncs.cmd
             Pnyx p = new Pnyx();
             p.setSettings(stdIoDefault: true);              // forces STD-IN/OUT as defaults                         
 
+            // Sets arguments 
+            args = args.Skip(1).ToArray();
+            p.setNumberedInputOutput(new ArgsInputOutput(args));
+            
             CodeParser parser = new CodeParser();
             parser.parseCode(p, source, compilePnyx: true);
             if (p.state != FluentState.Compiled)

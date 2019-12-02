@@ -166,6 +166,15 @@ namespace pnyx.net.fluent
             return readStreamFactory(new FileStreamFactory(path));
         }
 
+        public Pnyx readArg(int argNumber)
+        {
+            if (numberedInputOutput == null)
+                throw new IllegalStateException("readArg is only valid when used via command line or INumberedInputOutput is provided");
+
+            String fileName = numberedInputOutput.getFileName(argNumber);
+            return read(fileName);
+        }
+
         public Pnyx readStream(Stream input)
         {            
             return readStreamFactory(new GenericStreamFactory(input));
@@ -780,6 +789,9 @@ namespace pnyx.net.fluent
             if (state != FluentState.End)
                 throw new IllegalStateException("Pnyx is not in End state: {0}", state.ToString());
             
+            if (numberedInputOutput != null && !numberedInputOutput.verifyAllUsed())
+                throw new InvalidArgumentException("Not all inputs have been used.");
+            
             foreach (Object part in parts)
                 if (part is IDisposable)
                     resources.Add((IDisposable)part);
@@ -858,6 +870,15 @@ namespace pnyx.net.fluent
         public Pnyx write(String path)
         {
             return setEnd(new FileStream(path, FileMode.Create, FileAccess.Write));
+        }
+
+        public Pnyx writeArg(int argNumber)
+        {
+            if (numberedInputOutput == null)
+                throw new IllegalStateException("writeArg is only valid when used via command line or INumberedInputOutput is provided");
+
+            String fileName = numberedInputOutput.getFileName(argNumber);
+            return write(fileName);
         }
 
         public Pnyx writeStream(Stream output)
