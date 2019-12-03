@@ -1037,7 +1037,7 @@ namespace pnyx.net.fluent
         private void defaultOutput()
         {
             if (state == FluentState.New)
-                readStdin();
+                defaultInput();
 
             bool properState = state == FluentState.Line || state == FluentState.Row || state == FluentState.Start;
             if (!properState)
