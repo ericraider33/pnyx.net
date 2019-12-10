@@ -7,6 +7,7 @@
 # - From IDE:
 #       - Update pnyx.net NuGet properties version
 #       - Update pnyx.net Assembly version
+#       - Update pncs.cmd Assembly version
 #       - Update pnyx.cmd Assembly version
 # - build.py nuget
 # - Using web, upload result on page: https://www.nuget.org/packages/manage/upload

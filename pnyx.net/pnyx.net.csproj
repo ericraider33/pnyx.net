@@ -15,8 +15,8 @@
     <PackageTags>ETL Pnyx awk sed grep linux tool csv parse file</PackageTags>	
     <PackageReleaseNotes>Continual improvements</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <PackageVersion>0.9.5</PackageVersion>
-    <AssemblyVersion>0.9.5</AssemblyVersion>	
+    <PackageVersion>0.9.6</PackageVersion>
+    <AssemblyVersion>0.9.6</AssemblyVersion>	
   </PropertyGroup>
   <ItemGroup>
 	<None Include="..\LICENSE.md" Pack="true" PackagePath="" />
