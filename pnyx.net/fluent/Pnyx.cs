@@ -1021,37 +1021,41 @@ namespace pnyx.net.fluent
             }
         }
 
-        private void defaultInput()
+        private Pnyx defaultInput()
         {
             if (numberedInputOutput != null)
             {
                 String inputFile = numberedInputOutput.getImpliedInputFileName();
                 if (inputFile != null)
-                    read(inputFile);
+                    return read(inputFile);
             }
 
             if (settings.stdIoDefault)
-                readStdin();
+                return readStdin();
+            
+            return null;
         }
 
-        private void defaultOutput()
+        private Pnyx defaultOutput()
         {
             if (state == FluentState.New)
                 defaultInput();
 
             bool properState = state == FluentState.Line || state == FluentState.Row || state == FluentState.Start;
             if (!properState)
-                return;
+                return null;
             
             if (numberedInputOutput != null)
             {
                 String outputFile = numberedInputOutput.getImpliedOutputFileName();
                 if (outputFile != null)
-                    write(outputFile);
+                    return write(outputFile);
             }
 
             if (settings.stdIoDefault)
-                writeStdout();            
+                return writeStdout();
+            
+            return null;
         }
 
         public Pnyx process()

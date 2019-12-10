@@ -21,8 +21,8 @@ namespace pnyx.net.test.util
             Assert.Equal("abc@gmail.com", EmailUtil.validateAndRepair("abc@gmail"));
             Assert.Equal("abc@yahoo.com", EmailUtil.validateAndRepair("abc@yahoo"));
             Assert.Equal("abc@me.com", EmailUtil.validateAndRepair("abc@me"));
-            Assert.Equal(null, EmailUtil.validateAndRepair("abc@mysitecomdomtom"));        // no TLD
-            Assert.Equal(null, EmailUtil.validateAndRepair("abc@mysitegmailhail"));        // no TLD
+            Assert.Null(EmailUtil.validateAndRepair("abc@mysitecomdomtom"));        // no TLD
+            Assert.Null(EmailUtil.validateAndRepair("abc@mysitegmailhail"));        // no TLD
 
             Assert.Null(EmailUtil.validateAndRepair("abcmysitecom"));
         }

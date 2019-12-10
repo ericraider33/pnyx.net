@@ -33,9 +33,6 @@ namespace pncs.cmd
                 if (example != null)
                     return runExample(example, switches, args);
                 
-                if (args.Length > 1)
-                    return printUsage("unknown arguments specified. Pncs only expected 1 parameter but found: " + args.Length, 4);                
-                
                 return runCSharp(switches, args);
             }
             catch (Exception e)

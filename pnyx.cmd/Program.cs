@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using pnyx.cmd.shared;
 using pnyx.net.fluent;
@@ -24,9 +25,6 @@ namespace pnyx.cmd
                                 
                 // Reads settings file
                 SettingsYaml.parseSetting();
-                
-                if (args.Length > 1)
-                    return printUsage("unknown arguments specified. Pnyx only expected 1 parameter but found: " + args.Length, 4);                
                 
                 return runYaml(switches, args);
             }
@@ -59,10 +57,14 @@ namespace pnyx.cmd
                 yamlInput = new StreamReader(new FileStream(args[0], FileMode.Open, FileAccess.Read));
             }
 
+            // Sets arguments 
+            args = args.Skip(1).ToArray();
+            ArgsInputOutput argsIo = new ArgsInputOutput(args);
+
             using (yamlInput)
             {
                 YamlParser parser = new YamlParser();
-                List<Pnyx> toExecute = parser.parseYaml(yamlInput);
+                List<Pnyx> toExecute = parser.parseYaml(yamlInput, argsIo);
                 foreach (Pnyx pnyx in toExecute)
                 {
                     using (pnyx)

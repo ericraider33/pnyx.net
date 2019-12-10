@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text.RegularExpressions;
 using pnyx.cmd.shared;
 using pnyx.net.errors;
 using pnyx.net.fluent;
@@ -27,7 +25,7 @@ namespace pnyx.cmd
             methods = typeof(Pnyx).GetMethods(BindingFlags.Instance | BindingFlags.Public);            
         }            
         
-        public List<Pnyx> parseYaml(TextReader source)
+        public List<Pnyx> parseYaml(TextReader source, ArgsInputOutput argsIo = null)
         {
             YamlStream yaml = new YamlStream();
             yaml.Load(source);
@@ -35,17 +33,18 @@ namespace pnyx.cmd
             List<Pnyx> result = new List<Pnyx>();
             foreach (YamlDocument document in yaml.Documents)
             {
-                Pnyx pnyx = parseDocument(document);
+                Pnyx pnyx = parseDocument(document, argsIo);
                 result.Add(pnyx);
             }
 
             return result;
         }
 
-        protected Pnyx parseDocument(YamlDocument document)
+        protected Pnyx parseDocument(YamlDocument document, ArgsInputOutput argsIo)
         {
             Pnyx p = new Pnyx();
-            p.setSettings(stdIoDefault: true);              // forces STD-IN/OUT as defaults                         
+            p.setSettings(stdIoDefault: true);              // forces STD-IN/OUT as defaults
+            p.setNumberedInputOutput(argsIo);
             
             if (document.RootNode.NodeType != YamlNodeType.Sequence)
                 throw new InvalidArgumentException("Expected a YAML sequence as the document root, but found: {0}", document.RootNode.NodeType.ToString());                

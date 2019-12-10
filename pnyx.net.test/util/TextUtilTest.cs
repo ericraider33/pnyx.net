@@ -90,90 +90,90 @@ namespace pnyx.net.test.util
         [Fact]
         public void IsAllNumbers()
         {
-            Assert.Equal(false, TextUtil.isAllNumbers(null));
-            Assert.Equal(false, TextUtil.isAllNumbers(""));
-            Assert.Equal(false, TextUtil.isAllNumbers("a"));
-            Assert.Equal(false, TextUtil.isAllNumbers(" 1"));
-            Assert.Equal(false, TextUtil.isAllNumbers("1 "));
-            Assert.Equal(false, TextUtil.isAllNumbers("1.1"));
-            Assert.Equal(false, TextUtil.isAllNumbers("1a"));
-            Assert.Equal(false, TextUtil.isAllNumbers("a1"));
-            Assert.Equal(true, TextUtil.isAllNumbers("1"));
-            Assert.Equal(true, TextUtil.isAllNumbers("12"));
-            Assert.Equal(true, TextUtil.isAllNumbers("123"));
-            Assert.Equal(true, TextUtil.isAllNumbers("123456789"));
+            Assert.False(TextUtil.isAllNumbers(null));
+            Assert.False(TextUtil.isAllNumbers(""));
+            Assert.False(TextUtil.isAllNumbers("a"));
+            Assert.False(TextUtil.isAllNumbers(" 1"));
+            Assert.False(TextUtil.isAllNumbers("1 "));
+            Assert.False(TextUtil.isAllNumbers("1.1"));
+            Assert.False(TextUtil.isAllNumbers("1a"));
+            Assert.False(TextUtil.isAllNumbers("a1"));
+            Assert.True(TextUtil.isAllNumbers("1"));
+            Assert.True(TextUtil.isAllNumbers("12"));
+            Assert.True(TextUtil.isAllNumbers("123"));
+            Assert.True(TextUtil.isAllNumbers("123456789"));
         }
 
         [Fact]
         public void HasAnyLetters()
         {
-            Assert.Equal(true, TextUtil.hasAnyLetters("a"));
-            Assert.Equal(true, TextUtil.hasAnyLetters("1a"));
-            Assert.Equal(true, TextUtil.hasAnyLetters("a2"));
-            Assert.Equal(true, TextUtil.hasAnyLetters("1a2"));
-            Assert.Equal(false, TextUtil.hasAnyLetters(null));
-            Assert.Equal(false, TextUtil.hasAnyLetters(""));
-            Assert.Equal(false, TextUtil.hasAnyLetters("1"));
-            Assert.Equal(false, TextUtil.hasAnyLetters("1,2"));
+            Assert.True(TextUtil.hasAnyLetters("a"));
+            Assert.True(TextUtil.hasAnyLetters("1a"));
+            Assert.True(TextUtil.hasAnyLetters("a2"));
+            Assert.True(TextUtil.hasAnyLetters("1a2"));
+            Assert.False(TextUtil.hasAnyLetters(null));
+            Assert.False(TextUtil.hasAnyLetters(""));
+            Assert.False(TextUtil.hasAnyLetters("1"));
+            Assert.False(TextUtil.hasAnyLetters("1,2"));
         }
 
         [Fact]
         public void HasAnyNumbers()
         {
-            Assert.Equal(true, TextUtil.hasAnyNumbers("1fgdf"));
-            Assert.Equal(false, TextUtil.hasAnyNumbers(" "));
-            Assert.Equal(true, TextUtil.hasAnyNumbers("f2f"));
-            Assert.Equal(true, TextUtil.hasAnyNumbers("1a2"));
-            Assert.Equal(false, TextUtil.hasAnyNumbers(null));
-            Assert.Equal(false, TextUtil.hasAnyNumbers(""));
-            Assert.Equal(true, TextUtil.hasAnyNumbers("1324543"));
-            Assert.Equal(true, TextUtil.hasAnyNumbers("1,2"));
-            Assert.Equal(true, TextUtil.hasAnyNumbers("dfsdg3"));
+            Assert.True(TextUtil.hasAnyNumbers("1fgdf"));
+            Assert.False(TextUtil.hasAnyNumbers(" "));
+            Assert.True(TextUtil.hasAnyNumbers("f2f"));
+            Assert.True(TextUtil.hasAnyNumbers("1a2"));
+            Assert.False(TextUtil.hasAnyNumbers(null));
+            Assert.False(TextUtil.hasAnyNumbers(""));
+            Assert.True(TextUtil.hasAnyNumbers("1324543"));
+            Assert.True(TextUtil.hasAnyNumbers("1,2"));
+            Assert.True(TextUtil.hasAnyNumbers("dfsdg3"));
         }
 
         [Fact]
         public void HasAnyWhiteSpace()
         {
-            Assert.Equal(true, TextUtil.hasAnyWhiteSpace(" "));
-            Assert.Equal(true, TextUtil.hasAnyWhiteSpace("\n"));
-            Assert.Equal(true, TextUtil.hasAnyWhiteSpace("\t"));
-            Assert.Equal(true, TextUtil.hasAnyWhiteSpace("\r"));
-            Assert.Equal(true, TextUtil.hasAnyWhiteSpace("a a"));
-            Assert.Equal(true, TextUtil.hasAnyWhiteSpace("b\nb"));
-            Assert.Equal(true, TextUtil.hasAnyWhiteSpace("c\tc"));
-            Assert.Equal(true, TextUtil.hasAnyWhiteSpace("d\rd"));
-            Assert.Equal(false, TextUtil.hasAnyWhiteSpace("aa"));
+            Assert.True(TextUtil.hasAnyWhiteSpace(" "));
+            Assert.True(TextUtil.hasAnyWhiteSpace("\n"));
+            Assert.True(TextUtil.hasAnyWhiteSpace("\t"));
+            Assert.True(TextUtil.hasAnyWhiteSpace("\r"));
+            Assert.True(TextUtil.hasAnyWhiteSpace("a a"));
+            Assert.True(TextUtil.hasAnyWhiteSpace("b\nb"));
+            Assert.True(TextUtil.hasAnyWhiteSpace("c\tc"));
+            Assert.True(TextUtil.hasAnyWhiteSpace("d\rd"));
+            Assert.False(TextUtil.hasAnyWhiteSpace("aa"));
         }
 
         [Fact]
         public void HasSpecial()
         {
-            Assert.Equal(false, TextUtil.hasAnySpecial(" \t\n\r0123456789abcdABCDEF"));
-            Assert.Equal(false, TextUtil.hasAnySpecial(""));
-            Assert.Equal(false, TextUtil.hasAnySpecial(null));
-            Assert.Equal(true, TextUtil.hasAnySpecial("a!b"));
-            Assert.Equal(true, TextUtil.hasAnySpecial("a=b"));
+            Assert.False(TextUtil.hasAnySpecial(" \t\n\r0123456789abcdABCDEF"));
+            Assert.False(TextUtil.hasAnySpecial(""));
+            Assert.False(TextUtil.hasAnySpecial(null));
+            Assert.True(TextUtil.hasAnySpecial("a!b"));
+            Assert.True(TextUtil.hasAnySpecial("a=b"));
         }
 
         [Fact]
         public void HasConsecutiveCharacters()
         {
-            Assert.Equal(false, TextUtil.hasConsecutiveCharacters(null));
-            Assert.Equal(false, TextUtil.hasConsecutiveCharacters(""));
-            Assert.Equal(false, TextUtil.hasConsecutiveCharacters("abc123", 3));
-            Assert.Equal(false, TextUtil.hasConsecutiveCharacters("aa", 3));
-            Assert.Equal(true, TextUtil.hasConsecutiveCharacters("aaa", 3));
-            Assert.Equal(true, TextUtil.hasConsecutiveCharacters("aaaa", 3));
+            Assert.False(TextUtil.hasConsecutiveCharacters(null));
+            Assert.False(TextUtil.hasConsecutiveCharacters(""));
+            Assert.False(TextUtil.hasConsecutiveCharacters("abc123", 3));
+            Assert.False(TextUtil.hasConsecutiveCharacters("aa", 3));
+            Assert.True(TextUtil.hasConsecutiveCharacters("aaa", 3));
+            Assert.True(TextUtil.hasConsecutiveCharacters("aaaa", 3));
 
-            Assert.Equal(false, TextUtil.hasConsecutiveCharacters("aabb", 3));
-            Assert.Equal(true, TextUtil.hasConsecutiveCharacters("aabbb", 3));
+            Assert.False(TextUtil.hasConsecutiveCharacters("aabb", 3));
+            Assert.True(TextUtil.hasConsecutiveCharacters("aabbb", 3));
 
-            Assert.Equal(false, TextUtil.hasConsecutiveCharacters("aaxbb", 3));
-            Assert.Equal(true, TextUtil.hasConsecutiveCharacters("aaxbbb", 3));
+            Assert.False(TextUtil.hasConsecutiveCharacters("aaxbb", 3));
+            Assert.True(TextUtil.hasConsecutiveCharacters("aaxbbb", 3));
             
-            Assert.Equal(false, TextUtil.hasConsecutiveCharacters("aaxbb", 4));
-            Assert.Equal(false, TextUtil.hasConsecutiveCharacters("aaxbbb", 4));            
-            Assert.Equal(true, TextUtil.hasConsecutiveCharacters("aaxbbbb", 4));            
+            Assert.False(TextUtil.hasConsecutiveCharacters("aaxbb", 4));
+            Assert.False(TextUtil.hasConsecutiveCharacters("aaxbbb", 4));            
+            Assert.True(TextUtil.hasConsecutiveCharacters("aaxbbbb", 4));            
         }
 
         [Fact]
@@ -286,7 +286,7 @@ namespace pnyx.net.test.util
         [Fact]
         public void RemoveBeginning()
         {
-            Assert.Equal(null, TextUtil.removeBeginning(null, null));
+            Assert.Null(TextUtil.removeBeginning(null, null));
             Assert.Equal("hi", TextUtil.removeBeginning("hi", null));
             Assert.Equal("Big", TextUtil.removeBeginning("Big", "ig"));
             Assert.Equal("", TextUtil.removeBeginning("Big", "Big"));
@@ -296,7 +296,7 @@ namespace pnyx.net.test.util
         [Fact]
         public void RemoveEnding()
         {
-            Assert.Equal(null, TextUtil.removeEnding(null, null));
+            Assert.Null(TextUtil.removeEnding(null, null));
             Assert.Equal("hi", TextUtil.removeEnding("hi", null));
             Assert.Equal("BigShow", TextUtil.removeEnding("BigShow", "big"));
             Assert.Equal("", TextUtil.removeEnding("BigShow", "BigShow"));
@@ -306,19 +306,19 @@ namespace pnyx.net.test.util
         [Fact]
         public void IsMixedCase()
         {
-            Assert.Equal(false, TextUtil.isMixedCase(null));
-            Assert.Equal(false, TextUtil.isMixedCase(""));
-            Assert.Equal(false, TextUtil.isMixedCase("456"));
-            Assert.Equal(false, TextUtil.isMixedCase("asdf456"));
-            Assert.Equal(false, TextUtil.isMixedCase("ASDF"));
-            Assert.Equal(true, TextUtil.isMixedCase("ASdf"));
-            Assert.Equal(true, TextUtil.isMixedCase("A1 d"));
+            Assert.False(TextUtil.isMixedCase(null));
+            Assert.False(TextUtil.isMixedCase(""));
+            Assert.False(TextUtil.isMixedCase("456"));
+            Assert.False(TextUtil.isMixedCase("asdf456"));
+            Assert.False(TextUtil.isMixedCase("ASDF"));
+            Assert.True(TextUtil.isMixedCase("ASdf"));
+            Assert.True(TextUtil.isMixedCase("A1 d"));
         }
 
         [Fact]
         public void TrimQuotes()
         {
-            Assert.Equal(null, TextUtil.trimQuotes(null));
+            Assert.Null(TextUtil.trimQuotes(null));
             Assert.Equal("", TextUtil.trimQuotes(""));
             Assert.Equal("", TextUtil.trimQuotes("\""));
             Assert.Equal("", TextUtil.trimQuotes("\"\""));
@@ -337,7 +337,7 @@ namespace pnyx.net.test.util
         [Fact]
         public void Trunc()
         {
-            Assert.Equal(null, TextUtil.trunc(null, 3));
+            Assert.Null(TextUtil.trunc(null, 3));
             Assert.Equal("", TextUtil.trunc("", 3));
             Assert.Equal("a", TextUtil.trunc("a", 3));
             Assert.Equal("abc", TextUtil.trunc("abc", 3));
@@ -347,7 +347,7 @@ namespace pnyx.net.test.util
         [Fact]
         public void TruncRight()
         {
-            Assert.Equal(null, TextUtil.truncRight(null, 3));
+            Assert.Null(TextUtil.truncRight(null, 3));
             Assert.Equal("", TextUtil.truncRight("", 3));
             Assert.Equal("a", TextUtil.truncRight("a", 3));
             Assert.Equal("abc", TextUtil.truncRight("abc", 3));
@@ -357,7 +357,7 @@ namespace pnyx.net.test.util
         [Fact]
         public void ProtectedFromExcel()
         {
-            Assert.Equal(null, TextUtil.protectedFromExcel(null));
+            Assert.Null(TextUtil.protectedFromExcel(null));
             Assert.Equal("", TextUtil.protectedFromExcel(""));
             Assert.Equal("1", TextUtil.protectedFromExcel("1"));
 
@@ -398,7 +398,7 @@ namespace pnyx.net.test.util
         [Fact]
         public void RemoveParts()
         {
-            Assert.Equal(null, TextUtil.removeParts(null, 0, 0));
+            Assert.Null(TextUtil.removeParts(null, 0, 0));
             Assert.Equal("", TextUtil.removeParts("", 0, 0));
             Assert.Equal("", TextUtil.removeParts("a", 0, 0));
             Assert.Equal("b", TextUtil.removeParts("ab", 0, 0));
@@ -414,7 +414,7 @@ namespace pnyx.net.test.util
         [Fact]
         public void RemoveParentheses()
         {
-            Assert.Equal(null, TextUtil.removeParentheses(null));
+            Assert.Null(TextUtil.removeParentheses(null));
             Assert.Equal("", TextUtil.removeParentheses(""));
             Assert.Equal("freedom", TextUtil.removeParentheses("freedom"));
             Assert.Equal("freedom(", TextUtil.removeParentheses("freedom("));
@@ -433,8 +433,8 @@ namespace pnyx.net.test.util
         [Fact]
         public void SplitAt()
         {
-            Assert.Equal(null, TextUtil.splitAt("", ","));
-            Assert.Equal(null, TextUtil.splitAt(null, ","));
+            Assert.Null(TextUtil.splitAt("", ","));
+            Assert.Null(TextUtil.splitAt(null, ","));
             Assert.Equal(new Tuple<String, String>("a", ""), TextUtil.splitAt("a", ","));
             Assert.Equal(new Tuple<String, String>("a", ""), TextUtil.splitAt("a,", ","));
             Assert.Equal(new Tuple<String, String>("", "a"), TextUtil.splitAt(",a", ","));
@@ -445,8 +445,8 @@ namespace pnyx.net.test.util
         [Fact]
         public void SplitAtIndex()
         {
-            Assert.Equal(null, TextUtil.splitAtIndex("", 0));
-            Assert.Equal(null, TextUtil.splitAtIndex(null, 0));
+            Assert.Null(TextUtil.splitAtIndex("", 0));
+            Assert.Null(TextUtil.splitAtIndex(null, 0));
             Assert.Equal(new Tuple<String, String>("a", ""), TextUtil.splitAtIndex("a", 1));
             Assert.Equal(new Tuple<String, String>("a", ""), TextUtil.splitAtIndex("a", 2));
             Assert.Equal(new Tuple<String, String>("", "a"), TextUtil.splitAtIndex("a", 0));
@@ -460,15 +460,15 @@ namespace pnyx.net.test.util
         [Fact]
         public void EndsWith()
         {
-            Assert.Equal(true, "a".endsWithIgnoreCase("a"));
-            Assert.Equal(true, "a".endsWithIgnoreCase("A"));
-            Assert.Equal(true, "A".endsWithIgnoreCase("a"));
-            Assert.Equal(true, "Yo ma".endsWithIgnoreCase("ma"));
-            Assert.Equal(true, "Yo MA".endsWithIgnoreCase("ma"));
+            Assert.True("a".endsWithIgnoreCase("a"));
+            Assert.True("a".endsWithIgnoreCase("A"));
+            Assert.True("A".endsWithIgnoreCase("a"));
+            Assert.True("Yo ma".endsWithIgnoreCase("ma"));
+            Assert.True("Yo MA".endsWithIgnoreCase("ma"));
 
-            Assert.Equal(false, TextUtil.endsWithIgnoreCase("", "a"));
-            Assert.Equal(false, TextUtil.endsWithIgnoreCase(null, "a"));
-            Assert.Equal(false, "Yo ma no hands".endsWithIgnoreCase("ma"));
+            Assert.False(TextUtil.endsWithIgnoreCase("", "a"));
+            Assert.False(TextUtil.endsWithIgnoreCase(null, "a"));
+            Assert.False("Yo ma no hands".endsWithIgnoreCase("ma"));
         }
     }
 }

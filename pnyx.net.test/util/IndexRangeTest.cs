@@ -11,21 +11,21 @@ namespace pnyx.net.test.util
         public void contains()
         {
             IndexRange range = new IndexRange(2, 4);
-            Assert.Equal(false, range.containsInclusive(1));
-            Assert.Equal(true, range.containsInclusive(2));
-            Assert.Equal(true, range.containsInclusive(3));
-            Assert.Equal(true, range.containsInclusive(4));
-            Assert.Equal(false, range.containsInclusive(5));
+            Assert.False(range.containsInclusive(1));
+            Assert.True(range.containsInclusive(2));
+            Assert.True(range.containsInclusive(3));
+            Assert.True(range.containsInclusive(4));
+            Assert.False(range.containsInclusive(5));
         }
 
         [Fact]
         public void containsNull()
         {
             IndexRange range = IndexRange.NULL_RANGE;
-            Assert.Equal(false, range.containsInclusive(-1));
-            Assert.Equal(false, range.containsInclusive(0));
-            Assert.Equal(false, range.containsInclusive(1));
-            Assert.Equal(false, range.containsInclusive(2));
+            Assert.False(range.containsInclusive(-1));
+            Assert.False(range.containsInclusive(0));
+            Assert.False(range.containsInclusive(1));
+            Assert.False(range.containsInclusive(2));
         }
 
         [Theory]
