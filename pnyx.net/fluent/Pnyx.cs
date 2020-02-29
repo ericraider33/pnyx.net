@@ -378,7 +378,7 @@ namespace pnyx.net.fluent
             return this;                
         }
 
-        public Pnyx columnDefinition(int? limit = null, bool maxWidth = false, bool hasHeaderRow = false, bool minWidth = false, bool nullable = false)
+        public Pnyx columnDefinition(int? limit = null, bool maxWidth = false, bool hasHeaderRow = false, bool minWidth = false, bool nullable = false, bool swapRowsAndColumns = true)
         {
             ColumnDefinition buffering = new ColumnDefinition(streamInformation);
             if (limit.HasValue)
@@ -389,9 +389,16 @@ namespace pnyx.net.fluent
             if (maxWidth) flag |= ColumnDefinition.Flags.MaxWidth;
             if (minWidth) flag |= ColumnDefinition.Flags.MinWidth;
             if (nullable) flag |= ColumnDefinition.Flags.Nullable;
-            buffering.flag = flag;
+            
+            if (flag != ColumnDefinition.Flags.None)
+                buffering.flag = flag;                            // only override 'all' if specific flags are set
 
-            return rowBuffering(buffering);
+            rowBuffering(buffering);
+            
+            if (swapRowsAndColumns)
+                swapColumnsAndRows();                             // auto swaps row and columns for a more readable, SQL pseudo output 
+
+            return this;
         }
 
         public Pnyx swapColumnsAndRows()

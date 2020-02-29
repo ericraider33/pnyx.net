@@ -28,7 +28,8 @@ namespace pnyx.net.impl.columns
             MaxWidth = 1,
             MinWidth = 2,
             Nullable = 4,
-            Header = 8
+            Header = 8,
+            All = MaxWidth | MinWidth | Nullable | Header
         }
         
         public StreamInformation streamInformation { get; private set; }
@@ -42,7 +43,7 @@ namespace pnyx.net.impl.columns
         {
             this.streamInformation = streamInformation;
             limit = Int32.MaxValue;
-            flag = Flags.MaxWidth;
+            flag = Flags.All;
         }
 
         public List<String> rowHeader(List<String> header)
@@ -66,6 +67,12 @@ namespace pnyx.net.impl.columns
 
         public List<List<String>> bufferingRow(List<String> row)
         {
+            if (lineNumber == 0 && flag.HasFlag(Flags.Header))
+            {
+                rowHeader(row);
+                return null;
+            }
+            
             lineNumber++;
 
             for (int i = infoList.Count; i < row.Count; i++)
