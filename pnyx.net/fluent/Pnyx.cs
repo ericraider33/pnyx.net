@@ -777,9 +777,18 @@ namespace pnyx.net.fluent
             return lineBuffering(new SedInsert { text = text });
         }
 
-        public Pnyx count(bool checkData = true)
+        public Pnyx countLines(bool checkData = true)
         {
-            Count part = new Count { checkData = checkData };
+            CountLines part = new CountLines { checkData = checkData };
+            if (state == FluentState.Row)
+                return rowBuffering(part);
+
+            return lineBuffering(part);
+        }
+
+        public Pnyx countWords()
+        {
+            CountWords part = new CountWords();
             if (state == FluentState.Row)
                 return rowBuffering(part);
 

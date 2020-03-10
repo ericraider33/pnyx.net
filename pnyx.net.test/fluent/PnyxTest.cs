@@ -978,7 +978,7 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
             using (Pnyx p = new Pnyx())
             {
                 p.readString(source);
-                p.count();
+                p.countLines();
                 actual = p.processToString();
             }
 
@@ -993,7 +993,7 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
             {
                 p.readString(PLANETS_GODS);
                 p.parseCsv();
-                p.count();
+                p.countLines();
                 actual = p.processToString();
             }
 

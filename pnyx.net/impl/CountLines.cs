@@ -5,7 +5,7 @@ using pnyx.net.api;
 
 namespace pnyx.net.impl
 {
-    public class Count : IRowBuffering, ILineBuffering
+    public class CountLines : IRowBuffering, ILineBuffering
     {
         public bool checkData;
         
@@ -14,6 +14,10 @@ namespace pnyx.net.impl
         
         public List<string> rowHeader(List<string> header)
         {
+            // Assures headers are included in output even if no data in present in remainder of input
+            for (int i = rowCounts.Count; i < header.Count; i++)
+                rowCounts.Add(0);                                
+
             return header;    // no-op
         }
 
