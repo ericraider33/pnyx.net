@@ -1253,52 +1253,57 @@ namespace pnyx.net.fluent
             }                       
         }
 
-        public Pnyx sortLine(
+        public Pnyx sort(
             bool descending = false, 
             bool caseSensitive = false,
             bool unique = false,
+            int[] columnNumbers = null,
             String tempDirectory = null,
-            int? bufferLines = null
+            int? buffer = null
             )
         {
-            requireStart(line: true, row: false);
+            requireStart(line: true, row: true);
 
+            buffer = buffer ?? settings.bufferLines;
             tempDirectory = tempDirectory ?? settings.tempDirectory;
-            bufferLines = bufferLines ?? settings.bufferLines;
             
-            IComparer<String> comparer = new PnyxStringComparer(descending, caseSensitive);             
-            LineSortProcessor sortProcessor = new LineSortProcessor(unique, tempDirectory, comparer, bufferLines.Value);
-            return linePart(sortProcessor);
+            if (state == FluentState.Row)
+            {
+                columnNumbers = columnNumbers ?? new int[] { 1 };            
+                List<RowComparer.ColumnDefinition> definitions = new List<RowComparer.ColumnDefinition>();
+                foreach (int columnNumber in columnNumbers)
+                {
+                    definitions.Add(new RowComparer.ColumnDefinition
+                    {
+                        columnNumber = columnNumber,
+                        comparer = new PnyxStringComparer(descending, caseSensitive)
+                    });
+                }
+            
+                IComparer<List<String>> comparer = new RowComparer(definitions);             
+                RowSortProcessor sortProcessor = new RowSortProcessor(unique, tempDirectory, comparer, buffer.Value);
+                return rowPart(sortProcessor);
+            }
+            else 
+            {
+                IComparer<String> comparer = new PnyxStringComparer(descending, caseSensitive);             
+                LineSortProcessor sortProcessor = new LineSortProcessor(unique, tempDirectory, comparer, buffer.Value);
+                return linePart(sortProcessor);
+            }
         }
+
 
         public Pnyx sortRow(
             int[] columnNumbers = null,
-            bool descending = false, 
+            bool descending = false,
             bool caseSensitive = false,
             bool unique = false,
             String tempDirectory = null,
-            int? bufferRows = null
+            int? buffer = null
             )
         {
-            requireStart(line: false, row: true);
-
-            tempDirectory = tempDirectory ?? settings.tempDirectory;
-            bufferRows = bufferRows ?? settings.bufferLines;
-
-            columnNumbers = columnNumbers ?? new int[] { 1 };            
-            List<RowComparer.ColumnDefinition> definitions = new List<RowComparer.ColumnDefinition>();
-            foreach (int columnNumber in columnNumbers)
-            {
-                definitions.Add(new RowComparer.ColumnDefinition
-                {
-                    columnNumber = columnNumber,
-                    comparer = new PnyxStringComparer(descending, caseSensitive)
-                });
-            }
-            
-            IComparer<List<String>> comparer = new RowComparer(definitions);             
-            RowSortProcessor sortProcessor = new RowSortProcessor(unique, tempDirectory, comparer, bufferRows.Value);
-            return rowPart(sortProcessor);
+            requireStart(line: true, row: true);
+            return sort(descending: descending, caseSensitive: caseSensitive, unique: unique, columnNumbers: columnNumbers, tempDirectory: tempDirectory, buffer: buffer);
         }
     }
 }

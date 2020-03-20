@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Runtime.CompilerServices;
 using pnyx.net.fluent;
 using pnyx.net.impl;
 using pnyx.net.test.util;
@@ -27,7 +26,7 @@ namespace pnyx.net.test.processors.sort
                 p.parseCsv();   
                 if (hasHeader)
                     p.lineFilter(new LineNumberSkip(1));                
-                p.sortRow(columnNumbers, descending: descending, caseSensitive: caseSensitive, unique: unique, tempDirectory: Path.Combine(TestUtil.findTestOutputLocation(), "csv"));
+                p.sort(descending: descending, caseSensitive: caseSensitive, unique: unique, columnNumbers: columnNumbers, tempDirectory: Path.Combine(TestUtil.findTestOutputLocation(), "csv"));
                 p.write(outPath);
                 p.process();                                
             }
@@ -51,7 +50,7 @@ a,d,8
             {                
                 p.readString(input);
                 p.parseCsv();                
-                p.sortRow(new []{ 1 , 3 });
+                p.sort(columnNumbers: new []{ 1 , 3 });
                 actual = p.processToString();
             }
             
