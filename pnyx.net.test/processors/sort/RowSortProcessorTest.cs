@@ -25,7 +25,7 @@ namespace pnyx.net.test.processors.sort
                 p.read(inPath);
                 p.parseCsv();   
                 if (hasHeader)
-                    p.lineFilter(new LineNumberSkip(1));                
+                    p.lineFilter(new SkipSpecificFilter(1));                
                 p.sort(descending: descending, caseSensitive: caseSensitive, unique: unique, columnNumbers: columnNumbers, tempDirectory: Path.Combine(TestUtil.findTestOutputLocation(), "csv"));
                 p.write(outPath);
                 p.process();                                

@@ -4,17 +4,17 @@ using pnyx.net.api;
 
 namespace pnyx.net.impl
 {
-    public class LineNumberSkip : ILineFilter, IRowFilter
+    public class SkipSpecificFilter : ILineFilter, IRowFilter
     {                
         private readonly List<int> linesToSkip = new List<int>();
         private int lineNumber;
 
-        public LineNumberSkip(params int[] skip)
+        public SkipSpecificFilter(params int[] skip)
         {
             linesToSkip.AddRange(skip);    
         }
         
-        public LineNumberSkip(IEnumerable<int> lines)
+        public SkipSpecificFilter(IEnumerable<int> lines)
         {
             linesToSkip.AddRange(lines);
         }        

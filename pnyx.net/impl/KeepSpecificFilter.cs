@@ -4,12 +4,12 @@ using pnyx.net.api;
 
 namespace pnyx.net.impl
 {
-    public class LineNumberFilter : ILineFilter, IRowFilter
+    public class KeepSpecificFilter : ILineFilter, IRowFilter
     {                
         private readonly List<int> linesToKeep = new List<int>();
         private int lineNumber;
 
-        public LineNumberFilter(IEnumerable<int> lines)
+        public KeepSpecificFilter(IEnumerable<int> lines)
         {
             linesToKeep.AddRange(lines);
         }        

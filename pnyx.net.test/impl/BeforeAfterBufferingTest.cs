@@ -64,7 +64,7 @@ namespace pnyx.net.test.impl
         
         private void verify(int before, int after, String[] input, String[] expected, int[] lines)
         {
-            LineNumberFilter filter = new LineNumberFilter(lines);
+            KeepSpecificFilter filter = new KeepSpecificFilter(lines);
             BeforeAfterLineBuffering buf = new BeforeAfterLineBuffering(before, after, filter);
 
             List<String> bufOut;

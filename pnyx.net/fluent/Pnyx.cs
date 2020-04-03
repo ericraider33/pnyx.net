@@ -1305,5 +1305,25 @@ namespace pnyx.net.fluent
             requireStart(line: true, row: true);
             return sort(descending: descending, caseSensitive: caseSensitive, unique: unique, columnNumbers: columnNumbers, tempDirectory: tempDirectory, buffer: buffer);
         }
+
+        public Pnyx skipFirst(int linesToSkip)
+        {
+            return lineFilter(new SkipFirstLinesFilter(linesToSkip));
+        }
+
+        public Pnyx skipSpecific(params int[] lineNumbersToSkip)
+        {
+            return lineFilter(new SkipSpecificFilter(lineNumbersToSkip));
+        }
+
+        public Pnyx keepSpecific(params int[] lineNumbersToKeep)
+        {
+            return lineFilter(new KeepSpecificFilter(lineNumbersToKeep));
+        }
+
+        public Pnyx trim()
+        {
+            return lineTransformerFunc(TextUtil.trim);
+        }
     }
 }
