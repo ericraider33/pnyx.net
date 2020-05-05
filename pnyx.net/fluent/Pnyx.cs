@@ -1311,6 +1311,14 @@ namespace pnyx.net.fluent
             return lineFilter(new SkipFirstLinesFilter(linesToSkip));
         }
 
+        public Pnyx skipLast(int linesToSkip)
+        {
+            if (state == FluentState.Row)
+                return rowBuffering(new SkipLastRowBuffering(linesToSkip));
+
+            return lineBuffering(new SkipLastLineBuffering(linesToSkip));
+        }
+
         public Pnyx skipSpecific(params int[] lineNumbersToSkip)
         {
             return lineFilter(new SkipSpecificFilter(lineNumbersToSkip));
