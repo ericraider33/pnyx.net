@@ -359,19 +359,19 @@ namespace pnyx.net.fluent
             return this;
         }
 
-        public Pnyx print(String format)
+        public Pnyx print(params String[] format)
         {   
             requireStart(line: true, row: true);
             
             if (state == FluentState.Row)
             {
-                parts.Add(new Print { format = format, rowConverter = rowConverter });
+                parts.Add(new Print { formatStrings = format, rowConverter = rowConverter });
                 state = FluentState.Line;
                 rowConverter = null;
             }
             else if (state == FluentState.Start || state == FluentState.Line)
             {
-                parts.Add(new Print { format = format });
+                parts.Add(new Print { formatStrings = format });
                 state = FluentState.Line;                
             }
 
@@ -1264,34 +1264,28 @@ namespace pnyx.net.fluent
         {
             requireStart(line: true, row: true);
 
+            if (state == FluentState.Row)
+                return sortRow(columnNumbers, descending, caseSensitive, unique, tempDirectory, buffer);
+            else
+                return sortLine(descending, caseSensitive, unique, tempDirectory, buffer);
+        }
+
+        public Pnyx sortLine(
+            bool descending = false,
+            bool caseSensitive = false,
+            bool unique = false,
+            String tempDirectory = null,
+            int? buffer = null
+        )
+        {
+            requireStart(line: true, row: false);
             buffer = buffer ?? settings.bufferLines;
             tempDirectory = tempDirectory ?? settings.tempDirectory;
             
-            if (state == FluentState.Row)
-            {
-                columnNumbers = columnNumbers ?? new int[] { 1 };            
-                List<RowComparer.ColumnDefinition> definitions = new List<RowComparer.ColumnDefinition>();
-                foreach (int columnNumber in columnNumbers)
-                {
-                    definitions.Add(new RowComparer.ColumnDefinition
-                    {
-                        columnNumber = columnNumber,
-                        comparer = new PnyxStringComparer(descending, caseSensitive)
-                    });
-                }
-            
-                IComparer<List<String>> comparer = new RowComparer(definitions);             
-                RowSortProcessor sortProcessor = new RowSortProcessor(unique, tempDirectory, comparer, buffer.Value);
-                return rowPart(sortProcessor);
-            }
-            else 
-            {
-                IComparer<String> comparer = new PnyxStringComparer(descending, caseSensitive);             
-                LineSortProcessor sortProcessor = new LineSortProcessor(unique, tempDirectory, comparer, buffer.Value);
-                return linePart(sortProcessor);
-            }
+            IComparer<String> comparer = new PnyxStringComparer(descending, caseSensitive);             
+            LineSortProcessor sortProcessor = new LineSortProcessor(unique, tempDirectory, comparer, buffer.Value);
+            return linePart(sortProcessor);
         }
-
 
         public Pnyx sortRow(
             int[] columnNumbers = null,
@@ -1302,8 +1296,24 @@ namespace pnyx.net.fluent
             int? buffer = null
             )
         {
-            requireStart(line: true, row: true);
-            return sort(descending: descending, caseSensitive: caseSensitive, unique: unique, columnNumbers: columnNumbers, tempDirectory: tempDirectory, buffer: buffer);
+            requireStart(line: false, row: true);
+            buffer = buffer ?? settings.bufferLines;
+            tempDirectory = tempDirectory ?? settings.tempDirectory;
+            
+            columnNumbers = columnNumbers ?? new int[] { 1 };            
+            List<RowComparer.ColumnDefinition> definitions = new List<RowComparer.ColumnDefinition>();
+            foreach (int columnNumber in columnNumbers)
+            {
+                definitions.Add(new RowComparer.ColumnDefinition
+                {
+                    columnNumber = columnNumber,
+                    comparer = new PnyxStringComparer(descending, caseSensitive)
+                });
+            }
+            
+            IComparer<List<String>> comparer = new RowComparer(definitions);             
+            RowSortProcessor sortProcessor = new RowSortProcessor(unique, tempDirectory, comparer, buffer.Value);
+            return rowPart(sortProcessor);
         }
 
         public Pnyx skipFirst(int linesToSkip)

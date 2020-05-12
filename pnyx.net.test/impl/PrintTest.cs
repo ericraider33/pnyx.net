@@ -28,8 +28,8 @@ namespace pnyx.net.test.impl
         public void printRow(String format, String expected)
         {
             List<String> row = new List<String> { "AA", "BB", "CC", "DD", "EE", "FF", "GG", "HH", "II", "JJ", "KK", "LL", "MM" };
-            Print p = new Print { format = format, rowConverter = new CsvRowConverter() };
-            String actual = p.print(null, row);
+            Print p = new Print { rowConverter = new CsvRowConverter() };
+            String actual = p.print(format, null, row);
             Assert.Equal(expected, actual);
         }
 
@@ -41,8 +41,8 @@ namespace pnyx.net.test.impl
         public void printLine(String format, String expected)
         {
             String line = "Adam Smith";
-            Print p = new Print { format = format };
-            String actual = p.print(line, new List<String>());
+            Print p = new Print();
+            String actual = p.print(format, line, new List<String>());
             Assert.Equal(expected, actual);
         }
     }

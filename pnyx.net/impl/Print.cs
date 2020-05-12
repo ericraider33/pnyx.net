@@ -8,7 +8,7 @@ namespace pnyx.net.impl
 {
     public class Print : IRowProcessor, ILinePart, ILineProcessor
     {
-        public String format;
+        public String[] formatStrings;
         public ILineProcessor processor;
         public IRowConverter rowConverter;
         private readonly StringBuilder formatBuilder = new StringBuilder();
@@ -16,20 +16,29 @@ namespace pnyx.net.impl
 
         public void rowHeader(List<String> header)
         {
-            String line = print(null, header);
-            processor.processLine(line);            
+            foreach (String format in formatStrings)
+            {
+                String line = print(format, null, header);
+                processor.processLine(line);            
+            }
         }
 
         public void processRow(List<String> row)
         {
-            String line = print(null, row);
-            processor.processLine(line);            
+            foreach (String format in formatStrings)
+            {
+                String line = print(format, null, row);
+                processor.processLine(line);            
+            }
         }
 
         public void processLine(String line)
         {
-            line = print(line, emptyRow);
-            processor.processLine(line);
+            foreach (String format in formatStrings)
+            {
+                line = print(format, line, emptyRow);
+                processor.processLine(line);
+            }
         }
 
         public void endOfFile()
@@ -43,8 +52,8 @@ namespace pnyx.net.impl
         }
         
         private enum State { Text, Slash, Dollar, Number }
-        
-        public String print(String line, List<String> row)
+
+        public String print(String format, String line, List<String> row)
         {
             if (row == null)
                 return null;
