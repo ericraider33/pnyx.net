@@ -18,8 +18,8 @@ namespace pnyx.net.impl
         {
             foreach (String format in formatStrings)
             {
-                String line = print(format, null, header);
-                processor.processLine(line);            
+                String output = print(format, null, header);
+                processor.processLine(output);            
             }
         }
 
@@ -27,8 +27,8 @@ namespace pnyx.net.impl
         {
             foreach (String format in formatStrings)
             {
-                String line = print(format, null, row);
-                processor.processLine(line);            
+                String output = print(format, null, row);
+                processor.processLine(output);            
             }
         }
 
@@ -36,8 +36,8 @@ namespace pnyx.net.impl
         {
             foreach (String format in formatStrings)
             {
-                line = print(format, line, emptyRow);
-                processor.processLine(line);
+                String output = print(format, line, emptyRow);
+                processor.processLine(output);
             }
         }
 

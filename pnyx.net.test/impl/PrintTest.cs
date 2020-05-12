@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using pnyx.net.fluent;
 using pnyx.net.impl;
 using pnyx.net.impl.csv;
+using pnyx.net.processors.dest;
+using pnyx.net.util;
 using Xunit;
 
 namespace pnyx.net.test.impl
@@ -45,5 +48,29 @@ namespace pnyx.net.test.impl
             String actual = p.print(format, line, new List<String>());
             Assert.Equal(expected, actual);
         }
+        
+        [Fact]
+        public void printMultiLine()
+        {
+            CaptureText capture = new CaptureText(new StreamInformation(new Settings()));
+            
+            Print p = new Print { formatStrings = new [] { "1 $0", "2 $0" }, processor = capture };
+            p.processLine("Adam Smith");
+            
+            Assert.Equal("1 Adam Smith\r\n2 Adam Smith\r\n", capture.capture.ToString());
+        }
+        
+        [Fact]
+        public void printMultiRow()
+        {
+            List<String> row = new List<String> { "AA", "BB" };
+            CaptureText capture = new CaptureText(new StreamInformation(new Settings()));
+            
+            Print p = new Print { formatStrings = new [] { "1 $1", "2 $2" }, processor = capture };
+            p.processRow(row);
+
+            Assert.Equal("1 AA\r\n2 BB\r\n", capture.capture.ToString());
+        }
+        
     }
 }
