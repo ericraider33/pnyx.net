@@ -812,7 +812,7 @@ namespace pnyx.net.util
             return counts;
         }
 
-        public static String enocdeSqlValue(String source, bool quote = true, bool inculdePatternMatching = false, bool encodeNull = true)
+        public static String encodeSqlValue(String source, bool quote = true, bool includePatternMatching = false, bool encodeNull = true)
         {
             if (encodeNull && source == null)
                 return "null";
@@ -836,8 +836,8 @@ namespace pnyx.net.util
                     case '\t':  result.Append("\\t");   break;
                     case '\u001A': result.Append("\\z"); break;
                     case '\\':  result.Append("\\\\");   break;
-                    case '%':   result.Append(inculdePatternMatching ? "\\%" : "%");   break;
-                    case '_':  result.Append(inculdePatternMatching ? "\\_": "_");   break;
+                    case '%':   result.Append(includePatternMatching ? "\\%" : "%");   break;
+                    case '_':  result.Append(includePatternMatching ? "\\_": "_");   break;
                     default:    result.Append(c);       break;
                 }
             }

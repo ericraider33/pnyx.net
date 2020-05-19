@@ -146,6 +146,7 @@ namespace pncs.cmd
                 case "ga": return GaCleanup.main();
                 case "column": return ColumnDefinitionExample.main();
                 case "documentation": return runDocumentationExample(switches, args);
+                case "discovery": return DiscoveryExample.main();
                 default: return printUsage("Unknown example: " + example, 69);                    
             }
         }

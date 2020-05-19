@@ -93,7 +93,7 @@ namespace pncs.cmd.examples
                 p.rowTransformerFunc(row =>
                 {
                     for (int i = 0; i < row.Count; i++)
-                        row[i] = TextUtil.enocdeSqlValue(row[i]);                    
+                        row[i] = TextUtil.encodeSqlValue(row[i]);                    
                     return row;
                 });
                 p.print("update bhc_patient_ccm set lastname=$2, suffix=$3 where patientid=$1;");

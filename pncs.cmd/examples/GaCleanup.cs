@@ -15,7 +15,7 @@ namespace pncs.cmd.examples
                 p.sed("CL/C/MonitoringDashboard.", "");
                 p.parseCsv();
                 p.withColumns(p2 => { p2.sed(",", "", "g"); }, 2, 3);
-                p.lineTransformerFunc(line => TextUtil.enocdeSqlValue(line));
+                p.lineTransformerFunc(line => TextUtil.encodeSqlValue(line));
                 p.print("insert into `groupit` values($1,$2);");
                 p.write(@"c:/dev/asclepius/prod_import/events.sql");
                 
