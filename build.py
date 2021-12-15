@@ -1,4 +1,4 @@
-#!python3
+#!/usr/bin/env python3
 # Refernces: 
 # https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package-using-the-dotnet-cli
 # https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet?tabs=netcore21
