@@ -140,6 +140,7 @@ namespace pncs.cmd
         {                        
             switch (example.ToLower())
             {
+                case "mir": return Mir.fix();
                 case "bhcdischarge": return BhcDischarge.main();
                 case "bhcprocedure": return BhcProcedures.main();
                 case "altitude": return Altitude.main();
