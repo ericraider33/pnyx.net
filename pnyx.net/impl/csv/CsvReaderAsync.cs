@@ -2,74 +2,48 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using pnyx.net.api;
+using System.Threading.Tasks;
 using pnyx.net.errors;
-using pnyx.net.processors;
+using pnyx.net.fluent;
 using pnyx.net.util;
 
 namespace pnyx.net.impl.csv
 {
-    public class CsvStreamToRowProcessor : IRowSource, IDisposable
+    public class CsvReaderAsync : IDisposable
     {
-        public CsvRowConverter rowConverter { get; }
-        public CsvSettings settings  { get; }
-        public bool hasHeader { get; set; }
-        public StreamReader reader { get; protected set; }
-        public IRowProcessor rowProcessor { get; private set; }
-        public StreamInformation streamInformation { get; protected set; }        
-        public IStreamFactory streamFactory { get; protected set; }
+        public StreamReader reader { get; private set; }
+        public StreamInformation streamInformation { get; private set; }        
+        public CsvSettings csvSettings { get; }
         
         private readonly StringBuilder stringBuilder = new StringBuilder();
         private bool endOfFile;
-        
+
         private char[] buffer = new char[8096];
         private int bufferSize;
         private int bufferPosition;
-
-        public CsvStreamToRowProcessor(CsvSettings settings = null)
-        {
-            this.settings = settings ?? new CsvSettings();
-            rowConverter = new CsvRowConverter(this.settings);
-        }
-
-        public IRowConverter getRowConverter()
-        {
-            return rowConverter;
-        }
-
-        public virtual void process()
-        {
-            Stream stream = streamFactory.openStream();
-            reader = new StreamReader(stream, streamInformation.defaultEncoding, streamInformation.detectEncodingFromByteOrderMarks);
-            
-            endOfFile = false;
-            List<String> current;
-            while ((current = readRow(streamInformation.lineNumber)) != null && streamInformation.active)
-            {
-                streamInformation.lineNumber++;
-                if (streamInformation.lineNumber == 1 && hasHeader)
-                    rowProcessor.rowHeader(current);
-                else
-                    rowProcessor.processRow(current);
-            }
-
-            if (!streamInformation.active)
-                streamInformation.endsWithNewLine = current != null;
-
-            rowProcessor.endOfFile();
-            streamFactory.closeStream();
-        }
-                
+        
         private enum CsvState { StartOfLine, Quoted, Data, Seeking }
-
-        private int readChar_(bool peek = false)
+        
+        public CsvReaderAsync(Stream stream, Encoding defaultEncoding = null, CsvSettings csvSettings = null) 
+        {        
+            this.csvSettings = csvSettings ?? new CsvSettings();
+            
+            Settings settings = SettingsHome.settingsFactory.buildSettings();
+            settings.defaultEncoding = defaultEncoding ?? settings.defaultEncoding;
+            
+            streamInformation = new StreamInformation(settings);
+                
+            reader = new StreamReader(stream, streamInformation.defaultEncoding, streamInformation.detectEncodingFromByteOrderMarks);
+        }
+        
+        private async Task<int> readChar_(bool peek = false)
         {
             if (bufferPosition >= bufferSize)
             {
                 if (endOfFile)
                     return -1;
                 
-                bufferSize = reader.Read(buffer, 0, buffer.Length);
+                bufferSize = await reader.ReadAsync(buffer, 0, buffer.Length);
                 bufferPosition = 0;
                 
                 if (bufferSize == 0)
@@ -85,17 +59,24 @@ namespace pnyx.net.impl.csv
             return result;
         }
         
-        private int readChar()
+        private Task<int> readChar()
         {
             return readChar_();
         }
 
-        private int peekChar()
+        private Task<int> peekChar()
         {
             return readChar_(peek: true);
         }
         
-        protected virtual List<String> readRow(int rowNumber)
+        public async Task<List<String>> readRow()
+        {
+            List<String> result = await readRow(streamInformation.lineNumber);
+            streamInformation.lineNumber++;
+            return result;
+        }
+        
+        public async Task<List<String>> readRow(int rowNumber)
         {
             List<String> row = new List<String>();
             stringBuilder.Clear();
@@ -104,7 +85,7 @@ namespace pnyx.net.impl.csv
             
             int num;
             CsvState state = CsvState.StartOfLine;
-            while ((num = readChar()) != -1)
+            while ((num = await readChar()) != -1)
             {
                 switch (state)
                 {                    
@@ -121,9 +102,9 @@ namespace pnyx.net.impl.csv
                         }
                         else if (num == '\r')
                         {
-                            if (peekChar() == '\n')
+                            if (await peekChar() == '\n')
                             {
-                                readChar();            // consumes both \r\n
+                                await readChar();            // consumes both \r\n
                                 updateStreamInformation(rowNumber, "\r\n");                            
                             }
                             else
@@ -133,18 +114,18 @@ namespace pnyx.net.impl.csv
                                 row.Add(stringBuilder.ToString());                                    
                             return row;
                         }
-                        else if (num == settings.delimiter)
+                        else if (num == csvSettings.delimiter)
                         {
                             row.Add(stringBuilder.ToString());
                             stringBuilder.Clear();
                             state = CsvState.Seeking;                                
                         }
-                        else if (num == settings.escapeChar)
+                        else if (num == csvSettings.escapeChar)
                         {
                             if (state == CsvState.Data)
                             {
-                                if (settings.allowStrayQuotes)
-                                    stringBuilder.Append(settings.escapeChar);
+                                if (csvSettings.allowStrayQuotes)
+                                    stringBuilder.Append(csvSettings.escapeChar);
                                 else 
                                     throw new IllegalStateException(String.Format("Line {0} contains a quote that isn't wrapped with quotes", rowNumber+1)); 
                             }
@@ -161,19 +142,19 @@ namespace pnyx.net.impl.csv
 
                     case CsvState.Quoted:
                     {
-                        if (num == settings.escapeChar)
+                        if (num == csvSettings.escapeChar)
                         {
-                            int next = peekChar();
-                            if (next == settings.escapeChar)
+                            int next = await peekChar();
+                            if (next == csvSettings.escapeChar)
                             {
-                                readChar();            // consumes second quote
-                                stringBuilder.Append(settings.escapeChar);
+                                await readChar();            // consumes second quote
+                                stringBuilder.Append(csvSettings.escapeChar);
                             }
-                            else if (next == settings.delimiter)
+                            else if (next == csvSettings.delimiter)
                             {
                                 row.Add(stringBuilder.ToString());
                                 stringBuilder.Clear();
-                                readChar();            // consumes comma
+                                await readChar();            // consumes comma
                                 state = CsvState.Seeking;                                
                             }
                             else if (next == '\n' || next == '\r' || next == -1)
@@ -182,7 +163,7 @@ namespace pnyx.net.impl.csv
                             }
                             else
                             {
-                                if (settings.allowTextAfterClosingQuote)
+                                if (csvSettings.allowTextAfterClosingQuote)
                                     state = CsvState.Data;
                                 else
                                     throw new IllegalStateException(String.Format("Line {0} contains an unexpected character {1} after quote", rowNumber+1, (char)next));
@@ -208,7 +189,7 @@ namespace pnyx.net.impl.csv
                     return null;
                 
                 case CsvState.Quoted:
-                    if (!settings.terminateQuoteOnEndOfFile)
+                    if (!csvSettings.terminateQuoteOnEndOfFile)
                         throw new IllegalStateException("File ends with open quotes");
                     break;
             }
@@ -216,7 +197,7 @@ namespace pnyx.net.impl.csv
             row.Add(stringBuilder.ToString());                                    
             return row;
         }
-
+        
         private void updateStreamInformation(int lineNumber, String newLine)
         {
             if (lineNumber > 0)
@@ -232,23 +213,6 @@ namespace pnyx.net.impl.csv
                 reader.Dispose();
             
             reader = null;
-
-            IDisposable sfDisposable = (IDisposable) streamFactory; 
-            if (sfDisposable != null)
-                sfDisposable.Dispose();
-
-            streamFactory = null;
-        }
-
-        public void setSource(StreamInformation streamInformation, IStreamFactory streamFactory)
-        {
-            this.streamInformation = streamInformation;
-            this.streamFactory = streamFactory;
-        }
-
-        public void setNextRowProcessor(IRowProcessor next)
-        {
-            rowProcessor = next;
         }
     }
 }

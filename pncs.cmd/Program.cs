@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using pncs.cmd.examples;
 using pnyx.cmd.shared;
 using pnyx.net.errors;
@@ -13,7 +14,7 @@ namespace pncs.cmd
 {
     public class Program
     {
-        public static int Main(String[] args)
+        public static async Task<int> Main(String[] args)
         {
             Dictionary<String, String> switches = ArgsUtil.parseDictionary(ref args);
             try
@@ -31,7 +32,7 @@ namespace pncs.cmd
                 // Undocumented flag / used for testing
                 String example = switches.value("-e", "--example");
                 if (example != null)
-                    return runExample(example, switches, args);
+                    return await runExample(example, switches, args);
                 
                 return runCSharp(switches, args);
             }
@@ -136,23 +137,23 @@ namespace pncs.cmd
             return errorCode;
         }
 
-        private static int runExample(String example, Dictionary<String, String> switches, String[] args)
+        private static Task<int> runExample(String example, Dictionary<String, String> switches, String[] args)
         {                        
             switch (example.ToLower())
             {
-                case "mir": return Mir.fix();
-                case "bhcdischarge": return BhcDischarge.main();
-                case "bhcprocedure": return BhcProcedures.main();
-                case "altitude": return Altitude.main();
-                case "ga": return GaCleanup.main();
-                case "column": return ColumnDefinitionExample.main();
+                case "mir": return Task.FromResult(Mir.fix());
+                case "bhcdischarge": return Task.FromResult(BhcDischarge.main());
+                case "bhcprocedure": return Task.FromResult(BhcProcedures.main());
+                case "altitude": return Task.FromResult(Altitude.main());
+                case "ga": return Task.FromResult(GaCleanup.main());
+                case "column": return Task.FromResult(ColumnDefinitionExample.main());
                 case "documentation": return runDocumentationExample(switches, args);
-                case "discovery": return DiscoveryExample.main();
-                default: return printUsage("Unknown example: " + example, 69);                    
+                case "discovery": return Task.FromResult(DiscoveryExample.main());
+                default: return Task.FromResult(printUsage("Unknown example: " + example, 69));                    
             }
         }
 
-        private static int runDocumentationExample(Dictionary<String, String> switches, String[] args)
+        private static async Task<int> runDocumentationExample(Dictionary<String, String> switches, String[] args)
         {
             if (args.Length != 2)
                 return printUsage("Invalid Parameters: Documentation examples require a class name and a method name as parameters");
@@ -169,8 +170,10 @@ namespace pncs.cmd
                 throw new InvalidArgumentException("Static method '{0}' could not be found on type: {1}", methodName, typeName);
             
             // Runs example
-            method.Invoke(null, new Object[0]);
-
+            Object result = method.Invoke(null, new Object[0]);
+            if (result is Task)
+                await (Task)result;
+            
             return 0;
         }
     }

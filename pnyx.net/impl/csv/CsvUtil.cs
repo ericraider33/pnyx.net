@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using pnyx.net.errors;
 using pnyx.net.fluent;
 
@@ -86,7 +87,43 @@ namespace pnyx.net.impl.csv
                     writer.Write(val);
             }
         }
-                
+        
+        public static async Task writeRowAsync(
+            TextWriter writer,
+            IEnumerable<String> row,
+            char delimiter,
+            char escapeChar,
+            char[] charsNeedEscape            
+        )
+        {
+            bool first = true;
+            foreach (String val in row)
+            {
+                if (!first)
+                    await writer.WriteAsync(delimiter);
+                first = false;
+
+                if (val == null)
+                    continue;
+
+                // Checks if escape needed
+                if (val.IndexOfAny(charsNeedEscape) >= 0)
+                {
+                    await writer.WriteAsync(escapeChar);
+                    foreach (char c in val)
+                    {
+                        if (c == escapeChar)
+                            await writer.WriteAsync(escapeChar);
+
+                        await writer.WriteAsync(c);
+                    }
+                    await writer.WriteAsync(escapeChar);
+                }
+                else
+                    await writer.WriteAsync(val);
+            }
+        }
+        
         public static String rowToStringWithDefaults(
             IEnumerable<String> source,
             char? delimiter = null,

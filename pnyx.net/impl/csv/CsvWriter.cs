@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using pnyx.net.fluent;
 
 namespace pnyx.net.impl.csv
@@ -53,6 +54,12 @@ namespace pnyx.net.impl.csv
         {
             CsvUtil.writeRow(writer, row, delimiter, escapeChar, charsNeedEscape);
             writer.WriteLine();
+        }
+        
+        public async Task writeRowAsync(IEnumerable<String> row)
+        {
+            await CsvUtil.writeRowAsync(writer, row, delimiter, escapeChar, charsNeedEscape);
+            await writer.WriteLineAsync();
         }
     }
 }

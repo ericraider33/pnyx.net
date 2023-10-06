@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using pnyx.net.impl.csv;
 
 namespace pncs.cmd.examples.documentation.library
@@ -11,20 +12,55 @@ namespace pncs.cmd.examples.documentation.library
         // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExamplesUtilities csvReader
         public static void csvReader()
         {
-            using (FileStream stream = new FileStream("my.csv", FileMode.Open, FileAccess.Read))
+            using (FileStream oStream = new FileStream("C:\\dev\\asclepius\\prod_import\\testing\\stlh.tmp.csv", FileMode.Create, FileAccess.Write))
             {
-                using (CsvReader reader = new CsvReader(stream, Encoding.UTF8))
+                using (CsvWriter writer = new CsvWriter(oStream, Encoding.UTF8))
                 {
-                    reader.settings.setDefaults(strict: true); // throw errors for bad formatting
-                    
-                    List<String> row;
-                    while ((row = reader.readRow()) != null)
+                    using (FileStream stream = new FileStream("C:\\dev\\asclepius\\prod_import\\testing\\stlh.out.csv", FileMode.Open, FileAccess.Read))
                     {
-                        // Process data
-                        Console.WriteLine("Row has {0} column(s)", row.Count);
+                        using (CsvReader reader = new CsvReader(stream, Encoding.UTF8))
+                        {
+                            reader.settings.setDefaults(strict: true); // throw errors for bad formatting
+                    
+                            List<String> row;
+                            while ((row = reader.readRow()) != null)
+                            {
+                                // Process data
+                                row.Add("Testing: " + DateTime.Now);
+                                writer.writeRow(row);
+                            }
+                        }
                     }
                 }
             }
+            Console.WriteLine("Finished!");
+        }            
+
+        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExamplesUtilities csvReaderAsync
+        public static async Task csvReaderAsync()
+        {
+            using (FileStream oStream = new FileStream("C:\\dev\\asclepius\\prod_import\\testing\\stlh.tmp.csv", FileMode.Create, FileAccess.Write))
+            {
+                using (CsvWriter writer = new CsvWriter(oStream, Encoding.UTF8))
+                {
+                    using (FileStream stream = new FileStream("C:\\dev\\asclepius\\prod_import\\testing\\stlh.out.csv", FileMode.Open, FileAccess.Read))
+                    {
+                        using (CsvReaderAsync reader = new CsvReaderAsync(stream, Encoding.UTF8))
+                        {
+                            reader.csvSettings.setDefaults(strict: true); // throw errors for bad formatting
+                    
+                            List<String> row;
+                            while ((row = await reader.readRow()) != null)
+                            {
+                                // Process data
+                                row.Add("Testing: " + DateTime.Now);
+                                await writer.writeRowAsync(row);
+                            }
+                        }
+                    }
+                }
+            }
+            Console.WriteLine("Finished!");
         }            
         
         // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExamplesUtilities csvWriter
