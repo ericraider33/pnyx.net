@@ -2,6 +2,7 @@
   <PropertyGroup>
     <AssemblyVersion>0.9.9</AssemblyVersion>
     <TargetFramework>net7.0</TargetFramework>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\pnyx.cmd.shared\pnyx.cmd.shared.csproj" />
