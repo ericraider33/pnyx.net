@@ -16,7 +16,7 @@
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageVersion>0.9.9</PackageVersion>
     <AssemblyVersion>0.9.9</AssemblyVersion>	
-    <TargetFrameworks>netstandard2.1;net7.0</TargetFrameworks>	
+    <TargetFramework>netstandard2.1</TargetFramework>	
   </PropertyGroup>
   <ItemGroup>
 	<None Include="..\LICENSE.md" Pack="true" PackagePath="" />
