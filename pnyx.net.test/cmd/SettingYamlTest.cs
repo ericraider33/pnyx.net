@@ -57,7 +57,7 @@ backupRewrite: false
         }
 
         [Theory]
-        [InlineData("utf-7", true)]
+        [InlineData("utf-7", false)]
         [InlineData("utf-8", true)]
         [InlineData("utf-32", true)]
         [InlineData("us-ascii", true)]

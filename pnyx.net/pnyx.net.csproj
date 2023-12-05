@@ -1,6 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net461;net472;netcoreapp2.2</TargetFrameworks>
 	
 	<!-- Nuget Specs -->
     <PackageId>pnyx.net</PackageId>
@@ -9,14 +8,15 @@
     <Company>BuckTheOdds LLC.</Company>
     <Title>pnyx.net file transform library</Title>
     <PackageDescription>Pnyx brings all of your favorite unix file transform tools like grep, sed and awk to your preferred programming language.</PackageDescription>
-    <Copyright>Copyright 2018-2023</Copyright>
+    <Copyright>Copyright 2018-2024</Copyright>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageProjectUrl>http://pnyx.me/</PackageProjectUrl>
     <PackageTags>ETL Pnyx awk sed grep linux tool csv parse file</PackageTags>	
     <PackageReleaseNotes>Continual improvements</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <PackageVersion>0.9.8</PackageVersion>
-    <AssemblyVersion>0.9.8</AssemblyVersion>	
+    <PackageVersion>0.9.9</PackageVersion>
+    <AssemblyVersion>0.9.9</AssemblyVersion>	
+    <TargetFrameworks>netstandard2.1;net7.0</TargetFrameworks>	
   </PropertyGroup>
   <ItemGroup>
 	<None Include="..\LICENSE.md" Pack="true" PackagePath="" />

@@ -7,6 +7,7 @@ using pnyx.net.fluent;
 using pnyx.net.util;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
+using Settings = pnyx.net.fluent.Settings;
 
 namespace pnyx.cmd.shared
 {
