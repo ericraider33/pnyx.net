@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
 
         <IsPackable>false</IsPackable>
 
         <OutputType>Library</OutputType>
+
+        <TargetFrameworks>net7.0;net8.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>

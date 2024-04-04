@@ -2,9 +2,9 @@
 
     <PropertyGroup>
         <AssemblyVersion>0.9.9</AssemblyVersion>
-        <TargetFramework>net7.0</TargetFramework>
         <OutputType>Exe</OutputType>
         <PublishTrimmed>true</PublishTrimmed>
+        <TargetFrameworks>net7.0;net8.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
