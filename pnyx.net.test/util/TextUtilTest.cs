@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 using pnyx.net.util;
 using Xunit;
 
@@ -42,49 +39,6 @@ namespace pnyx.net.test.util
             Assert.Equal("12345", TextUtil.truncAtWhitespace("12345 78", 5));
             Assert.Equal("12 45", TextUtil.truncAtWhitespace("12 45 78", 5));
             Assert.Equal("12345", TextUtil.truncAtWhitespace("12345 78 0", 5));
-        }
-
-        [Fact]
-        public void UnderscoreToCamel()
-        {
-            Assert.Equal("DbVersion", TextUtil.underscoreToCamel("db_version"));
-        }
-
-        [Fact]
-        public void CamelToDash()
-        {
-            Assert.Equal("db-version", TextUtil.camelToDash("DbVersion"));
-            Assert.Equal("chronic-care-iq", TextUtil.camelToDash("ChronicCareIQ"));
-            Assert.Equal("mib", TextUtil.camelToDash("MIB"));
-            Assert.Equal("iam-interface", TextUtil.camelToDash("IAmInterface"));
-            Assert.Equal("mib-200", TextUtil.camelToDash("MIB200"));
-        }
-
-        [Fact]
-        public void CamelToSpace()
-        {
-            Assert.Equal("x", TextUtil.camelToSpace("x"));
-            Assert.Equal("x Y", TextUtil.camelToSpace("xY"));
-            Assert.Equal("XYZ", TextUtil.camelToSpace("XYZ"));
-            Assert.Equal("x Y", TextUtil.camelToSpace("x Y"));
-            Assert.Equal("XYZoo Land", TextUtil.camelToSpace("XYZooLand"));
-            Assert.Equal("Stay or Go", TextUtil.camelToSpace("StayOrGo"));
-            Assert.Equal("Stand and Fight", TextUtil.camelToSpace("StandAndFight"));
-            Assert.Equal("Would You Stay and Go or Go and Stay", TextUtil.camelToSpace("WouldYouStayAndGoOrGoAndStay"));
-
-            Assert.Equal("x", TextUtil.camelToSpace("x"));
-            Assert.Equal("x 1", TextUtil.camelToSpace("x1"));
-            Assert.Equal("x 1", TextUtil.camelToSpace("x 1"));
-            Assert.Equal("XYZoo 100", TextUtil.camelToSpace("XYZoo100"));
-            Assert.Equal("Stay 100 Go", TextUtil.camelToSpace("Stay100Go"));
-        }
-
-        [Fact]
-        public void SpaceToCamel()
-        {
-            Assert.Equal("x", TextUtil.spaceToCamel("x"));
-            Assert.Equal("xY", TextUtil.spaceToCamel("x Y"));
-            Assert.Equal("XYZ", TextUtil.spaceToCamel("X Y Z"));
         }
 
         [Fact]
@@ -230,60 +184,6 @@ namespace pnyx.net.test.util
         }
 
         [Fact]
-        public void ExtractAlphaNumeric()
-        {
-            Assert.Equal("", TextUtil.extractAlphaNumeric(null));
-            Assert.Equal("", TextUtil.extractAlphaNumeric(""));
-            Assert.Equal("", TextUtil.extractAlphaNumeric("~"));
-            Assert.Equal("a", TextUtil.extractAlphaNumeric("~a"));
-            Assert.Equal("ab", TextUtil.extractAlphaNumeric("a b"));
-            Assert.Equal("ab", TextUtil.extractAlphaNumeric("a b&"));
-        }
-
-        [Fact]
-        public void ExtractNumeric()
-        {
-            Assert.Equal("", TextUtil.extractNumeric(null));
-            Assert.Equal("", TextUtil.extractNumeric(""));
-            Assert.Equal("", TextUtil.extractNumeric("~"));
-            Assert.Equal("1", TextUtil.extractNumeric("~1a"));
-            Assert.Equal("12", TextUtil.extractNumeric("1 2 a b"));
-            Assert.Equal("12", TextUtil.extractNumeric("1 2&"));
-        }
-
-        [Fact]
-        public void ExtractNonWhitespace()
-        {
-            Assert.Equal("", TextUtil.extractNotWhitespace(null));
-            Assert.Equal("", TextUtil.extractNotWhitespace(""));
-            Assert.Equal("~", TextUtil.extractNotWhitespace(" ~ "));
-            Assert.Equal("~a", TextUtil.extractNotWhitespace(" ~ a "));
-            Assert.Equal("ab", TextUtil.extractNotWhitespace(" ab "));
-            Assert.Equal("ab&", TextUtil.extractNotWhitespace(" a b& "));
-        }
-
-        [Fact]
-        public void SplitSpace()
-        {
-            verifySplitSpace(null, new string[0]);
-            verifySplitSpace("", new string[0]);
-            verifySplitSpace(" ", new string[0]);
-            verifySplitSpace("a", new string[] { "a" });
-            verifySplitSpace(" a", new string[] { "a" });
-            verifySplitSpace("a ", new string[] { "a" });
-            verifySplitSpace("a b", new string[] { "a", "b" });
-            verifySplitSpace("a b ", new string[] { "a", "b" });
-            verifySplitSpace(" a b", new string[] { "a", "b" });
-        }
-
-        private void verifySplitSpace(string input, string[] tokens)
-        {
-            string[] actual = TextUtil.splitSpace(input);
-            
-            Assert.Equal(tokens, actual);
-        }
-
-        [Fact]
         public void RemoveBeginning()
         {
             Assert.Null(TextUtil.removeBeginning(null, null));
@@ -370,32 +270,6 @@ namespace pnyx.net.test.util
         }
 
         [Fact]
-        public void ParseInts()
-        {
-            verifyInt(TextUtil.parseInts(null));
-            verifyInt(TextUtil.parseInts(""));
-            verifyInt(TextUtil.parseInts("1"), 1);
-            verifyInt(TextUtil.parseInts("1,2"), 1, 2);
-            verifyInt(TextUtil.parseInts(" 1 , 2 "), 1, 2);
-
-            verifyInt(TextUtil.parseInts(" 1 \n\r 2 ", new[] { '\n' }), 1, 2);
-            verifyInt(TextUtil.parseInts(" 1 \n\r 2 \n\r", new[] { '\n' }), 1, 2);
-        }
-
-        private void verifyInt(List<int> list, params int[] expected)
-        {
-            List<int> expectedList = new List<int>(expected);
-            if (Enumerable.SequenceEqual(expectedList, list))
-                return;
-
-            String actualText = String.Join(",", list);
-            String expectedText = String.Join(",", expected);
-            Console.WriteLine("Source: {0}", actualText);
-            Console.WriteLine("Expect: {0}", expectedText);
-            Assert.Equal(expectedText, actualText);
-        }
-
-        [Fact]
         public void RemoveParts()
         {
             Assert.Null(TextUtil.removeParts(null, 0, 0));
@@ -429,33 +303,6 @@ namespace pnyx.net.test.util
             Assert.Equal("freedom", TextUtil.removeParentheses("freedom((((()"));
             Assert.Equal("freedom))", TextUtil.removeParentheses("freedom()))"));
         }
-
-        [Fact]
-        public void SplitAt()
-        {
-            Assert.Null(TextUtil.splitAt("", ","));
-            Assert.Null(TextUtil.splitAt(null, ","));
-            Assert.Equal(new Tuple<String, String>("a", ""), TextUtil.splitAt("a", ","));
-            Assert.Equal(new Tuple<String, String>("a", ""), TextUtil.splitAt("a,", ","));
-            Assert.Equal(new Tuple<String, String>("", "a"), TextUtil.splitAt(",a", ","));
-            Assert.Equal(new Tuple<String, String>("a", "a"), TextUtil.splitAt("a,a", ","));
-            Assert.Equal(new Tuple<String, String>("a", "b,c"), TextUtil.splitAt("a,b,c", ","));
-        }
-
-        [Fact]
-        public void SplitAtIndex()
-        {
-            Assert.Null(TextUtil.splitAtIndex("", 0));
-            Assert.Null(TextUtil.splitAtIndex(null, 0));
-            Assert.Equal(new Tuple<String, String>("a", ""), TextUtil.splitAtIndex("a", 1));
-            Assert.Equal(new Tuple<String, String>("a", ""), TextUtil.splitAtIndex("a", 2));
-            Assert.Equal(new Tuple<String, String>("", "a"), TextUtil.splitAtIndex("a", 0));
-            Assert.Equal(new Tuple<String, String>("a", "a"), TextUtil.splitAtIndex("aa", 1));
-            Assert.Equal(new Tuple<String, String>("a", "bc"), TextUtil.splitAtIndex("abc", 1));
-            Assert.Equal(new Tuple<String, String>("ab", "c"), TextUtil.splitAtIndex("abc", 2));
-            Assert.Equal(new Tuple<String, String>("abc", ""), TextUtil.splitAtIndex("abc", 3));
-        }
-        
 
         [Fact]
         public void EndsWith()

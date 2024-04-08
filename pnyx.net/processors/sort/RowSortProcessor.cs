@@ -30,7 +30,7 @@ namespace pnyx.net.processors.sort
             this.comparer = comparer;
             
             buffer = new PnyxSortedList<List<String>>(bufferSize, comparer, unique);            
-            tempFileKey = TextUtil.extractAlphaNumeric(Guid.NewGuid().ToString());
+            tempFileKey = ParseExtensions.extractAlphaNumeric(Guid.NewGuid().ToString());
         }
 
         public void rowHeader(List<String> header)

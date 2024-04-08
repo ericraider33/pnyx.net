@@ -11,14 +11,14 @@ namespace pnyx.net.util
 
         public static String parseZipCode(String source, bool zeroPad = false)
         {
-            source = TextUtil.extractNotWhitespace(source);
+            source = ParseExtensions.extractNotWhitespace(source);
             if (ZIP_CODE_EXPRESSION.IsMatch(source))
-                return TextUtil.extractNumeric(source);    
+                return ParseExtensions.extractNumeric(source);    
 
             if (!zeroPad || !ZERO_PAD_EXPRESSION.IsMatch(source))            
                 return null;
             
-            source = TextUtil.extractNumeric(source);
+            source = ParseExtensions.extractNumeric(source);
             if (source.Length == (5 - 2) || source.Length == (9 - 2))
                 return "00" + source;
 

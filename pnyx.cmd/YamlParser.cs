@@ -239,7 +239,7 @@ namespace pnyx.cmd
             switch (parameterInfo.ParameterType.Name)
             {
                 case "Int32": return Int32.Parse(scalarValue);
-                case "Boolean": return TextUtil.parseBool(scalarValue);
+                case "Boolean": return scalarValue.parseBool();
                 case "String": return scalarValue;
                 case "Encoding": return EncodingTypeConverter.parseText(scalarValue);
                 default:
@@ -264,7 +264,7 @@ namespace pnyx.cmd
             switch (multiParameter.ParameterType.Name)
             {
                 case "Int32[]": return values.Select(ysn => Int32.Parse(ysn.Value)).ToArray();
-                case "Boolean[]": return values.Select(ysn => TextUtil.parseBool(ysn.Value)).ToArray();
+                case "Boolean[]": return values.Select(ysn => ysn.Value.parseBool()).ToArray();
                 case "String[]": return values.Select(ysn => ysn.Value).ToArray();
                 case "Object[]":
                 {
@@ -296,7 +296,7 @@ namespace pnyx.cmd
                 return Double.Parse(value);
             }
 
-            bool? boolValue = TextUtil.parseBoolNullable(value);
+            bool? boolValue = value.parseBoolNullable();
             if (boolValue.HasValue)
                 return boolValue.Value;
 

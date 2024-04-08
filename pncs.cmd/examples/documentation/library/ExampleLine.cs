@@ -64,7 +64,7 @@ Oliver Twist
                 p.readString(input);
                 p.lineFilterFunc(line =>
                 {
-                    String numbers = TextUtil.extractNumeric(line);
+                    String numbers = ParseExtensions.extractNumeric(line);
                     return numbers.Length > 0 && int.Parse(numbers) > 5;
                 });
                 p.writeStdout();
@@ -85,7 +85,7 @@ Oliver Twist
                 p.readString(input);
                 p.lineTransformerFunc(line =>
                 {
-                    String numbers = TextUtil.extractNumeric(line);
+                    String numbers = ParseExtensions.extractNumeric(line);
                     return numbers;
                 });
                 p.writeStdout();
@@ -113,7 +113,7 @@ Oliver Twist
         {
             public List<string> lineToRow(string line)
             {
-                Tuple<String,String> pair = TextUtil.splitAt(line, ":=");
+                Tuple<String,String> pair = line.splitAt(":=");
                 return new List<String> { pair.Item1.Trim(), pair.Item2.Trim() };
             }
 

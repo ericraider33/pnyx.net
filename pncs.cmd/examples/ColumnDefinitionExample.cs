@@ -18,7 +18,7 @@ namespace pncs.cmd.examples
                 
                 p.rowTransformerFunc(row =>
                 {
-                    row[3] = TextUtil.extractAlpha(row[3]);            // removes periods from title
+                    row[3] = ParseExtensions.extractAlpha(row[3]);            // removes periods from title
                     return row;
                 });                
                 p.rowTransformerFunc(row =>

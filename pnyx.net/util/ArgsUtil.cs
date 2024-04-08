@@ -54,12 +54,12 @@ namespace pnyx.net.util
 
         public static int? valueInt(this Dictionary<String, String> switchDictionary, params String[] keys)
         {
-            return TextUtil.parseIntNullable(value(switchDictionary, keys));
+            return value(switchDictionary, keys).parseIntNullable();
         }
 
         public static double? valueDouble(this Dictionary<String, String> switchDictionary, params String[] keys)
         {
-            return TextUtil.parseDoubleNullable(value(switchDictionary, keys));
+            return value(switchDictionary, keys).parseDoubleNullable();
         }
 
         public static bool? valueBool(this Dictionary<String, String> switchDictionary, params String[] keys)
@@ -73,7 +73,7 @@ namespace pnyx.net.util
                 if (val == null)
                     return true;                                // treats as a switch
 
-                return TextUtil.parseBool(val);
+                return val.parseBool();
             }
             
             return null;

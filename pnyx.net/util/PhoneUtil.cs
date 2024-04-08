@@ -6,7 +6,7 @@ namespace pnyx.net.util
     {
         public static String parsePhone(String phone, String defualtAreaCode = null)
         {
-            phone = TextUtil.emptyAsNull(TextUtil.extractNumeric(phone));
+            phone = TextUtil.emptyAsNull(ParseExtensions.extractNumeric(phone));
 
             if (phone == null || phone.StartsWith("0"))
                 return null;
