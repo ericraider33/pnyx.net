@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using pnyx.net.errors;
 using pnyx.net.fluent;
 using pnyx.net.impl.csv;
+using pnyx.net.processors.rows;
 using pnyx.net.processors.sources;
 using pnyx.net.test.processors;
 using pnyx.net.util;

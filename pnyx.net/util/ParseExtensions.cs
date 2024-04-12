@@ -169,6 +169,20 @@ public static class ParseExtensions
         }
         return result.ToString();
     }
+    
+    public static String extractAlphaNumericDash(String source)
+    {
+        if (source == null)
+            return "";
+
+        StringBuilder result = new StringBuilder(source.Length);
+        foreach (Char c in source)
+        {
+            if (Char.IsLetterOrDigit(c) || c == '-' || c == '_')
+                result.Append(c);
+        }
+        return result.ToString();
+    }
 
     public static String extractAlpha(String source, bool preserveSpaces = false)
     {

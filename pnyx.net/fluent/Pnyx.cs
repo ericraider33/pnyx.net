@@ -14,6 +14,7 @@ using pnyx.net.processors;
 using pnyx.net.processors.converters;
 using pnyx.net.processors.dest;
 using pnyx.net.processors.lines;
+using pnyx.net.processors.nameValuePairs;
 using pnyx.net.processors.rows;
 using pnyx.net.processors.sort;
 using pnyx.net.processors.sources;
@@ -355,6 +356,16 @@ namespace pnyx.net.fluent
             parts.Add(new RowToLineProcessor { rowConverter = converter });
             state = FluentState.Line;
             rowConverter = null;
+
+            return this;
+        }
+
+        public Pnyx rowToNameValuePair()
+        {
+            requireStart(line: false, row: true);
+
+            parts.Add(new RowToNameValuePairProcessor());
+            state = FluentState.NameValuePair;
 
             return this;
         }
@@ -827,6 +838,11 @@ namespace pnyx.net.fluent
                     ILinePart currentPart = (ILinePart)part;
                     currentPart.setNextLineProcessor((ILineProcessor)last);
                 }
+                else if (part is INameValuePairPart)
+                {
+                    INameValuePairPart currentPart = (INameValuePairPart)part;
+                    currentPart.setNextNameValuePairProcessor((INameValuePairProcessor)last);
+                }
                 else
                     throw new IllegalStateException("Unknown part {0} should be consumed before compiling", part.GetType().Name);
 
@@ -997,6 +1013,19 @@ namespace pnyx.net.fluent
             return this;            
         }
 
+        public Pnyx endNameValuePair(INameValuePairProcessor nvpProcessor)
+        {
+            if (state == FluentState.Row)
+                rowToNameValuePair();
+                
+            if (state != FluentState.NameValuePair)
+                throw new IllegalStateException("Pnyx is not in NameValuePair state: {0}", state.ToString());
+
+            parts.Add(nvpProcessor);
+            state = FluentState.End;
+            return this;
+        }
+
         public Pnyx tee(Action<Pnyx> block)
         {
             requireStart(line: true, row: true);
@@ -1096,6 +1125,19 @@ namespace pnyx.net.fluent
             stateProcessedHandler = null;
 
             return this;
+        }
+
+        public List<IDictionary<String, Object>> processCaptureNameValuePairs()
+        {
+            if (state != FluentState.NameValuePair)
+                throw new IllegalStateException("Pnyx must be in NameValuePair state");
+
+            CaptureNameValuePairProcessor capture = new();
+            endNameValuePair(capture);
+
+            process();
+
+            return capture.records;
         }
 
         public void Dispose()

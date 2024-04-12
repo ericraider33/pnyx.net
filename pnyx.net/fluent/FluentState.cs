@@ -6,6 +6,7 @@ namespace pnyx.net.fluent
         Start,
         Line,
         Row,
+        NameValuePair,
         End,
         Compiled,
         CompiledServile, 
