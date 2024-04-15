@@ -15,6 +15,7 @@ using pnyx.net.processors.converters;
 using pnyx.net.processors.dest;
 using pnyx.net.processors.lines;
 using pnyx.net.processors.nameValuePairs;
+using pnyx.net.processors.objects;
 using pnyx.net.processors.rows;
 using pnyx.net.processors.sort;
 using pnyx.net.processors.sources;
@@ -31,6 +32,8 @@ namespace pnyx.net.fluent
         public readonly Settings settings;
         private IProcessor processor;
         private IRowConverter rowConverter;
+        private IObjectConverterFromNameValuePair objectConverterFromNameValuePair;
+        private IObjectConverterFromRow objectConverterFromRow;
         private readonly ArrayList parts;
         private readonly List<IDisposable> resources;
         private readonly List<String> sourceFiles;
@@ -367,6 +370,53 @@ namespace pnyx.net.fluent
             parts.Add(new RowToNameValuePairProcessor());
             state = FluentState.NameValuePair;
 
+            return this;
+        }
+
+        public Pnyx rowToObject(IObjectConverterFromRow converter = null)
+        {
+            requireStart(line: false, row: true);
+
+            objectConverterFromRow ??= converter;
+            parts.Add(new RowToObjectProcessor { converter = objectConverterFromRow });
+            state = FluentState.Object;
+            
+            return this;
+        }
+
+        public Pnyx objectToRow(IObjectConverterFromRow converter = null)
+        {
+            if (state != FluentState.Object)
+                throw new IllegalStateException("Pnyx is not in Object state: {0}", state.ToString());
+            
+            parts.Add(new ObjectToRowProcessor { converter = converter ?? objectConverterFromRow });
+            state = FluentState.Row;
+            objectConverterFromRow = null;
+            
+            return this;
+        }
+
+        public Pnyx nameValuePairToObject(IObjectConverterFromNameValuePair converter = null)
+        {
+            if (state != FluentState.NameValuePair)
+                throw new IllegalStateException("Pnyx is not in NameValuePair state: {0}", state.ToString());
+
+            objectConverterFromNameValuePair ??= converter;
+            parts.Add(new NameValuePairToObjectProcessor { converter = objectConverterFromNameValuePair });
+            state = FluentState.Object;
+            
+            return this;
+        }
+
+        public Pnyx objectToNameValuePair(IObjectConverterFromNameValuePair converter = null)
+        {
+            if (state != FluentState.Object)
+                throw new IllegalStateException("Pnyx is not in Object state: {0}", state.ToString());
+            
+            parts.Add(new ObjectToNameValuePairProcessor { converter = converter ?? objectConverterFromNameValuePair });
+            state = FluentState.NameValuePair;
+            objectConverterFromNameValuePair = null;
+            
             return this;
         }
 
@@ -843,6 +893,11 @@ namespace pnyx.net.fluent
                     INameValuePairPart currentPart = (INameValuePairPart)part;
                     currentPart.setNextNameValuePairProcessor((INameValuePairProcessor)last);
                 }
+                else if (part is IObjectPart)
+                {
+                    IObjectPart currentPart = (IObjectPart)part;
+                    currentPart.setNextObjectProcessor((IObjectProcessor)last);
+                }
                 else
                     throw new IllegalStateException("Unknown part {0} should be consumed before compiling", part.GetType().Name);
 
@@ -1026,6 +1081,16 @@ namespace pnyx.net.fluent
             return this;
         }
 
+        public Pnyx endObject(IObjectProcessor objProcessor)
+        {
+            if (state != FluentState.Object)
+                throw new IllegalStateException("Pnyx is not in Object state: {0}", state.ToString());
+
+            parts.Add(objProcessor);
+            state = FluentState.End;
+            return this;
+        }
+
         public Pnyx tee(Action<Pnyx> block)
         {
             requireStart(line: true, row: true);
@@ -1115,9 +1180,15 @@ namespace pnyx.net.fluent
             
             if (state != FluentState.Compiled)
                 throw new IllegalStateException("Pnyx must have an end point before processing");
-                                        
-            processor.process();
-            state = FluentState.Processed;
+
+            try
+            {
+                processor.process();
+            }
+            finally
+            {
+                state = FluentState.Processed;
+            }
             
             // Updates events
             if (stateProcessedHandler != null)
@@ -1134,6 +1205,19 @@ namespace pnyx.net.fluent
 
             CaptureNameValuePairProcessor capture = new();
             endNameValuePair(capture);
+
+            process();
+
+            return capture.records;
+        }
+
+        public List<T> processCaptureObject<T>()
+        {
+            if (state != FluentState.Object)
+                throw new IllegalStateException("Pnyx must be in Object state");
+
+            CaptureObjectProcessor<T> capture = new ();
+            endObject(capture);
 
             process();
 

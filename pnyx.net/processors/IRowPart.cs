@@ -1,7 +1,6 @@
-namespace pnyx.net.processors
+namespace pnyx.net.processors;
+
+public interface IRowPart
 {
-    public interface IRowPart
-    {
-        void setNextRowProcessor(IRowProcessor next);
-    }
+    void setNextRowProcessor(IRowProcessor next);
 }
