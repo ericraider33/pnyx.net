@@ -1,27 +1,26 @@
 using System;
 using pnyx.net.api;
 
-namespace pnyx.net.processors.lines
+namespace pnyx.net.processors.lines;
+
+public class LineFilterProcessor : ILinePart, ILineProcessor
 {
-    public class LineFilterProcessor : ILinePart, ILineProcessor
+    public ILineFilter filter;
+    public ILineProcessor processor;
+
+    public void processLine(String line)
     {
-        public ILineFilter filter;
-        public ILineProcessor processor;
+        if (filter.shouldKeepLine(line))
+            processor.processLine(line);
+    }
 
-        public void processLine(String line)
-        {
-            if (filter.shouldKeepLine(line))
-                processor.processLine(line);
-        }
+    public void endOfFile()
+    {
+        processor.endOfFile();
+    }
 
-        public void endOfFile()
-        {
-            processor.endOfFile();
-        }
-
-        public void setNextLineProcessor(ILineProcessor next)
-        {
-            processor = next;
-        }
+    public void setNextLineProcessor(ILineProcessor next)
+    {
+        processor = next;
     }
 }

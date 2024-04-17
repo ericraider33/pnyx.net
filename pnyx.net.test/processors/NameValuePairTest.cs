@@ -71,4 +71,50 @@ Odyssey,Homer,-1000
         String propertyName = String.Join(",", first.Keys);
         Assert.Equal(expected, propertyName);
     }
+    
+    [Theory]
+    [InlineData(-2000, 3)]
+    [InlineData(1800, 2)]
+    [InlineData(1845, 1)]
+    [InlineData(1900, 0)]
+    public void filter(int year, int expected)
+    {
+        List<IDictionary<String, Object>> actual;
+        using (Pnyx p = new Pnyx())
+        {
+            p.readString(csvInputA);
+            p.parseCsv(hasHeader: true);
+            p.rowToNameValuePair();
+            p.nameValuePairFilter(x => int.Parse((String)x["PublicationDate"]) >= year);
+            actual = p.processCaptureNameValuePairs();
+        }
+
+        Assert.Equal(expected, actual.Count);
+    }  
+    
+    [Fact]
+    public void transform()
+    {
+        List<IDictionary<String, Object>> actual;
+        using (Pnyx p = new Pnyx())
+        {
+            p.readString(csvInputA);
+            p.parseCsv(hasHeader: true);
+            p.rowToNameValuePair();
+            p.nameValuePairTransformFunc(x =>
+            {
+                x.Remove("PublicationDate");
+                return x;
+            });
+            actual = p.processCaptureNameValuePairs();
+        }
+
+        Assert.Equal(3, actual.Count);
+
+        IDictionary<String, Object> first = actual[0];
+        Assert.Equal("Author,Title", String.Join(",", first.Keys.Order()));
+        Assert.Equal("Tale of Two Cities", first["Title"]);
+        Assert.Equal("Charles Dickens", first["Author"]);
+        Assert.False(first.ContainsKey("PublicationDate"));
+    }
 }

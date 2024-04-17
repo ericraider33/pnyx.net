@@ -295,6 +295,15 @@ namespace pnyx.net.fluent
             }
         }
 
+        private void requireNameValuePair()
+        {
+            if (state == FluentState.Row)
+                rowToNameValuePair();
+                
+            if (state != FluentState.NameValuePair)
+                throw new IllegalStateException("Pnyx is not in NameValuePair state: {0}", state.ToString());
+        }
+
         public Pnyx head(int limit = 1)
         {
             if (limit < 1)
@@ -798,6 +807,39 @@ namespace pnyx.net.fluent
             return rowTransformer(new RowTransformerWithColumns(indexes, new RowTransformerShimOr { lineTransformer = lineTransformer }));
         }
 
+        public Pnyx nameValuePairPart(INameValuePairPart pairPart)
+        {
+            requireNameValuePair();
+            
+            parts.Add(pairPart);
+            state = FluentState.NameValuePair;
+            return this;
+        }
+        
+        public Pnyx nameValuePairFilter(INameValuePairFilter filter)
+        {
+            requireNameValuePair();
+            return nameValuePairPart(new NameValuePairFilterProcessor { filter = filter });
+        }
+
+        public Pnyx nameValuePairFilter(Func<IDictionary<string, object>, bool> filter)
+        {
+            requireNameValuePair();
+            return nameValuePairPart(new NameValuePairFilterProcessor { filter = new NameValuePairFilterFunc { pairFilterFunc = filter }});
+        }
+
+        public Pnyx nameValuePairTransform(INameValuePairTransformer transformer)
+        {
+            requireNameValuePair();
+            return nameValuePairPart(new NameValuePairTransformerProcessor { transformer = transformer });
+        }
+
+        public Pnyx nameValuePairTransformFunc(Func<IDictionary<String, Object>, IDictionary<String, Object>> transformer)
+        {
+            requireNameValuePair();
+            return nameValuePairPart(new NameValuePairTransformerProcessor { transformer = new NameValuePairTransformerFunc { transformFunc = transformer }});
+        }
+
         public Pnyx grep(String textToFind, bool caseSensitive = true)
         {
             return lineFilter(new Grep { textToFind = textToFind, caseSensitive = caseSensitive });
@@ -1070,12 +1112,7 @@ namespace pnyx.net.fluent
 
         public Pnyx endNameValuePair(INameValuePairProcessor nvpProcessor)
         {
-            if (state == FluentState.Row)
-                rowToNameValuePair();
-                
-            if (state != FluentState.NameValuePair)
-                throw new IllegalStateException("Pnyx is not in NameValuePair state: {0}", state.ToString());
-
+            requireNameValuePair();
             parts.Add(nvpProcessor);
             state = FluentState.End;
             return this;
