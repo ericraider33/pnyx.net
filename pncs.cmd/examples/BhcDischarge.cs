@@ -25,7 +25,7 @@ namespace pncs.cmd.examples
                 {
                     formatSource = DateUtil.FORMAT_MDYYYY, formatDestination = DateUtil.FORMAT_ISO_8601_DATE                        
                 }), 4,5,6);
-                p.rowTransformerFunc(row =>
+                p.rowTransformer(row =>
                 {
                     String fullName = row[2];
 
@@ -78,7 +78,7 @@ namespace pncs.cmd.examples
             {
                 p.read("C:/dev/asclepius/prod_import/ccm_names.csv");
                 p.parseCsv(hasHeader: true);
-                p.rowTransformerFunc(row =>
+                p.rowTransformer(row =>
                 {
                     String lastName = row[1];
                     Tuple<String, String> lastNameSuffix = NameUtil.parseSuffix(lastName);
@@ -90,7 +90,7 @@ namespace pncs.cmd.examples
                     row = RowUtil.replaceColumn(row, 2, lastNameSuffix.Item1, lastNameSuffix.Item2);                    
                     return row;
                 });
-                p.rowTransformerFunc(row =>
+                p.rowTransformer(row =>
                 {
                     for (int i = 0; i < row.Count; i++)
                         row[i] = TextUtil.encodeSqlValue(row[i]);                    

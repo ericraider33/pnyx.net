@@ -12,7 +12,7 @@ namespace pncs.cmd.examples
             {
                 p.read("nya.csv");
                 p.parseCsv();
-                p.rowTransformerFunc(row =>
+                p.rowTransformer(row =>
                 {
                     var fullName = row[1];
 
@@ -24,7 +24,7 @@ namespace pncs.cmd.examples
                 });
                 p.selectColumns(2,3,5);
                 p.columnTransformer(3, new pnyx.net.impl.DateTransform { formatSource = "M-d-yyyy", formatDestination = "yyyy-M-d"  });
-                p.lineTransformerFunc(x => pnyx.net.util.TextUtil.encodeSqlValue(x));
+                p.lineTransformer(x => pnyx.net.util.TextUtil.encodeSqlValue(x));
                 p.print("insert into tmp_name values($1,$2,$3);");
                 p.write("nya.sql");
             }
@@ -33,7 +33,7 @@ namespace pncs.cmd.examples
             {
                 p.read(@"C:\dev\asclepius\prod_import\alt.txt");
                 p.parseTab();
-                p.rowTransformerFunc(row =>
+                p.rowTransformer(row =>
                 {
                     var fullName = row[0];
 
@@ -43,7 +43,7 @@ namespace pncs.cmd.examples
 
                     return pnyx.net.util.RowUtil.replaceColumn(row, 1, name.firstName, name.middleName, name.lastName);
                 });
-                p.lineTransformerFunc(x => pnyx.net.util.TextUtil.encodeSqlValue(x));
+                p.lineTransformer(x => pnyx.net.util.TextUtil.encodeSqlValue(x));
                 p.sortRow(new[] {1, 3});
                 p.writeCsv(@"C:\dev\asclepius\prod_import\alt.csv");
             }
@@ -53,7 +53,7 @@ namespace pncs.cmd.examples
                 p.read(@"C:\dev\asclepius\prod_import\alt_names.csv");
                 p.parseCsv();
                 p.columnTransformer(3, new DateTransform { formatSource = DateUtil.FORMAT_MDYYYY, formatDestination = DateUtil.FORMAT_ISO_8601_DATE  });
-                p.rowTransformerFunc(row =>
+                p.rowTransformer(row =>
                 {
                     for (int i = 0; i < row.Count; i++)
                         row[i] = TextUtil.encodeSqlValue(row[i]);                    

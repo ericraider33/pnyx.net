@@ -14,29 +14,29 @@ namespace pncs.cmd.examples
                 p.read(@"c:/dev/asclepius/prod_import/American Academy of Private Physicians.csv");
                 p.parseCsv(hasHeader: true);
                 p.hasColumns(true, 2);
-                p.withColumns(p2 => { p2.lineTransformerFunc(line => line == "" ? "-66" : line); }, 1, 2, 3, 4, 5);
+                p.withColumns(p2 => { p2.lineTransformer(line => line == "" ? "-66" : line); }, 1, 2, 3, 4, 5);
                 
-                p.rowTransformerFunc(row =>
+                p.rowTransformer(row =>
                 {
                     row[3] = ParseExtensions.extractAlpha(row[3]);            // removes periods from title
                     return row;
                 });                
-                p.rowTransformerFunc(row =>
+                p.rowTransformer(row =>
                 {
                     row[7] = ZipCodeUtil.parseZipCode(row[7], true);
                     return row;
                 });
-                p.rowTransformerFunc(row =>
+                p.rowTransformer(row =>
                 {
                     row[8] = PhoneUtil.parsePhone(row[8]);
                     return row;
                 });
-                p.rowTransformerFunc(row =>
+                p.rowTransformer(row =>
                 {
                     row[9] = EmailUtil.validateAndRepair(row[9]);
                     return row;
                 });
-                p.rowTransformerFunc(row =>
+                p.rowTransformer(row =>
                 {
                     String firstName = row[1];
                     String lastName = row[2];

@@ -101,7 +101,7 @@ Odyssey,Homer,-1000
             p.readString(csvInputA);
             p.parseCsv(hasHeader: true);
             p.rowToNameValuePair();
-            p.nameValuePairTransformFunc(x =>
+            p.nameValuePairTransform(x =>
             {
                 x.Remove("PublicationDate");
                 return x;

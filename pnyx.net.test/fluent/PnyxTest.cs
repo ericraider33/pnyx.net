@@ -1007,7 +1007,7 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
             using (Pnyx p = new Pnyx())
             {
                 p.setSettings(outputNewline: "\n");
-                p.readLineFunc(() => new[] {"a","b","c"});
+                p.readLine(() => new[] {"a","b","c"});
                 actual = p.processToString();
             }
             
@@ -1028,7 +1028,7 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
             using (Pnyx p = new Pnyx())
             {
                 p.setSettings(outputNewline: "\n");
-                p.readRowFunc(source);
+                p.readRow(source);
                 actual = p.processToString();
             }
             
@@ -1038,7 +1038,7 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
             using (Pnyx p = new Pnyx())
             {
                 p.setSettings(outputNewline: "\n");
-                p.readRowFunc(source, header: () => new List<string> { "Letter", "Number" });
+                p.readRow(source, header: () => new List<string> { "Letter", "Number" });
                 actual = p.processToString();
             }
 

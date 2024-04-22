@@ -62,7 +62,7 @@ Oliver Twist
             using (Pnyx p = new Pnyx())
             {
                 p.readString(input);
-                p.lineFilterFunc(line =>
+                p.lineFilter(line =>
                 {
                     String numbers = ParseExtensions.extractNumeric(line);
                     return numbers.Length > 0 && int.Parse(numbers) > 5;
@@ -83,7 +83,7 @@ Oliver Twist
             using (Pnyx p = new Pnyx())
             {
                 p.readString(input);
-                p.lineTransformerFunc(line =>
+                p.lineTransformer(line =>
                 {
                     String numbers = ParseExtensions.extractNumeric(line);
                     return numbers;

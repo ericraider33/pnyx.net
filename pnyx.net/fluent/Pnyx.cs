@@ -117,12 +117,12 @@ namespace pnyx.net.fluent
             return this;            
         }
 
-        public Pnyx readLineFunc(Func<IEnumerable<String>> source)
+        public Pnyx readLine(Func<IEnumerable<String>> source)
         {
             return readLine(new LineProcessorFunc(source));
         }
 
-        public Pnyx readRowFunc(Func<IEnumerable<List<String>>> source, 
+        public Pnyx readRow(Func<IEnumerable<List<String>>> source, 
             Func<List<String>> header = null,
             IRowConverter rowConverter = null
             )
@@ -303,7 +303,13 @@ namespace pnyx.net.fluent
             if (state != FluentState.NameValuePair)
                 throw new IllegalStateException("Pnyx is not in NameValuePair state: {0}", state.ToString());
         }
-
+        
+        private void requireObject()
+        {
+            if (state != FluentState.Object)
+                throw new IllegalStateException("Pnyx is not in NameValuePair state: {0}", state.ToString());
+        }
+        
         public Pnyx head(int limit = 1)
         {
             if (limit < 1)
@@ -395,8 +401,7 @@ namespace pnyx.net.fluent
 
         public Pnyx objectToRow(IObjectConverterFromRow converter = null)
         {
-            if (state != FluentState.Object)
-                throw new IllegalStateException("Pnyx is not in Object state: {0}", state.ToString());
+            requireObject();
             
             parts.Add(new ObjectToRowProcessor { converter = converter ?? objectConverterFromRow });
             state = FluentState.Row;
@@ -419,8 +424,7 @@ namespace pnyx.net.fluent
 
         public Pnyx objectToNameValuePair(IObjectConverterFromNameValuePair converter = null)
         {
-            if (state != FluentState.Object)
-                throw new IllegalStateException("Pnyx is not in Object state: {0}", state.ToString());
+            requireObject();
             
             parts.Add(new ObjectToNameValuePairProcessor { converter = converter ?? objectConverterFromNameValuePair });
             state = FluentState.NameValuePair;
@@ -709,12 +713,12 @@ namespace pnyx.net.fluent
             return linePart(new LineBufferingProcessor { buffering = buffering });
         }             
         
-        public Pnyx lineFilterFunc(Func<String, bool> filter)
+        public Pnyx lineFilter(Func<String, bool> filter)
         {
             return lineFilter(new LineFilterFunc { lineFilterFunc = filter });
         }
         
-        public Pnyx lineTransformerFunc(Func<String, String> transform)
+        public Pnyx lineTransformer(Func<String, String> transform)
         {
             return lineTransformer(new LineTransformerFunc { lineTransformerFunc = transform });
         }
@@ -766,12 +770,12 @@ namespace pnyx.net.fluent
             return rowPart(new RowTransformerProcessor { transform = transform });
         }
         
-        public Pnyx rowFilterFunc(Func<List<String>, bool> filter)
+        public Pnyx rowFilter(Func<List<String>, bool> filter)
         {
             return rowFilter(new RowFilterFunc { rowFilterFunc = filter });
         }
         
-        public Pnyx rowTransformerFunc(Func<List<String>, List<String>> transform, bool treatHeaderAsRow = false)
+        public Pnyx rowTransformer(Func<List<String>, List<String>> transform, bool treatHeaderAsRow = false)
         {
             return rowTransformer(new RowTransformerFunc { rowTransformerFunc = transform, treatHeaderAsRow = treatHeaderAsRow });
         }           
@@ -787,7 +791,7 @@ namespace pnyx.net.fluent
             return rowFilter(new RowFilterWithColumns(indexes, new RowFilterShimOr { lineFilter = lineFilter }));
         }
         
-        public Pnyx columnFilterFunc(int columnNumber, Func<String, bool> filter)
+        public Pnyx columnFilter(int columnNumber, Func<String, bool> filter)
         {
             int[] indexes = convertColumnNumbersToIndex(columnNumber);
             ILineFilter lineFilter = new LineFilterFunc { lineFilterFunc = filter };
@@ -800,7 +804,7 @@ namespace pnyx.net.fluent
             return rowTransformer(new RowTransformerWithColumns(indexes, new RowTransformerShimOr { lineTransformer = lineTransformer }));
         }
         
-        public Pnyx columnTransformerFunc(int columnNumber, Func<String, String> transform)
+        public Pnyx columnTransformer(int columnNumber, Func<String, String> transform)
         {
             int[] indexes = convertColumnNumbersToIndex(columnNumber);
             ILineTransformer lineTransformer = new LineTransformerFunc { lineTransformerFunc = transform };
@@ -834,12 +838,63 @@ namespace pnyx.net.fluent
             return nameValuePairPart(new NameValuePairTransformerProcessor { transformer = transformer });
         }
 
-        public Pnyx nameValuePairTransformFunc(Func<IDictionary<String, Object>, IDictionary<String, Object>> transformer)
+        public Pnyx nameValuePairTransform(Func<IDictionary<String, Object>, IDictionary<String, Object>> transformer)
         {
             requireNameValuePair();
             return nameValuePairPart(new NameValuePairTransformerProcessor { transformer = new NameValuePairTransformerFunc { transformFunc = transformer }});
         }
+        
+        public Pnyx objectPart(IObjectPart objectPart)
+        {
+            requireObject();
+            
+            parts.Add(objectPart);
+            state = FluentState.Object;
+            return this;
+        }
+        
+        public Pnyx objectFilter(IObjectFilter filter)
+        {
+            requireObject();
+            return objectPart(new ObjectFilterProcessor { filter = filter });
+        }
 
+        public Pnyx objectFilter(Func<object, bool> filter)
+        {
+            requireObject();
+            return objectPart(new ObjectFilterProcessor { filter = new ObjectFilterFunc { filterFunc = filter }});
+        }
+
+        public Pnyx objectFilter<T>(Func<T, bool> filter)
+        {
+            requireObject();
+            return objectPart(new ObjectFilterProcessor { filter = new ObjectFilterFunc<T> { filterFunc = filter }});
+        }
+
+        public Pnyx objectTransform(IObjectTransformer transformer)
+        {
+            requireObject();
+            return objectPart(new ObjectTransformerProcessor { transformer = transformer });
+        }
+
+        public Pnyx objectTransform(Func<object, object> transformer)
+        {
+            requireObject();
+            return objectPart(new ObjectTransformerProcessor { transformer = new ObjectTransformerFunc { transformFunc = transformer }});
+        }
+
+        public Pnyx objectTransform<TSource>(Func<TSource, object> transformer)
+        {
+            requireObject();
+            return objectPart(new ObjectTransformerProcessor { transformer = new ObjectTransformerFunc<TSource, object> { transformFunc = transformer }});
+        }
+
+        public Pnyx objectTransform<TSource, TDest>(Func<TSource, TDest> transformer)
+        {
+            requireObject();
+            return objectPart(new ObjectTransformerProcessor { transformer = new ObjectTransformerFunc<TSource, TDest> { transformFunc = transformer }});
+        }
+        
         public Pnyx grep(String textToFind, bool caseSensitive = true)
         {
             return lineFilter(new Grep { textToFind = textToFind, caseSensitive = caseSensitive });
@@ -1120,8 +1175,7 @@ namespace pnyx.net.fluent
 
         public Pnyx endObject(IObjectProcessor objProcessor)
         {
-            if (state != FluentState.Object)
-                throw new IllegalStateException("Pnyx is not in Object state: {0}", state.ToString());
+            requireObject();
 
             parts.Add(objProcessor);
             state = FluentState.End;
@@ -1250,8 +1304,7 @@ namespace pnyx.net.fluent
 
         public List<T> processCaptureObject<T>()
         {
-            if (state != FluentState.Object)
-                throw new IllegalStateException("Pnyx must be in Object state");
+            requireObject();
 
             CaptureObjectProcessor<T> capture = new ();
             endObject(capture);
@@ -1504,7 +1557,7 @@ namespace pnyx.net.fluent
 
         public Pnyx trim()
         {
-            return lineTransformerFunc(TextUtil.trim);
+            return lineTransformer(TextUtil.trim);
         }
     }
 }

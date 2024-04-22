@@ -56,7 +56,7 @@ Line two,Loser
             {
                 p.readString(input);
                 p.parseCsv();
-                p.rowFilterFunc(x => TextUtil.isUpperCase(x[1]));
+                p.rowFilter(x => TextUtil.isUpperCase(x[1]));
                 p.writeStdout();
             }                        
             // outputs:         
@@ -73,7 +73,7 @@ Line two,LOSER
             {
                 p.readString(input);
                 p.parseCsv();
-                p.rowTransformerFunc(x => new List<string> {NameUtil.toTitleCase(x[1])});
+                p.rowTransformer(x => new List<string> {NameUtil.toTitleCase(x[1])});
                 p.writeStdout();
             }                        
             // outputs:            

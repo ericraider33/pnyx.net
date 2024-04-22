@@ -24,6 +24,24 @@ Odyssey,Homer,-1000
         public int PublicationDate { get; set; }
     }
 
+    public class BookExtended
+    {
+        public String Title { get; set; }
+        public String Author { get; set; }
+        public int PublicationDate { get; set; }
+        public DateTime Timestamp = DateTime.Now;
+
+        public static BookExtended from(Book x)
+        {
+            return new BookExtended
+            {
+                Title = x.Title,
+                Author = x.Author,
+                PublicationDate = x.PublicationDate
+            };
+        }
+    }
+
     public class BookConverter : IObjectConverterFromRow, IObjectConverterFromNameValuePair
     {
         public object rowToObject(List<string> row, List<string> header = null)
@@ -222,5 +240,91 @@ Odyssey,Homer,-1000
         Assert.Equal("Tale of Two Cities", first["Title"]);
         Assert.Equal("Charles Dickens", first["Author"]);
         Assert.Equal(1859, first["PublicationDate"]);
+    }
+    
+    [Theory]
+    [InlineData(-2000, 3)]
+    [InlineData(1800, 2)]
+    [InlineData(1845, 1)]
+    [InlineData(1900, 0)]
+    public void filter(int year, int expected)
+    {
+        List<Book> actual;
+        using (Pnyx p = new Pnyx())
+        {
+            p.readString(csvInputA);
+            p.parseCsv(hasHeader: true);
+            p.rowToNameValuePair();
+            p.nameValuePairToObject(new BookConverter());
+            p.objectFilter(x => ((Book)x).PublicationDate >= year);
+            actual = p.processCaptureObject<Book>();
+        }
+
+        Assert.Equal(expected, actual.Count);
+    }  
+    
+    [Theory]
+    [InlineData(-2000, 3)]
+    [InlineData(1800, 2)]
+    [InlineData(1845, 1)]
+    [InlineData(1900, 0)]
+    public void filterGeneric(int year, int expected)
+    {
+        List<Book> actual;
+        using (Pnyx p = new Pnyx())
+        {
+            p.readString(csvInputA);
+            p.parseCsv(hasHeader: true);
+            p.rowToNameValuePair();
+            p.nameValuePairToObject(new BookConverter());
+            p.objectFilter<Book>(x => x.PublicationDate >= year);
+            actual = p.processCaptureObject<Book>();
+        }
+
+        Assert.Equal(expected, actual.Count);
+    }  
+    
+    [Fact]
+    public void transform()
+    {
+        List<BookExtended> actual;
+        using (Pnyx p = new Pnyx())
+        {
+            p.readString(csvInputA);
+            p.parseCsv(hasHeader: true);
+            p.rowToNameValuePair();
+            p.nameValuePairToObject(new BookConverter());
+            p.objectTransform(x => BookExtended.from((Book)x));
+            actual = p.processCaptureObject<BookExtended>();
+        }
+
+        Assert.Equal(3, actual.Count);
+
+        BookExtended first = actual[0];
+        Assert.Equal("Tale of Two Cities", first.Title);
+        Assert.Equal("Charles Dickens", first.Author);
+        Assert.True(first.Timestamp > new DateTime(2024,1,1));
+    }
+    
+    [Fact]
+    public void transformGeneric()
+    {
+        List<BookExtended> actual;
+        using (Pnyx p = new Pnyx())
+        {
+            p.readString(csvInputA);
+            p.parseCsv(hasHeader: true);
+            p.rowToNameValuePair();
+            p.nameValuePairToObject(new BookConverter());
+            p.objectTransform<Book>(BookExtended.from);
+            actual = p.processCaptureObject<BookExtended>();
+        }
+
+        Assert.Equal(3, actual.Count);
+
+        BookExtended first = actual[0];
+        Assert.Equal("Tale of Two Cities", first.Title);
+        Assert.Equal("Charles Dickens", first.Author);
+        Assert.True(first.Timestamp > new DateTime(2024,1,1));
     }
 }
