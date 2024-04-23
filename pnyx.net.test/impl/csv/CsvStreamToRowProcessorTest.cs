@@ -17,6 +17,7 @@ namespace pnyx.net.test.impl
         [InlineData("", null, null)]
         [InlineData("a", new String[] { "a" }, null)]
         [InlineData(" ", new String[] { " " }, null)]
+        [InlineData(" , ,,", new String[] { " ", " ", "", "" }, null)]
         [InlineData("a,b", new String[] { "a", "b" }, null)]
         [InlineData("a,b\n", new String[] { "a", "b" }, null)]
         [InlineData("a,b\nc", new String[] { "a", "b" }, new String[] { "c" })]
