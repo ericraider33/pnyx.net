@@ -67,7 +67,7 @@ namespace pnyx.net.test.cmd
         public void codeFunc()
         {
             CodeParser parser = new CodeParser();
-            parser.parseCode(p, "readString(\"test\").lineFilterFunc(line => true)", compilePnyx: false);
+            parser.parseCode(p, "readString(\"test\").lineFilter(line => true)", compilePnyx: false);
             String actual = p.processToString();
             Assert.Equal("test", actual);
         }        
@@ -86,7 +86,7 @@ namespace pnyx.net.test.cmd
         {
             const string code = @"
 asCsv(p2 => p2.readString(""Jock Lock Blank III""));
-rowTransformerFunc(row =>
+rowTransformer(row =>
 {
 	var fullName = row[0];
 	var name = pnyx.net.util.NameUtil.parseFullName(fullName);

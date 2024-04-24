@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using pnyx.net.errors;
 using pnyx.net.fluent;
+using pnyx.net.impl;
 using pnyx.net.impl.csv;
 using pnyx.net.processors.rows;
 using pnyx.net.processors.sources;
@@ -51,6 +52,18 @@ namespace pnyx.net.test.impl
         public void settings(String source, String[] rowA)
         {
             verifyRows(source, rowA, null, x => { x.settings.setDefaults(strict: false); });
+        }
+        
+        [Theory]
+        [InlineData(TrimStyleEnum.None,"""a, b ,,d """, new String[] { "a", " b ", "", "d " })]
+        [InlineData(TrimStyleEnum.Trim,"""a, b ,,d """, new String[] { "a", "b", "", "d" })]
+        [InlineData(TrimStyleEnum.TrimToNull,"""a, b ,,d """, new String[] { "a", "b", null, "d" })]
+        [InlineData(TrimStyleEnum.None,"""a," b ",,d """, new String[] { "a", " b ", "", "d " })]
+        [InlineData(TrimStyleEnum.Trim,"""a," b ",,d """, new String[] { "a", "b", "", "d" })]
+        [InlineData(TrimStyleEnum.TrimToNull,"""a," b ",,d """, new String[] { "a", "b", null, "d" })]
+        public void trim(TrimStyleEnum style, String source, String[] rowA)
+        {
+            verifyRows(source, rowA, null, x => { x.settings.setDefaults(trimStyle: style); });
         }
         
         private void verifyRows(String source, String[] rowA, String[] rowB, Action<CsvStreamToRowProcessor> callback = null)

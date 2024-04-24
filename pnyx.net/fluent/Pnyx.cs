@@ -246,13 +246,14 @@ namespace pnyx.net.fluent
             bool strict = true, 
             bool hasHeader = false,
             char? delimiter = null,
-            char? escapeChar = null
+            char? escapeChar = null,
+            TrimStyleEnum? trimStyle = null
             )
         {
             if (state != FluentState.New && state != FluentState.Start)
                 throw new IllegalStateException("Pnyx is not in New,Start state: {0}", state.ToString());
 
-            CsvSettings csvSettings = settings.buildCsvSettings().setDefaults(strict, delimiter, escapeChar);
+            CsvSettings csvSettings = settings.buildCsvSettings().setDefaults(strict, delimiter, escapeChar, trimStyle: trimStyle);
             
             int indexModifier = parts.Count;
             parts.Add(new CsvModifer(csvSettings, hasHeader));
@@ -603,11 +604,12 @@ namespace pnyx.net.fluent
         public Pnyx parseCsv(bool? strict = true, 
             bool hasHeader = false, 
             char? delimiter = null,
-            char? escapeChar = null
+            char? escapeChar = null,
+            TrimStyleEnum? trimStyle = null
             )
         {
             requireStart(line: true, row: false);
-            CsvSettings csvSettings = settings.buildCsvSettings().setDefaults(strict, delimiter, escapeChar);
+            CsvSettings csvSettings = settings.buildCsvSettings().setDefaults(strict, delimiter, escapeChar, trimStyle: trimStyle);
             
             ILineSource lineSource = (parts.Count == 0 ? null : parts[parts.Count-1]) as ILineSource;
             if (state == FluentState.Start && lineSource != null)
