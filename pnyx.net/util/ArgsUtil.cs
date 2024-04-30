@@ -78,6 +78,14 @@ namespace pnyx.net.util
             
             return null;
         }
+        
+        public static DateTime? valueDate(this Dictionary<String, String> switchDictionary, params String[] keys)
+        {
+            String valueAsText = value(switchDictionary, keys);
+            if (valueAsText == null)
+                return null;
+            return Convert.ToDateTime(valueAsText);
+        }
 
         public static bool hasAny(this Dictionary<String, String> switchDictionary, params String[] keys)
         {

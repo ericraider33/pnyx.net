@@ -6,220 +6,278 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-namespace pnyx.net.util
+namespace pnyx.net.util;
+
+public static class NameUtil
 {
-    public static class NameUtil
+    private static readonly String[] SUFFIX =
     {
-        private static readonly String[] SUFFIX =
-        {
-            "bvm",  "cfre", "clu",  "cpa",  "csc",  "csj",  "dc",   "dd",   "dds",  "dmd",  "do",
-            "dvm",  "edd",  "esq",  "ii",   "iii",  "iv", "vi", "vii", "viii", "ix", "inc",  "jd",   "jr",   "lld",  "ltd",
-            "md",   "od",   "osb",  "pc",   "pe",   "phd",  "rev", "ret",  "rgs",  "rn",   "rnc",  "shcj",
-            "sj",   "snjm", "sr",   "ssmo", "usa",  "usaf", "usafr",    "usar", "uscg", "usmc", "usmcr",
-            "usn",  "usnr"
-        };
+        "bvm",  "cfre", "clu",  "cpa",  "csc",  "csj",  "dc",   "dd",   "dds",  "dmd",  "do",
+        "dvm",  "edd",  "esq",  "ii",   "iii",  "iv", "vi", "vii", "viii", "ix", "inc",  "jd",   "jr",   "lld",  "ltd",
+        "md",   "od",   "osb",  "pc",   "pe",   "phd",  "rev", "ret",  "rgs",  "rn",   "rnc",  "shcj",
+        "sj",   "snjm", "sr",   "ssmo", "usa",  "usaf", "usafr",    "usar", "uscg", "usmc", "usmcr",
+        "usn",  "usnr"
+    };
 
-        private static readonly Regex NAME_EXPRESSION = new Regex("^[a-zA-Z'-]+(\\s+[a-zA-Z'-]+)*$");
-        // NOTE: only checks that value looks like a name, but still good to run through method "extractNameString"
-        public static bool isName(String text)
-        {
-            if (String.IsNullOrEmpty(text))
-                return false;
+    private static readonly Regex NAME_EXPRESSION = new Regex("^[a-zA-Z'-]+(\\s+[a-zA-Z'-]+)*$");
+    // NOTE: only checks that value looks like a name, but still good to run through method "extractNameString"
+    public static bool isName(String text)
+    {
+        if (String.IsNullOrEmpty(text))
+            return false;
 
-            return NAME_EXPRESSION.IsMatch(text);
+        return NAME_EXPRESSION.IsMatch(text);
+    }
+
+    // Removes special characters from String.    Allows letters, spaces, hyphens and apostrophes
+    public static String extractNameString(this String str)
+    {
+        if (str == null) return null;
+
+        StringBuilder sb = new StringBuilder();
+
+        // Finds last good character, ignoring trailing format
+        int max = str.Length-1;
+        while (max >= 0)
+        {
+            char c = str[max];
+            if (isNameChar(c) && !isNameFormatChar(c))
+                break;
+            max--;
         }
 
-        // Removes special characters from String.    Allows letters, spaces, hyphens and apostrophes
-        public static String extractNameString(this String str)
+        // Processes String up to last char
+        bool previousFormat = false;
+        for (int i = 0; i <= max; i++)
         {
-            if (str == null) return null;
-
-            StringBuilder sb = new StringBuilder();
-
-            // Finds last good character, ignoring trailing format
-            int max = str.Length-1;
-            while (max >= 0)
+            char c = str[i];
+            if (isNameFormatChar(c))
             {
-                char c = str[max];
-                if (isNameChar(c) && !isNameFormatChar(c))
-                    break;
-                max--;
-            }
-
-            // Processes String up to last char
-            bool previousFormat = false;
-            for (int i = 0; i <= max; i++)
-            {
-                char c = str[i];
-                if (isNameFormatChar(c))
-                {
-                    if (!previousFormat && sb.Length > 0)
-                        sb.Append(c);
-                    previousFormat = true;
-                }
-                else if (isNameChar(c))
-                {
-                    previousFormat = false;
+                if (!previousFormat && sb.Length > 0)
                     sb.Append(c);
-                }
+                previousFormat = true;
             }
-
-            return sb.Length == 0 ? null : sb.ToString();
+            else if (isNameChar(c))
+            {
+                previousFormat = false;
+                sb.Append(c);
+            }
         }
 
-        private static bool isNameChar(char c)
-        {
-            return c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || isNameFormatChar(c);
-        }
+        return sb.Length == 0 ? null : sb.ToString();
+    }
 
-        private static bool isNameFormatChar(char c)
-        {
-            return c == ' ' || c == '-' || c == '\'';
-        }
+    private static bool isNameChar(char c)
+    {
+        return c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || isNameFormatChar(c);
+    }
 
-        public static String toTitleCase(this String str)
-        {
-            if (str == null) return null;
-            TextInfo textInfo = Thread.CurrentThread.CurrentCulture.TextInfo;
-            return textInfo.ToTitleCase(str.ToLower());
-        }
+    private static bool isNameFormatChar(char c)
+    {
+        return c == ' ' || c == '-' || c == '\'';
+    }
 
-        public static String asName(this String str)
-        {
-            str = extractNameString(str);           // removes any invalid characters
+    public static String toTitleCase(this String str)
+    {
+        if (str == null) return null;
+        TextInfo textInfo = Thread.CurrentThread.CurrentCulture.TextInfo;
+        return textInfo.ToTitleCase(str.ToLower());
+    }
 
-            if (!TextUtil.isMixedCase(str))
-                str = toTitleCase(str);
+    public static String asName(this String str)
+    {
+        str = extractNameString(str);           // removes any invalid characters
 
-            return str;
-        }
+        if (!TextUtil.isMixedCase(str))
+            str = toTitleCase(str);
 
-        public static Tuple<String, String, String> lastFirstMiddleName(String name)
-        {
-            if (name == null || !name.Contains(","))
-                return null;
+        return str;
+    }
 
-            String[] nameParts = name.Split(',').Select(x => x.asName()).Where(x => x != null).ToArray();
-            if (nameParts.Length != 2)
-                return null;
+    public static Tuple<String, String, String> lastFirstMiddleName(String name)
+    {
+        if (name == null || !name.Contains(","))
+            return null;
 
-            String lastName = nameParts[0];
-            nameParts = nameParts[1].Split(' ');
+        String[] nameParts = name.Split(',').Select(x => x.asName()).Where(x => x != null).ToArray();
+        if (nameParts.Length != 2)
+            return null;
+
+        String lastName = nameParts[0];
+        nameParts = nameParts[1].Split(' ');
             
-            // Parses known suffix
-            String suffix = nameParts.FirstOrDefault(x => TextUtil.findIgnoreCase(SUFFIX, x) != null);
-            if (suffix != null && nameParts.Length > 1)
-            {
-                nameParts = nameParts.Where(x => x != suffix).ToArray();
-                lastName = String.Concat(lastName, " ", suffix);
-            }
-
-            if (nameParts.Length == 0)
-                return null;
-
-            String firstName = String.Join(" ", nameParts.Take(Math.Max(1, nameParts.Length - 1)));
-            String middleName = nameParts.Length == 1 ? null : nameParts.Last().Replace(".", "");
-
-            return new Tuple<String, String, String>(firstName, middleName, lastName);
+        // Parses known suffix
+        String suffix = nameParts.FirstOrDefault(x => TextUtil.findIgnoreCase(SUFFIX, x) != null);
+        if (suffix != null && nameParts.Length > 1)
+        {
+            nameParts = nameParts.Where(x => x != suffix).ToArray();
+            lastName = String.Concat(lastName, " ", suffix);
         }
 
-        public static Tuple<String, String, String> lastMiddleFirstName(String name)
+        if (nameParts.Length == 0)
+            return null;
+
+        String firstName = String.Join(" ", nameParts.Take(Math.Max(1, nameParts.Length - 1)));
+        String middleName = nameParts.Length == 1 ? null : nameParts.Last().Replace(".", "");
+
+        return new Tuple<String, String, String>(firstName, middleName, lastName);
+    }
+
+    public static Tuple<String, String, String> lastMiddleFirstName(String name)
+    {
+        if (name == null || !name.Contains(","))
+            return null;
+
+        String[] nameParts = name.Split(',').Select(x => x.asName()).Where(x => x != null).ToArray();
+        if (nameParts.Length != 2)
+            return null;
+
+        String lastName = nameParts[0];
+        nameParts = nameParts[1].Split(' ');
+
+        // Parses known suffix
+        String suffix = nameParts.FirstOrDefault(x => TextUtil.findIgnoreCase(SUFFIX, x) != null);
+        if (suffix != null && nameParts.Length > 1)
         {
-            if (name == null || !name.Contains(","))
-                return null;
-
-            String[] nameParts = name.Split(',').Select(x => x.asName()).Where(x => x != null).ToArray();
-            if (nameParts.Length != 2)
-                return null;
-
-            String lastName = nameParts[0];
-            nameParts = nameParts[1].Split(' ');
-
-            // Parses known suffix
-            String suffix = nameParts.FirstOrDefault(x => TextUtil.findIgnoreCase(SUFFIX, x) != null);
-            if (suffix != null && nameParts.Length > 1)
-            {
-                nameParts = nameParts.Where(x => x != suffix).ToArray();
-                lastName = String.Concat(lastName, " ", suffix);
-            }
-
-            if (nameParts.Length == 0)
-                return null;
-
-            String middleName = nameParts.Length >= 2 ? nameParts[0] : null;
-            String firstName = String.Join(" ", nameParts.Skip(middleName != null ? 1 : 0));
-
-            return new Tuple<String, String, String>(firstName, middleName, lastName);
+            nameParts = nameParts.Where(x => x != suffix).ToArray();
+            lastName = String.Concat(lastName, " ", suffix);
         }
 
-        public static Name parseFullName(String name)
+        if (nameParts.Length == 0)
+            return null;
+
+        String middleName = nameParts.Length >= 2 ? nameParts[0] : null;
+        String firstName = String.Join(" ", nameParts.Skip(middleName != null ? 1 : 0));
+
+        return new Tuple<String, String, String>(firstName, middleName, lastName);
+    }
+
+    public static Name parseFullName(String name)
+    {
+        name = name.asName();
+        if (String.IsNullOrWhiteSpace(name))
+            return null;
+
+        Name result = new Name();
+        List<String> nameParts = name.Split(' ').Select(x => x.asName()).Where(x => x != null).ToList();
+
+        // Parses known suffix
+        if (nameParts.Count > 2)
         {
-            name = name.asName();
-            if (String.IsNullOrWhiteSpace(name))
-                return null;
-
-            Name result = new Name();
-            List<String> nameParts = name.Split(' ').Select(x => x.asName()).Where(x => x != null).ToList();
-
-            // Parses known suffix
-            if (nameParts.Count > 2)
-            {
-                result.suffix = nameParts.FirstOrDefault(x => TextUtil.findIgnoreCase(SUFFIX, x) != null);
-                if (result.suffix != null)
-                    nameParts.RemoveAll(x => x == result.suffix);
-            }
+            result.suffix = nameParts.FirstOrDefault(x => TextUtil.findIgnoreCase(SUFFIX, x) != null);
+            if (result.suffix != null)
+                nameParts.RemoveAll(x => x == result.suffix);
+        }
             
-            // Looks for a middle initial
-            if (nameParts.Count >= 4 && nameParts[2].Length == 1)
+        // Looks for a middle initial
+        if (nameParts.Count >= 4 && nameParts[2].Length == 1)
+        {
+            // Sets first name using first 2 parts
+            result.firstName = String.Concat(nameParts[0], " ", nameParts[1]);
+            nameParts.RemoveAt(0);                
+            nameParts.RemoveAt(0);                
+        }
+        else
+        {
+            // Sets first name
+            result.firstName = nameParts[0];
+            nameParts.RemoveAt(0);
+        }
+
+        // Sets middle name
+        if (nameParts.Count > 1)
+        {
+            result.middleName = nameParts[0];
+            nameParts.RemoveAt(0);                
+        }
+
+        if (nameParts.Count > 0)
+            result.lastName = String.Join(" ", nameParts);
+            
+        return result;
+    }
+
+    public static Tuple<String,String> parseSuffix(String name)
+    {
+        if (String.IsNullOrWhiteSpace(name))
+            return new Tuple<String, String>(name, null);
+
+        name = name.asName();
+            
+        List<String> nameParts = new List<String>();
+        String suffix = null;
+        foreach (String part in name.Split(' '))
+        {
+            if (suffix == null)
             {
-                // Sets first name using first 2 parts
-                result.firstName = String.Concat(nameParts[0], " ", nameParts[1]);
-                nameParts.RemoveAt(0);                
-                nameParts.RemoveAt(0);                
+                suffix = TextUtil.findIgnoreCase(SUFFIX, part);
+                if (suffix == null)
+                    nameParts.Add(part);
             }
             else
-            {
-                // Sets first name
-                result.firstName = nameParts[0];
-                nameParts.RemoveAt(0);
-            }
-
-            // Sets middle name
-            if (nameParts.Count > 1)
-            {
-                result.middleName = nameParts[0];
-                nameParts.RemoveAt(0);                
-            }
-
-            if (nameParts.Count > 0)
-                result.lastName = String.Join(" ", nameParts);
-            
-            return result;
+                nameParts.Add(part);                    
         }
 
-        public static Tuple<String,String> parseSuffix(String name)
-        {
-            if (String.IsNullOrWhiteSpace(name))
-                return new Tuple<String, String>(name, null);
-
-            name = name.asName();
-            
-            List<String> nameParts = new List<String>();
-            String suffix = null;
-            foreach (String part in name.Split(' '))
-            {
-                if (suffix == null)
-                {
-                    suffix = TextUtil.findIgnoreCase(SUFFIX, part);
-                    if (suffix == null)
-                        nameParts.Add(part);
-                }
-                else
-                    nameParts.Add(part);                    
-            }
-
-            name = String.Join(" ", nameParts);
-            return new Tuple<String, String>(name, suffix);
-        }
+        name = String.Join(" ", nameParts);
+        return new Tuple<String, String>(name, suffix);
     }
+
+    public static String toLastFirstTitle(Tuple<String,String,String> name, String title = null)
+    {
+        return toLastFirstTitle(name.Item1, name.Item2, name.Item3, title);
+    }
+
+    public static String toLastFirstTitle(String firstName, String middleName, String lastName, String title = null)
+    {
+        if (firstName == null || lastName == null)
+            return "";
+
+        String middleInitial = middleName == null ? null : middleName.Substring(0, 1);
+
+        if (title != null && middleInitial != null)
+            return String.Format("{0}, {1} {2} {3}", lastName, firstName, middleInitial, title);
+
+        if (title != null)
+            return String.Format("{0}, {1} {2}", lastName, firstName, title);
+
+        if (middleInitial != null)
+            return String.Format("{0}, {1} {2}", lastName, firstName, middleInitial);
+
+        return String.Format("{0}, {1}", lastName, firstName);
+    }
+
+    public static String toFirstLastTitle(String firstName, String middleName, String lastName, String title = null)
+    {
+        if (firstName == null || lastName == null)
+            return "";
+
+        String middleInitial = middleName == null ? null : middleName.Substring(0, 1);
+
+        if (title != null && middleInitial != null)
+            return String.Format("{0} {1} {2}, {3}", firstName, middleInitial, lastName, title);
+
+        if (title != null)
+            return String.Format("{0} {1}, {2}", firstName, lastName, title);
+
+        if (middleInitial != null)
+            return String.Format("{0} {1} {2}", firstName, middleInitial, lastName);
+
+        return String.Format("{0} {1}", firstName, lastName);
+    }
+    
+    public static String joinNameParts(params String[] parts)
+    {
+        return String.Join(" ", parts.Where(x => x != null));
+    }
+
+    public static String toInitials(String firstName, String middleName, String lastName)
+    {
+        char? first = !string.IsNullOrEmpty(firstName) ? firstName[0] : (char?) null;
+        char? middle = !string.IsNullOrEmpty(middleName) ? middleName[0] : (char?) null;
+        char? last = !string.IsNullOrEmpty(lastName) ? lastName[0] : (char?) null;
+
+        return string.Concat(first, middle, last);            
+    }
+    
+    
 }
