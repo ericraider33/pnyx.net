@@ -77,7 +77,13 @@ public readonly struct LocalTimestamp : IComparable<LocalTimestamp>, IFormattabl
 
     public override string ToString()
     {
-        return local.toIso8601Timestamp();
+        String withZ = local.toIso8601Timestamp();
+        TimeSpan offset = timeZone.GetUtcOffset(local);
+        String offsetAsText = $"{offset.Hours:00}:{offset.Minutes:00}";
+        if (!offsetAsText.StartsWith("-"))
+            offsetAsText = "+" + offsetAsText;
+        String result = withZ.Replace("Z", offsetAsText);
+        return result;
     }
 
     public bool Equals(LocalTimestamp other)
@@ -128,7 +134,7 @@ public readonly struct LocalTimestamp : IComparable<LocalTimestamp>, IFormattabl
     public static LocalTimestamp parse(String text, TimeZoneInfo timeZone = null)
     {
         DateTime asDate = DateUtil.parseIso8601Timestamp(text);
-        return fromLocal(timeZone ?? TimeZoneInfo.Local, asDate);
+        return fromUtc(timeZone ?? TimeZoneInfo.Local, asDate);
     }
     
     public LocalTimestamp add(TimeSpan duration)

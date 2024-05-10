@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace pnyx.net.util;
 
@@ -44,11 +43,11 @@ public static class DateUtil
         }
     }
 
-    public static DateTime parseExact(String format, String text, int? lineNumber = null)
+    public static DateTime parseExact(String format, String text, DateTimeStyles style = DateTimeStyles.None, int? lineNumber = null)
     {
         try
         {
-            return DateTime.ParseExact(text, format, CultureInfo.CurrentCulture);
+            return DateTime.ParseExact(text, format, CultureInfo.CurrentCulture, style);
         }
         catch (Exception)
         {
@@ -95,30 +94,49 @@ public static class DateUtil
         return parseExact(FORMAT_ISO_8601_DATE, source);
     }
 
+    public static DateTime? parseIso8601DateNullable(String source)
+    {
+        return parseNullable(FORMAT_ISO_8601_DATE, source);
+    }
+
     private static string getIso8601Format(String source)
     {
         String format = null;
         if (source != null)
         {
-            String[] available = new[]
+            (int, String)[] available = new[]
             {
-                "yyyy-MM-ddTHH:mm:ss.fff'Z'",
-                "yyyy-MM-ddTHH:mm:ss.fff",
-                "yyyy-MM-ddTHH:mm:ss",
-                "yyyy-MM-dd"
+                (29, "yyyy-MM-ddTHH:mm:ss.fffK"),                           // example: 2024-05-29T07:08:09.000-01:30
+                (24, FORMAT_ISO_8601_TIMESTAMP),                           // example: 2024-05-29T07:08:09.000-01:30
+                (23, "yyyy-MM-ddTHH:mm:ss.fff"),
+                (19, "yyyy-MM-ddTHH:mm:ss"),
+                (10, "yyyy-MM-dd")
             };
-            format = available.FirstOrDefault(f => f.Length == source.Length);
+            format = available.Where(f => f.Item1 == source.Length).Select(f => f.Item2).FirstOrDefault();
         }
 
         return format ?? FORMAT_ISO_8601_TIMESTAMP;
     }
     
+    /// <summary>
+    /// Parse an ISO-8601 date. If no timezone is specified, date is assumed in UTC. If a TZ is specified, then date is
+    /// automatically converted to UTC time. Supported ISO-8601 formats:
+    /// 
+    /// yyyy-MM-ddTHH:mm:ss.fffK - example: 2024-05-29T07:08:09.000-01:30
+    /// yyyy-MM-ddTHH:mm:ss.fffZ - example: 2024-05-29T07:08:09.000Z
+    /// yyyy-MM-ddTHH:mm:ss.fff  - example: 2024-05-29T07:08:09.000
+    /// yyyy-MM-ddTHH:mm:ss      - example: 2024-05-29T07:08:09
+    /// yyyy-MM-dd               - example: 2024-05-29
+    ///
+    /// See https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings for definitions
+    /// </summary>
+    /// <returns>DateTime in UTC</returns>
     public static DateTime parseIso8601Timestamp(String source)
     {
-        return parseExact(getIso8601Format(source), source);
+        return parseExact(getIso8601Format(source), source, style: DateTimeStyles.AdjustToUniversal);
     }
 
-    public static DateTime? parseIso8601DateNullable(String source)
+    public static DateTime? parseIso8601TimestampNullable(String source)
     {
         return parseNullable(getIso8601Format(source), source);
     }
