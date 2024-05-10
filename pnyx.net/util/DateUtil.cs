@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace pnyx.net.util;
@@ -94,14 +95,32 @@ public static class DateUtil
         return parseExact(FORMAT_ISO_8601_DATE, source);
     }
 
+    private static string getIso8601Format(String source)
+    {
+        String format = null;
+        if (source != null)
+        {
+            String[] available = new[]
+            {
+                "yyyy-MM-ddTHH:mm:ss.fff'Z'",
+                "yyyy-MM-ddTHH:mm:ss.fff",
+                "yyyy-MM-ddTHH:mm:ss",
+                "yyyy-MM-dd"
+            };
+            format = available.FirstOrDefault(f => f.Length == source.Length);
+        }
+
+        return format ?? FORMAT_ISO_8601_TIMESTAMP;
+    }
+    
     public static DateTime parseIso8601Timestamp(String source)
     {
-        return parseExact(FORMAT_ISO_8601_TIMESTAMP, source);
+        return parseExact(getIso8601Format(source), source);
     }
 
     public static DateTime? parseIso8601DateNullable(String source)
     {
-        return parseNullable(FORMAT_ISO_8601_DATE, source);
+        return parseNullable(getIso8601Format(source), source);
     }
 
     public static String toIso8601Date(this DateTime? source)
