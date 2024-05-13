@@ -222,4 +222,14 @@ public readonly struct LocalDay : IComparable<LocalDay>, IFormattable, IUtcCapab
     {
         return new LocalDay(timeZone, local.AddYears(x));
     }
+    
+    public LocalDay startOfDecade()
+    {
+        return new LocalDay(timeZone, new DateTime(local.Year - (local.Year  % 10), 1, 1));
+    }
+    
+    public LocalDay startOfCentury()
+    {
+        return new LocalDay(timeZone, new DateTime(local.Year - (local.Year  % 100), 1, 1));
+    }
 }
