@@ -115,4 +115,18 @@ public class ParseExtensionsTest
         Assert.Equal(new Tuple<String, String>("ab", "c"), ParseExtensions.splitAtIndex("abc", 2));
         Assert.Equal(new Tuple<String, String>("abc", ""), ParseExtensions.splitAtIndex("abc", 3));
     }
+
+    [Theory]
+    [InlineData("~!@#$%^&*()_-+=", "!@#%&*()_-")]
+    [InlineData("\ttab space", "\ttab space")]
+    [InlineData("{}[]\\|", "{}[]\\")]
+    [InlineData(";:'\"", ";:'\"")]
+    [InlineData("<,>./?", ",./?")]
+    [InlineData("1234567890", "1234567890")]
+    [InlineData("abcxyz", "abcxyz")]
+    [InlineData("ABCXYZ", "ABCXYZ")]
+    public void extractNonGarbage(string input, string output)
+    {
+        Assert.Equal(output, ParseExtensions.extractNonGarbage(input));
+    }
 }
