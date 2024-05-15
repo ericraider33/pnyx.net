@@ -19,6 +19,7 @@ public static class TimeZoneFinder
         TimeZoneName.GlaceBay
     };
     private static readonly Dictionary<String, TimeZoneName> ianaidMap = tzList.ToDictionary(tzn => tzn.ianaId, tzn => tzn);
+    private static readonly Dictionary<string, TimeZoneName> windowsMap = tzList.ToDictionary(tzn => tzn.windowsId, tzn => tzn);
     
     public static TimeZoneInfo getTimeZoneInfo(this TimeZoneName name)
     {
@@ -41,4 +42,20 @@ public static class TimeZoneFinder
         
         return TimeZoneInfo.FindSystemTimeZoneById(Environment.OSVersion.Platform == PlatformID.Unix ? tzn.ianaId : tzn.windowsId);
     }    
+    
+    /// <summary>
+    /// Find the IANA-ID for a given TimeZone.
+    /// </summary>
+    /// <exception cref="InvalidTimeZoneException"></exception>
+    public static string toIanaId(this TimeZoneInfo tz)
+    {
+        if (Environment.OSVersion.Platform == PlatformID.Unix)
+            return tz.Id;
+
+        TimeZoneName name = windowsMap[tz.Id];
+        if (name == null)
+            throw new InvalidTimeZoneException("Could not find a match for tz windowsId=" + tz.Id);
+
+        return name.ianaId;
+    } 
 }
