@@ -357,27 +357,40 @@ public static class DateUtil
         return new DateTime(value.Year, value.Month, value.Day, value.Hour, value.Minute, 0);
     }
     
-    // Converts a DateTime to unix time. Unix time is the number of seconds between 1970-1-1 0:0:0.0 (unix epoch) and the time (UTC).
-    // Returns the number of seconds between Unix epoch and the input time
+    /// <summary>
+    /// Converts a DateTime to unix time. Unix time is the number of seconds between 1970-1-1 0:0:0.0 (unix epoch) and the time (UTC). 
+    /// </summary>
+    /// <returns>Returns the number of seconds between Unix epoch and the input DateTIme</returns>
     public static long toUnixTime(DateTime time)
     {
         return (long)(time - UTCUnixEpoch).TotalSeconds;
     }
     
-    // Converts a long representation of a unix time into a DateTime. Unix time is the number of seconds between 1970-1-1 0:0:0.0 (unix epoch) and the time (UTC).
-    // Returns a UTC DateTime object representing the unix time
+    /// <summary>
+    /// Converts a long representation of a unix time into a DateTime. Unix time is the number of seconds between 1970-1-1 0:0:0.0 (unix epoch) and the time (UTC). 
+    /// </summary>
+    /// <returns>Returns a UTC DateTime object representing the unix time</returns>
     public static DateTime fromUnixTime(long unixTime)
     {
         return UTCUnixEpoch.AddSeconds(unixTime);
     }
     
-    public static DateTime fromUnixTimeWithMilliseconds(long unixTime)
+    /// <summary>
+    /// Converts a DateTime to a long compatible with Javascript Date, which is the total milliseconds since 1970-1-1 0:0:0.0 
+    /// </summary>
+    /// <returns>Returns the number of milliSeconds since Unix epoch</returns>
+    public static long toJavascriptDate(this DateTime time)
     {
-        // Test whether timestamp is millis or second
-        const long threshold = 10000000000;
-        if (Math.Abs(unixTime) > threshold)
-            return UTCUnixEpoch.AddMilliseconds(unixTime);
-        
-        return UTCUnixEpoch.AddSeconds(unixTime);
+        return (long)(time - UTCUnixEpoch).TotalSeconds * 1000 + time.Millisecond;
+    }
+    
+    /// <summary>
+    /// Converts a long representation of a Javascript Date into a DateTime. Javascript date
+    /// is the number of milliSeconds between 1970-1-1 0:0:0.0 (unix epoch) and the time (UTC). 
+    /// </summary>
+    /// <returns>Returns a UTC DateTime object representing the unix time</returns>
+    public static DateTime fromJavascriptDate(this long unixTime)
+    {
+        return UTCUnixEpoch.AddMilliseconds(unixTime);
     }
 }

@@ -60,4 +60,22 @@ public class DateUtilTest
         DateTime x = DateUtil.parseIso8601Timestamp(text);
         Assert.Equal("5/29/2024 12:00:00 AM", x.ToString());
     }
+    
+    [Theory]
+    [InlineData("2024-05-29T07:08:09.000+00:00", "1716966489")]
+    public void toUnixTime(String input, String expected)
+    {
+        DateTime x = DateUtil.parseIso8601Timestamp(input);
+        long unix = DateUtil.toUnixTime(x);
+        Assert.Equal(expected, unix.ToString());
+    }
+    
+    [Theory]
+    [InlineData("2024-05-29T07:08:09.000+00:00", "1716966489000")]
+    public void toJavascriptDate(String input, String expected)
+    {
+        DateTime x = DateUtil.parseIso8601Timestamp(input);
+        long unix = DateUtil.toJavascriptDate(x);
+        Assert.Equal(expected, unix.ToString());
+    }
 }
