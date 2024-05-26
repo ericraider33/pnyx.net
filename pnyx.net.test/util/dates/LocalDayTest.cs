@@ -35,5 +35,18 @@ public class LocalDayTest
         LocalDay ld = LocalDay.fromLocal(tz, source);
         DateTime expected = source + TimeSpan.FromHours(4);
         Assert.Equal(expected, ld.utc);
-    }    
+    }
+
+    [Fact]
+    public void equals_default()
+    {
+        TimeZoneInfo tz = TimeZoneName.Eastern.getTimeZoneInfo();
+        DateTime source = new DateTime(2024, 5, 29);
+
+        LocalDay ld = LocalDay.fromLocal(tz, source);
+        LocalDay other = default;
+        Assert.False(ld == other);
+        Assert.False(ld == default);
+        Assert.True(other == default);
+    }
 }

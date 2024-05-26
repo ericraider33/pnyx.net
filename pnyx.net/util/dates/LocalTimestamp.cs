@@ -88,7 +88,8 @@ public readonly struct LocalTimestamp : IComparable<LocalTimestamp>, IFormattabl
 
     public bool Equals(LocalTimestamp other)
     {
-        return timeZone.Equals(other.timeZone) && local.Equals(other.local);
+        return Object.Equals(timeZone, other.timeZone)
+            && local.Equals(other.local);
     }
 
     public override bool Equals(object obj)

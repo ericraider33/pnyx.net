@@ -85,7 +85,8 @@ public readonly struct LocalDay : IComparable<LocalDay>, IFormattable, IUtcCapab
 
     public bool Equals(LocalDay other)
     {
-        return timeZone.Equals(other.timeZone) && local.Equals(other.local);
+        return Equals(timeZone, other.timeZone)
+            && local.Equals(other.local);
     }
 
     public override bool Equals(object? obj)

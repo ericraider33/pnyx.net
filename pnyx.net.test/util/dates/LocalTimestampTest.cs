@@ -72,4 +72,17 @@ public class LocalTimestampTest
         DateTime expected = source + TimeSpan.FromHours(4);
         Assert.Equal(expected, lt.utc);
     }    
+
+    [Fact]
+    public void equals_default()
+    {
+        TimeZoneInfo tz = TimeZoneName.Eastern.getTimeZoneInfo();
+        DateTime source = new DateTime(2024, 5, 29);
+
+        LocalTimestamp lt = LocalTimestamp.fromLocal(tz, source);
+        LocalTimestamp other = default;
+        Assert.False(lt == other);
+        Assert.False(lt == default);
+        Assert.True(other == default);
+    }
 }
