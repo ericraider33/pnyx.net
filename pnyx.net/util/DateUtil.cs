@@ -357,6 +357,26 @@ public static class DateUtil
         return new DateTime(value.Year, value.Month, value.Day, value.Hour, value.Minute, 0);
     }
     
+    public static DateTime limitToHour(this DateTime value)
+    {
+        return new DateTime(value.Year, value.Month, value.Day, value.Hour, 0, 0);
+    }
+    
+    public static DateTime limitToDay(this DateTime value)
+    {
+        return new DateTime(value.Year, value.Month, value.Day, 0, 0, 0);
+    }
+    
+    public static DateTime limitToWeek(this DateTime value)
+    {
+        return value.limitToDay().startOfWeek();
+    }
+    
+    public static DateTime limitToMonth(this DateTime value)
+    {
+        return new DateTime(value.Year, value.Month, 0, 0, 0, 0);
+    }
+    
     /// <summary>
     /// Converts a DateTime to unix time. Unix time is the number of seconds between 1970-1-1 0:0:0.0 (unix epoch) and the time (UTC). 
     /// </summary>
