@@ -347,24 +347,48 @@ public static class DateUtil
         return result;
     }
 
-    public static DateTime limitToSecond(this DateTime value)
+    public static DateTime limitToSecond(this DateTime value, int? modulus = null)
     {
-        return new DateTime(value.Year, value.Month, value.Day, value.Hour, value.Minute, value.Second);
+        return new DateTime(
+            value.Year, 
+            value.Month, 
+            value.Day, 
+            value.Hour, 
+            value.Minute, 
+            modulus.HasValue ? value.Second % modulus.Value : value.Second
+            );
     }
     
-    public static DateTime limitToMinute(this DateTime value)
+    public static DateTime limitToMinute(this DateTime value, int? modulus = null)
     {
-        return new DateTime(value.Year, value.Month, value.Day, value.Hour, value.Minute, 0);
+        return new DateTime(
+            value.Year, 
+            value.Month,
+            value.Day, 
+            value.Hour, 
+            modulus.HasValue ? value.Minute % modulus.Value : value.Minute, 
+            0
+            );
     }
     
-    public static DateTime limitToHour(this DateTime value)
+    public static DateTime limitToHour(this DateTime value, int? modulus = null)
     {
-        return new DateTime(value.Year, value.Month, value.Day, value.Hour, 0, 0);
+        return new DateTime(
+            value.Year, 
+            value.Month, 
+            value.Day,
+            modulus.HasValue ? value.Hour % modulus.Value : value.Hour,
+            0, 
+            0
+            );
     }
     
-    public static DateTime limitToDay(this DateTime value)
+    public static DateTime limitToDay(this DateTime value, int? modulus = null)
     {
-        return new DateTime(value.Year, value.Month, value.Day, 0, 0, 0);
+        return new DateTime(value.Year, 
+            value.Month, 
+            modulus.HasValue ? value.Day % modulus.Value : value.Day
+            );
     }
     
     public static DateTime limitToWeek(this DateTime value)
