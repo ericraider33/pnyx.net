@@ -31,7 +31,7 @@ public class RowToNameValuePairProcessor : IRowProcessor, INameValuePairPart
         for (int i = 0; i < header.Count; i++)
         {
             String name = header[i];
-            String? value = i < row.Count ? row[i].trimEmptyAsNull() : null;
+            String value = i < row.Count ? row[i].trimEmptyAsNull() : null;
             @object.Add(name, value);
         }
         

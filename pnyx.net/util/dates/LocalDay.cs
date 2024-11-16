@@ -67,7 +67,7 @@ public readonly struct LocalDay : IComparable<LocalDay>, IFormattable, IUtcCapab
         return utc.CompareTo(other.utc);
     }
 
-    public string ToString(string? format, IFormatProvider? formatProvider)
+    public string ToString(string format, IFormatProvider formatProvider)
     {
         return local.ToString(format, formatProvider);
     }
@@ -89,7 +89,7 @@ public readonly struct LocalDay : IComparable<LocalDay>, IFormattable, IUtcCapab
             && local.Equals(other.local);
     }
 
-    public override bool Equals(object? obj)
+    public override bool Equals(object obj)
     {
         return obj is LocalDay other && Equals(other);
     }

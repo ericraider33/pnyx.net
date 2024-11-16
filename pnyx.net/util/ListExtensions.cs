@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace pnyx.net.util;
 
@@ -33,4 +34,30 @@ public static class ListExtensions
         }
         list.Add(item);
     }    
+    
+    /// <summary>
+    /// Adds an item to the list if it is not null. Passed list is modified when item is not null. Passed list is returned for chaining.
+    /// </summary>      
+    public static List<T> addNotNull<T>(this List<T> list, T item) where T : class
+    {
+        if (item != null)
+            list.Add(item);
+        return list;
+    }
+    
+    /// <summary>
+    /// Creates a new list with all items that are not null. 
+    /// </summary>      
+    public static List<T> whereNotNull<T>(this IEnumerable<T> enumerable) where T : class
+    {
+        return enumerable.Where(e => e != null).ToList();
+    }
+    
+    /// <summary>
+    /// Creates a new list with all parameters that are not null. 
+    /// </summary>      
+    public static List<T> whereNotNull<T>(params T[] args) where T : class
+    {
+        return args.Where(e => e != null).ToList();
+    }
 }

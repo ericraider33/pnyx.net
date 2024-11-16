@@ -34,7 +34,7 @@ public readonly struct UtcDate : IComparable<UtcDate>, IFormattable, IUtcCapable
         return utc.CompareTo(other.utc);
     }
 
-    public string ToString(String? format, IFormatProvider? formatProvider)
+    public string ToString(String format, IFormatProvider formatProvider)
     {
         return utc.ToString(format, formatProvider);
     }
@@ -104,7 +104,7 @@ public readonly struct UtcDate : IComparable<UtcDate>, IFormattable, IUtcCapable
         return utc.Equals(other.utc);
     }
 
-    public override bool Equals(object? obj)
+    public override bool Equals(object obj)
     {
         return obj is UtcDate other && Equals(other);
     }

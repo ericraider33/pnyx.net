@@ -1,6 +1,6 @@
 Pnyx.net Software Lincense 
 Version 1, January 28 2019
-Copyright (c) 2018-2019 BuckTheOdds, LLC. <http://www.bucktheodds.com>
+Copyright (c) 2018-2025 BuckTheOdds, LLC. <http://www.bucktheodds.com>
 
   0. Definitions.
 
