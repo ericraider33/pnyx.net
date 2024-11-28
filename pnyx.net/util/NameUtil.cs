@@ -222,18 +222,20 @@ public static class NameUtil
         return new Tuple<String, String>(name, suffix);
     }
 
-    public static String toLastFirstTitle(Tuple<String,String,String> name, String title = null)
+    public static String toLastFirstTitle(Tuple<String,String,String> name, String title = null, String suffix = null)
     {
-        return toLastFirstTitle(name.Item1, name.Item2, name.Item3, title);
+        return toLastFirstTitle(name.Item1, name.Item2, name.Item3, title, suffix);
     }
 
-    public static String toLastFirstTitle(String firstName, String middleName, String lastName, String title = null)
+    public static String toLastFirstTitle(String firstName, String middleName, String lastName, String title = null, String suffix = null)
     {
         if (firstName == null || lastName == null)
             return "";
 
         String middleInitial = middleName == null ? null : middleName.Substring(0, 1);
-
+        if (suffix != null)
+            lastName = String.Concat(lastName, " ", suffix);
+        
         if (title != null && middleInitial != null)
             return String.Format("{0}, {1} {2} {3}", lastName, firstName, middleInitial, title);
 
@@ -246,12 +248,14 @@ public static class NameUtil
         return String.Format("{0}, {1}", lastName, firstName);
     }
 
-    public static String toFirstLastTitle(String firstName, String middleName, String lastName, String title = null)
+    public static String toFirstLastTitle(String firstName, String middleName, String lastName, String title = null, String suffix = null)
     {
         if (firstName == null || lastName == null)
             return "";
 
         String middleInitial = middleName == null ? null : middleName.Substring(0, 1);
+        if (suffix != null)
+            lastName = String.Concat(lastName, " ", suffix);
 
         if (title != null && middleInitial != null)
             return String.Format("{0} {1} {2}, {3}", firstName, middleInitial, lastName, title);
@@ -278,6 +282,4 @@ public static class NameUtil
 
         return string.Concat(first, middle, last);            
     }
-    
-    
 }
