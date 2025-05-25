@@ -8,14 +8,14 @@
     <Company>BuckTheOdds LLC.</Company>
     <Title>pnyx.net file transform library</Title>
     <PackageDescription>Pnyx brings all of your favorite unix file transform tools like grep, sed and awk to your preferred programming language.</PackageDescription>
-    <Copyright>Copyright 2018-2024</Copyright>
+    <Copyright>Copyright 2018-2025</Copyright>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageProjectUrl>http://pnyx.me/</PackageProjectUrl>
     <PackageTags>ETL Pnyx awk sed grep linux tool csv parse file</PackageTags>	
     <PackageReleaseNotes>Continual improvements</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <PackageVersion>1.0.12</PackageVersion>
-    <AssemblyVersion>1.0.12</AssemblyVersion>	
+    <PackageVersion>1.0.13</PackageVersion>
+    <AssemblyVersion>1.0.13</AssemblyVersion>	
     <TargetFramework>net8.0</TargetFramework>	
   </PropertyGroup>
   <ItemGroup>

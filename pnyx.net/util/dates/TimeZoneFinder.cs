@@ -15,8 +15,8 @@ public static class TimeZoneFinder
         TimeZoneName.Mountain,
         TimeZoneName.Central,
         TimeZoneName.Eastern,
-        TimeZoneName.Indiana,
-        TimeZoneName.GlaceBay
+        TimeZoneName.GlaceBay,
+        TimeZoneName.UTC
     };
     private static readonly Dictionary<String, TimeZoneName> ianaidMap = tzList.ToDictionary(tzn => tzn.ianaId, tzn => tzn);
     private static readonly Dictionary<string, TimeZoneName> windowsMap = tzList.ToDictionary(tzn => tzn.windowsId, tzn => tzn);

@@ -57,7 +57,7 @@ namespace pnyx.net.test.impl
             Print p = new Print { formatStrings = new [] { "1 $0", "2 $0" }, processor = capture };
             p.processLine("Adam Smith");
             
-            Assert.Equal("1 Adam Smith\r\n2 Adam Smith\r\n", capture.capture.ToString());
+            Assert.Equal($"1 Adam Smith{Environment.NewLine}2 Adam Smith{Environment.NewLine}", capture.capture.ToString());
         }
         
         [Fact]
@@ -69,7 +69,7 @@ namespace pnyx.net.test.impl
             Print p = new Print { formatStrings = new [] { "1 $1", "2 $2" }, processor = capture };
             p.processRow(row);
 
-            Assert.Equal("1 AA\r\n2 BB\r\n", capture.capture.ToString());
+            Assert.Equal($"1 AA{Environment.NewLine}2 BB{Environment.NewLine}", capture.capture.ToString());
         }
         
     }

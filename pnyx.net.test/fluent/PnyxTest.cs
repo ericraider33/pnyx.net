@@ -128,8 +128,7 @@ to the honour of God, the exaltation of the holy Church, and the better ordering
                 actual = p.processToString();
             }
 
-            const String expected = @"Gaia,Terra,""Mother goddess of the earth""
-The Lord is my shepherd";
+            String expected = "Gaia,Terra,\"Mother goddess of the earth\"\r\nThe Lord is my shepherd";
             Assert.Equal(expected, actual);
         }
 
@@ -220,8 +219,7 @@ valueX1,valueX1
                 actual = p.processToString();
             }
 
-            const String expected = "Ares,Mars,\"Hated god of war\"\r\n";
-
+            String expected = "Ares,Mars,\"Hated god of war\"" + Environment.NewLine;
             Assert.Equal(expected, actual);
         }
 
@@ -254,8 +252,7 @@ valueX1,valueX1
                 actual = p.processToString();
             }
 
-            const String expected = @"Gaia,Terra,""Mother goddess of the earth""
-""The Lord"",is,""my shepherd"""; 
+            String expected = "Gaia,Terra,\"Mother goddess of the earth\"\r\n\"The Lord\",is,\"my shepherd\""; 
             Assert.Equal(expected, actual);
         }
 
@@ -951,10 +948,10 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
         }
 
         [Theory]
-        [InlineData(true,  false, false, false, "MaxWidth\t1\t11\t4\r\n")]
-        [InlineData(false, true,  false, false, "Header\t1\tHong Kong\t90.2\r\n")]
-        [InlineData(false, false, true,  false, "MinWidth\t1\t9\t4\r\n")]
-        [InlineData(false, false, false, true,  "Nullable\tnot null\tnot null\tnot null\r\n")]
+        [InlineData(true,  false, false, false, "MaxWidth\t1\t11\t4")]
+        [InlineData(false, true,  false, false, "Header\t1\tHong Kong\t90.2")]
+        [InlineData(false, false, true,  false, "MinWidth\t1\t9\t4")]
+        [InlineData(false, false, false, true,  "Nullable\tnot null\tnot null\tnot null")]
         public void columnDefinition(bool maxWidth, bool hasHeaderRow, bool minWidth, bool nullable, String expected)
         {
             String actual;
@@ -965,6 +962,7 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
                 p.columnDefinition(null, maxWidth, hasHeaderRow, minWidth, nullable, swapRowsAndColumns: false);
                 actual = p.processToString();
             }
+            expected += Environment.NewLine;
             Assert.Equal(expected, actual);
         }
         

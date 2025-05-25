@@ -63,6 +63,11 @@ public readonly struct LocalTimestamp : IComparable<LocalTimestamp>, IFormattabl
         }
     }
 
+    public UtcDate asUtcDate()
+    {
+        return new UtcDate(utc);
+    }
+
     public LocalDay day => new LocalDay(timeZone, local.Date);
     
     public int CompareTo(LocalTimestamp other)
@@ -132,6 +137,19 @@ public readonly struct LocalTimestamp : IComparable<LocalTimestamp>, IFormattabl
         return a.CompareTo(b) <= 0;
     }
         
+    /// <summary>
+    /// Parse an ISO-8601 date. If no timezone is specified, date is assumed in UTC. If a TZ is specified, then date is
+    /// automatically converted to UTC time. Supported ISO-8601 formats:
+    /// 
+    /// yyyy-MM-ddTHH:mm:ss.fffK - example: 2024-05-29T07:08:09.000-01:30
+    /// yyyy-MM-ddTHH:mm:ss.fffZ - example: 2024-05-29T07:08:09.000Z
+    /// yyyy-MM-ddTHH:mm:ss.fff  - example: 2024-05-29T07:08:09.000
+    /// yyyy-MM-ddTHH:mm:ss      - example: 2024-05-29T07:08:09
+    /// yyyy-MM-dd               - example: 2024-05-29
+    ///
+    /// See https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings for definitions
+    /// </summary>
+    /// <returns>LocalTimestamp as specified by passed timezone</returns>
     public static LocalTimestamp parse(String text, TimeZoneInfo timeZone = null)
     {
         DateTime asDate = DateUtil.parseIso8601Timestamp(text);
