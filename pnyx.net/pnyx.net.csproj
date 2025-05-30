@@ -14,8 +14,8 @@
     <PackageTags>ETL Pnyx awk sed grep linux tool csv parse file</PackageTags>	
     <PackageReleaseNotes>Continual improvements</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <PackageVersion>1.0.13</PackageVersion>
-    <AssemblyVersion>1.0.13</AssemblyVersion>	
+    <PackageVersion>1.0.14</PackageVersion>
+    <AssemblyVersion>1.0.14</AssemblyVersion>	
     <TargetFramework>net8.0</TargetFramework>	
   </PropertyGroup>
   <ItemGroup>

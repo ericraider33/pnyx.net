@@ -1,30 +1,29 @@
 using System;
 using System.Collections.Generic;
 
-namespace pnyx.net.processors.sources
+namespace pnyx.net.processors.sources;
+
+public class LineProcessorFunc : ILinePart, IProcessor
 {
-    public class LineProcessorFunc : ILinePart, IProcessor
+    public Func<IEnumerable<String>> source { get; private set; }
+    public ILineProcessor next { get; private set; }
+
+    public LineProcessorFunc(Func<IEnumerable<string>> source)
     {
-        public Func<IEnumerable<String>> source { get; private set; }
-        public ILineProcessor next { get; private set; }
+        this.source = source;
+    }
 
-        public LineProcessorFunc(Func<IEnumerable<string>> source)
-        {
-            this.source = source;
-        }
+    public void setNextLineProcessor(ILineProcessor next)
+    {
+        this.next = next;
+    }
 
-        public void setNextLineProcessor(ILineProcessor next)
-        {
-            this.next = next;
-        }
-
-        public void process()
-        {
-            IEnumerable<String> data = source();
-            foreach (String line in data)
-                next.processLine(line);
+    public void process()
+    {
+        IEnumerable<String> data = source();
+        foreach (String line in data)
+            next.processLine(line);
             
-            next.endOfFile();
-        }
+        next.endOfFile();
     }
 }

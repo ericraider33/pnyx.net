@@ -116,6 +116,17 @@ namespace pnyx.net.fluent
             
             return this;            
         }
+        
+        public Pnyx readObject(IObjectPart objectProcessor)
+        {
+            if (state != FluentState.New || parts.Count > 0)
+                throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
+            
+            parts.Add(objectProcessor);
+            state = FluentState.Object;
+            
+            return this;            
+        }
 
         public Pnyx readLine(Func<IEnumerable<String>> source)
         {
@@ -192,6 +203,11 @@ namespace pnyx.net.fluent
         public Pnyx readStdin()
         {
             return readStream(Console.OpenStandardInput());
+        }
+
+        public Pnyx readObject(Func<IEnumerable<object>> source)
+        {
+            return readObject(new ObjectProcessorFunc(source));
         }
 
         public Pnyx cat(Action<Pnyx> block)
@@ -419,6 +435,28 @@ namespace pnyx.net.fluent
             objectConverterFromNameValuePair ??= converter;
             parts.Add(new NameValuePairToObjectProcessor { converter = objectConverterFromNameValuePair });
             state = FluentState.Object;
+            
+            return this;
+        }
+        
+        /// <summary>
+        /// Changes the Pnyx state from NameValuePair to Row.
+        /// </summary>
+        /// <param name="newRowConverter">Row converter to use, or NULL to default to CsvRowConverter</param>
+        /// <param name="header">Explicit header. When null, names will be sorted</param>
+        public Pnyx nameValuePairToRow(CsvRowConverter newRowConverter = null, List<string> header = null)
+        {
+            if (state != FluentState.NameValuePair)
+                throw new IllegalStateException("Pnyx is not in NameValuePair state: {0}", state.ToString());
+
+            
+            if (newRowConverter != null)
+                rowConverter = newRowConverter;
+            else if (rowConverter == null)
+                rowConverter = new CsvRowConverter();
+            
+            parts.Add(new NameValuePairToRowProcessor(header));
+            state = FluentState.Row;
             
             return this;
         }

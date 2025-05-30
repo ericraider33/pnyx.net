@@ -242,6 +242,42 @@ Odyssey,Homer,-1000
         Assert.Equal(1859, first["PublicationDate"]);
     }
     
+    [Fact]
+    public void automapper_object_to_csv()
+    {
+        List<Book> actual;
+        using (Pnyx p = new Pnyx())
+        {
+            p.readString(csvInputA);
+            p.parseCsv(hasHeader: true);
+            p.rowToObject(new BookConverter());
+            actual = p.processCaptureObject<Book>();
+        }
+
+        Assert.Equal(3, actual.Count);
+        
+        MapperConfiguration config = new MapperConfiguration(cfg =>
+        {
+        });
+
+        IObjectConverterFromNameValuePair converter = new AutoMapperObjectConverter<Book>
+        {
+            mapper = config.CreateMapper() 
+        };
+
+        string csvOutputA = "";
+        using (Pnyx p = new Pnyx())
+        {
+            p.readObject(() => actual);
+            p.objectToNameValuePair(converter);
+            p.nameValuePairToRow(header: new List<string>{"Title","Author","PublicationDate"});
+            p.rowToLine();
+            csvOutputA = p.processToString();
+        }
+
+        Assert.Equal(csvInputA, csvOutputA);
+    }
+    
     [Theory]
     [InlineData(-2000, 3)]
     [InlineData(1800, 2)]
