@@ -1,13 +1,12 @@
 using System;
 using pnyx.net.api;
 
-namespace pnyx.net.impl
+namespace pnyx.net.impl;
+
+public class HasLine : ILineFilter
 {
-    public class HasLine : ILineFilter
+    public bool shouldKeepLine(String line)
     {
-        public bool shouldKeepLine(String line)
-        {
-            return !String.IsNullOrEmpty(line);
-        }
+        return !String.IsNullOrEmpty(line);
     }
 }

@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace pnyx.net.api
+namespace pnyx.net.api;
+
+public interface ILineFilter
 {
-    public interface ILineFilter
-    {
-        bool shouldKeepLine(String line);
-    }
+    bool shouldKeepLine(String line);
 }

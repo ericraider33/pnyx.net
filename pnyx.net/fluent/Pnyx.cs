@@ -1354,6 +1354,16 @@ namespace pnyx.net.fluent
             return capture.records;
         }
 
+        public List<string> processCaptureLines()
+        {
+            CaptureLineProcessor capture = new();
+            
+            endLine(capture);
+            process();
+            
+            return capture.records;
+        }
+
         public void Dispose()
         {
             if (settings.processOnDispose)
