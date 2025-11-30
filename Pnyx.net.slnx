@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/globals/">
+    <File Path=".gitignore" />
+    <File Path="build.py" />
+    <File Path="README.md" />
+    <File Path="LICENSE.md" />
+  </Folder>
+  <Project Path="pncs.cmd/pncs.cmd.csproj" />
+  <Project Path="pnyx.cmd.shared/pnyx.cmd.shared.csproj" />
+  <Project Path="pnyx.cmd/pnyx.cmd.csproj" />
+  <Project Path="pnyx.net.test/pnyx.net.test.csproj" />
+  <Project Path="pnyx.net/pnyx.net.csproj" />
+</Solution>
