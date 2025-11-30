@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using pnyx.net.errors;
 using pnyx.net.util;
 
 namespace pnyx.net.impl.columns;
@@ -82,5 +85,47 @@ public class ColumnIndex
             val = val / 26;
         }
         return base.ToString();
+    }
+    
+    /// <summary>
+    /// Converts 1-based integers into ColumnIndex objects 
+    /// </summary>
+    public static ColumnIndex[] convertColumnNumbersToIndex(params int[] columnNumbers)
+    {
+        ColumnIndex[] indexes = new ColumnIndex[columnNumbers.Length];
+        for (int i = 0; i < columnNumbers.Length; i++)
+        {
+            int columnNumber = columnNumbers[i];
+            if (columnNumber <= 0)
+                throw new InvalidArgumentException("Invalid ColumnNumber {0}, ColumnNumbers start at 1", columnNumber);
+
+            indexes[i] = columnNumber - 1;
+        }
+
+        return indexes;
+    }
+
+    public static HashSet<ColumnIndex> convertColumnNumbersToIndex(IEnumerable<int> columnNumbers)
+    {
+        HashSet<ColumnIndex> columnIndices = columnNumbers.Select(x => new ColumnIndex(x-1)).ToHashSet();
+        return columnIndices;
+    }
+
+    protected bool Equals(ColumnIndex other)
+    {
+        return index_ == other.index_;
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is null) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((ColumnIndex)obj);
+    }
+
+    public override int GetHashCode()
+    {
+        return index_;
     }
 }

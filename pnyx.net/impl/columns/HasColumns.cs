@@ -3,38 +3,37 @@ using System.Collections.Generic;
 using System.Linq;
 using pnyx.net.api;
 
-namespace pnyx.net.impl.columns
+namespace pnyx.net.impl.columns;
+
+public class HasColumns : IRowFilter
 {
-    public class HasColumns : IRowFilter
+    public readonly bool verifyColumnHasText;
+    public readonly HashSet<int> columnNumbers;
+    private readonly int maxColumnNumber;
+
+    public HasColumns(IEnumerable<int> columns, bool verifyColumnHasText = true)
     {
-        public readonly bool verifyColumnHasText;
-        public readonly HashSet<int> columnNumbers;
-        private readonly int maxColumnNumber;
+        this.columnNumbers = new HashSet<int>(columns);
+        this.verifyColumnHasText = verifyColumnHasText;
 
-        public HasColumns(IEnumerable<int> columns, bool verifyColumnHasText = true)
-        {
-            this.columnNumbers = new HashSet<int>(columns);
-            this.verifyColumnHasText = verifyColumnHasText;
+        maxColumnNumber = columnNumbers.Max(x => x);
+    }
 
-            maxColumnNumber = columnNumbers.Max(x => x);
-        }
+    public bool shouldKeepRow(List<String> row)
+    {
+        if (row.Count < maxColumnNumber)
+            return false;
 
-        public bool shouldKeepRow(List<String> row)
-        {
-            if (row.Count < maxColumnNumber)
-                return false;
-
-            if (!verifyColumnHasText)
-                return true;
-
-            foreach (int columnNumber in columnNumbers)
-            {
-                String column = row[columnNumber - 1];
-                if (String.IsNullOrEmpty(column))
-                    return false;
-            }
-
+        if (!verifyColumnHasText)
             return true;
+
+        foreach (int columnNumber in columnNumbers)
+        {
+            String column = row[columnNumber - 1];
+            if (String.IsNullOrEmpty(column))
+                return false;
         }
+
+        return true;
     }
 }

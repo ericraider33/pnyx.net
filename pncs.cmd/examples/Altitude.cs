@@ -1,5 +1,6 @@
 using pnyx.net.fluent;
 using pnyx.net.impl;
+using pnyx.net.impl.columns;
 using pnyx.net.util;
 
 namespace pncs.cmd.examples
@@ -44,7 +45,7 @@ namespace pncs.cmd.examples
                     return pnyx.net.util.RowUtil.replaceColumn(row, 1, name.firstName, name.middleName, name.lastName);
                 });
                 p.lineTransformer(x => pnyx.net.util.TextUtil.encodeSqlValue(x));
-                p.sortRow(new[] {1, 3});
+                p.sortRow(new[] { RowConstants.A, RowConstants.C });
                 p.writeCsv(@"C:\dev\asclepius\prod_import\alt.csv");
             }
 

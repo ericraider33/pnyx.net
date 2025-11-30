@@ -2,29 +2,28 @@ using System;
 using System.Collections.Generic;
 using pnyx.net.api;
 
-namespace pnyx.net.impl.columns
+namespace pnyx.net.impl.columns;
+
+public class RowFilterWithColumns : IRowFilter
 {
-    public class RowFilterWithColumns : IRowFilter
-    {
-        public int[] indexes { get; private set; }   
-        public IRowFilter rowFilter  { get; private set; }
+    public ColumnIndex[] indexes { get; private set; }   
+    public IRowFilter rowFilter  { get; private set; }
         
-        public RowFilterWithColumns(int[] indexes, IRowFilter rowFilter)
+    public RowFilterWithColumns(ColumnIndex[] indexes, IRowFilter rowFilter)
+    {
+        this.indexes = indexes;
+        this.rowFilter = rowFilter;
+    }
+
+    public bool shouldKeepRow(List<String> row)
+    {
+        List<String> subColumns = new List<String>(indexes.Length);
+        foreach (int columnIndex in indexes)
         {
-            this.indexes = indexes;
-            this.rowFilter = rowFilter;
+            String column = columnIndex < row.Count ? row[columnIndex] : "";
+            subColumns.Add(column);
         }
 
-        public bool shouldKeepRow(List<String> row)
-        {
-            List<String> subColumns = new List<String>(indexes.Length);
-            foreach (int columnIndex in indexes)
-            {
-                String column = columnIndex < row.Count ? row[columnIndex] : "";
-                subColumns.Add(column);
-            }
-
-            return rowFilter.shouldKeepRow(subColumns);
-        }
+        return rowFilter.shouldKeepRow(subColumns);
     }
 }

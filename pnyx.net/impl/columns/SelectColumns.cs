@@ -2,27 +2,26 @@ using System;
 using System.Collections.Generic;
 using pnyx.net.api;
 
-namespace pnyx.net.impl.columns
+namespace pnyx.net.impl.columns;
+
+public class SelectColumns : IRowTransformer
 {
-    public class SelectColumns : IRowTransformer
+    public ColumnIndex[] columnIndices;                                // zero-based
+
+    public List<String> transformHeader(List<String> header)
     {
-        public int[] indexes;                                // zero-based
+        return transformRow(header);
+    }
 
-        public List<String> transformHeader(List<String> header)
+    public List<String> transformRow(List<String> row)
+    {
+        List<String> result = new List<String>(columnIndices.Length);
+        foreach (int columnIndex in columnIndices)
         {
-            return transformRow(header);
+            String column = columnIndex < row.Count ? row[columnIndex] : "";
+            result.Add(column);
         }
 
-        public List<String> transformRow(List<String> row)
-        {
-            List<String> result = new List<String>(indexes.Length);
-            foreach (int columnIndex in indexes)
-            {
-                String column = columnIndex < row.Count ? row[columnIndex] : "";
-                result.Add(column);
-            }
-
-            return result;
-        }
+        return result;
     }
 }

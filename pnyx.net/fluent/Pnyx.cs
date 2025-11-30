@@ -527,6 +527,22 @@ namespace pnyx.net.fluent
             return rowFilter(new HasColumns(columnNumbers, verifyColumnHasText));
         }
 
+        public Pnyx hasColumns(bool verifyColumnHasText, params ColumnIndex[] columnIndexes)
+        {
+            if (columnIndexes.Length == 0)
+                throw new InvalidArgumentException("At least one columnIndex is required");
+            
+            return rowFilter(new HasColumnIndexes(columnIndexes, verifyColumnHasText));
+        }
+
+        public Pnyx hasColumns(Func<string, bool> checkContent, params ColumnIndex[] columnIndexes)
+        {
+            if (columnIndexes.Length == 0)
+                throw new InvalidArgumentException("At least one columnIndex is required");
+            
+            return rowFilter(new HasColumnIndexes(columnIndexes, verifyColumnHasText: false, checkContent: checkContent));
+        }
+
         public Pnyx widthColumns(int columns, String pad = "")
         {
             return rowTransformer(new WidthColumns { columns = columns, pad = pad });
@@ -534,22 +550,46 @@ namespace pnyx.net.fluent
 
         public Pnyx removeColumns(params int[] columnNumbers)
         {            
-            return rowTransformer(new RemoveColumns(columnNumbers));
+            ColumnIndex[] columnIndices = ColumnIndex.convertColumnNumbersToIndex(columnNumbers);
+            return rowTransformer(new RemoveColumns(columnIndices));
+        }
+
+        public Pnyx removeColumns(params ColumnIndex[] columnIndices)
+        {            
+            return rowTransformer(new RemoveColumns(columnIndices));
         }
 
         public Pnyx insertColumnsWithPadding(String pad = "", params int[] columnNumbers)
         {
-            return rowTransformer(new InsertColumns(columnNumbers) { pad = pad });
+            ColumnIndex[] columnIndices = convertColumnNumbersToIndex(columnNumbers);
+            return rowTransformer(new InsertColumns(columnIndices) { pad = pad });
+        }
+
+        public Pnyx insertColumnsWithPadding(String pad = "", params ColumnIndex[] columnIndices)
+        {
+            return rowTransformer(new InsertColumns(columnIndices) { pad = pad });
         }
 
         public Pnyx insertColumns(params int[] columnNumbers)
         {
-            return rowTransformer(new InsertColumns(columnNumbers));
+            ColumnIndex[] columnIndices = convertColumnNumbersToIndex(columnNumbers);
+            return rowTransformer(new InsertColumns(columnIndices));
+        }
+
+        public Pnyx insertColumns(params ColumnIndex[] columnIndices)
+        {
+            return rowTransformer(new InsertColumns(columnIndices));
         }
 
         public Pnyx duplicateColumns(params int[] columnNumbers)
         {
-            return rowTransformer(new DuplicateColumns(columnNumbers));
+            ColumnIndex[] columnIndices = convertColumnNumbersToIndex(columnNumbers);
+            return rowTransformer(new DuplicateColumns(columnIndices));
+        }
+
+        public Pnyx duplicateColumns(params ColumnIndex[] columnIndices)
+        {
+            return rowTransformer(new DuplicateColumns(columnIndices));
         }
 
         public Pnyx headerNames(params Object[] columnNumbersAndNames)
@@ -561,7 +601,11 @@ namespace pnyx.net.fluent
             Dictionary<int, String> nameMap = new Dictionary<int, String>(columnNumbersAndNames.Length);
             foreach (Object val in columnNumbersAndNames)
             {
-                if (val is int)
+                if (val is ColumnIndex)
+                {
+                    index = ((ColumnIndex)val).Index;
+                }
+                else if (val is int)
                 {
                     index = (int) val - 1;
                     if (index < 0)
@@ -585,8 +629,13 @@ namespace pnyx.net.fluent
 
         public Pnyx selectColumns(params int[] columnNumbers)
         {
-            int[] indexes = convertColumnNumbersToIndex(columnNumbers);            
-            return rowTransformer(new SelectColumns { indexes = indexes });
+            ColumnIndex[] columnIndices = convertColumnNumbersToIndex(columnNumbers);            
+            return rowTransformer(new SelectColumns { columnIndices = columnIndices });
+        }
+        
+        public Pnyx selectColumns(params ColumnIndex[] columnIndices)
+        {
+            return rowTransformer(new SelectColumns { columnIndices = columnIndices });
         }
         
         public Pnyx printColumn(int columnNumber)            // 1-based to be consistent with print and sed
@@ -602,6 +651,34 @@ namespace pnyx.net.fluent
 
             return this;
         }
+        
+        public Pnyx printColumn(ColumnIndex columnIndex)
+        {
+            requireStart(line: false, row: true);
+            
+            parts.Add(new ColumnToLine { index = columnIndex.Index });
+            state = FluentState.Line;
+            rowConverter = null;
+
+            return this;
+        }
+        
+        public Pnyx withColumns(Action<Pnyx> block, params ColumnIndex[] indices)
+        {
+            requireStart(line: false, row: true);
+               
+            // Add modifier to parts
+            int partIndex = parts.Count;
+            parts.Add(new WithColumns { indexes = indices });
+            
+            // Runs block
+            block(this);
+            
+            // Removes modifier from parts
+            parts.RemoveAt(partIndex);
+
+            return this;
+        }
                 
         public Pnyx withColumns(Action<Pnyx> block, params int[] columnNumbers)
         {
@@ -609,8 +686,8 @@ namespace pnyx.net.fluent
                
             // Add modifier to parts
             int partIndex = parts.Count;
-            int[] indexes = convertColumnNumbersToIndex(columnNumbers);
-            parts.Add(new WithColumns { indexes = indexes });
+            ColumnIndex[] indices = convertColumnNumbersToIndex(columnNumbers);
+            parts.Add(new WithColumns { indexes = indices });
             
             // Runs block
             block(this);
@@ -621,22 +698,12 @@ namespace pnyx.net.fluent
             return this;
         }
 
-        private int[] convertColumnNumbersToIndex(params int[] columnNumbers)
+        private ColumnIndex[] convertColumnNumbersToIndex(params int[] columnNumbers)
         {
             if (columnNumbers.Length == 0)
                 throw new InvalidArgumentException("Must specify at least one ColumnNumber");
-                
-            int[] indexes = new int[columnNumbers.Length];
-            for (int i = 0; i < columnNumbers.Length; i++)
-            {
-                int columnNumber = columnNumbers[i];
-                if (columnNumber <= 0)
-                    throw new InvalidArgumentException("Invalid ColumnNumber {0}, ColumnNumbers start at 1", columnNumber);
 
-                indexes[i] = columnNumber - 1;
-            }
-
-            return indexes;
+            return ColumnIndex.convertColumnNumbersToIndex(columnNumbers);
         }
                 
         public Pnyx parseCsv(bool? strict = true, 
@@ -827,28 +894,54 @@ namespace pnyx.net.fluent
         
         public Pnyx columnFilter(int columnNumber, ILineFilter lineFilter)
         {
-            int[] indexes = convertColumnNumbersToIndex(columnNumber);
-            return rowFilter(new RowFilterWithColumns(indexes, new RowFilterShimOr { lineFilter = lineFilter }));
+            ColumnIndex[] indices = convertColumnNumbersToIndex(columnNumber);
+            return rowFilter(new RowFilterWithColumns(indices, new RowFilterShimOr { lineFilter = lineFilter }));
         }
         
         public Pnyx columnFilter(int columnNumber, Func<String, bool> filter)
         {
-            int[] indexes = convertColumnNumbersToIndex(columnNumber);
+            ColumnIndex[] indexes = convertColumnNumbersToIndex(columnNumber);
             ILineFilter lineFilter = new LineFilterFunc { lineFilterFunc = filter };
             return rowFilter(new RowFilterWithColumns(indexes, new RowFilterShimOr { lineFilter = lineFilter }));
         }
         
+        public Pnyx columnFilter(ColumnIndex columnIndex, ILineFilter lineFilter)
+        {
+            ColumnIndex[] indices = [columnIndex.Index];
+            return rowFilter(new RowFilterWithColumns(indices, new RowFilterShimOr { lineFilter = lineFilter }));
+        }
+        
+        public Pnyx columnFilter(ColumnIndex columnIndex, Func<String, bool> filter)
+        {
+            ColumnIndex[] indices = [columnIndex.Index];
+            ILineFilter lineFilter = new LineFilterFunc { lineFilterFunc = filter };
+            return rowFilter(new RowFilterWithColumns(indices, new RowFilterShimOr { lineFilter = lineFilter }));
+        }
+        
         public Pnyx columnTransformer(int columnNumber, ILineTransformer lineTransformer)
         {
-            int[] indexes = convertColumnNumbersToIndex(columnNumber);
-            return rowTransformer(new RowTransformerWithColumns(indexes, new RowTransformerShimOr { lineTransformer = lineTransformer }));
+            ColumnIndex[] indices = convertColumnNumbersToIndex(columnNumber);
+            return rowTransformer(new RowTransformerWithColumns(indices, new RowTransformerShimOr { lineTransformer = lineTransformer }));
         }
         
         public Pnyx columnTransformer(int columnNumber, Func<String, String> transform)
         {
-            int[] indexes = convertColumnNumbersToIndex(columnNumber);
+            ColumnIndex[] indices = convertColumnNumbersToIndex(columnNumber);
             ILineTransformer lineTransformer = new LineTransformerFunc { lineTransformerFunc = transform };
-            return rowTransformer(new RowTransformerWithColumns(indexes, new RowTransformerShimOr { lineTransformer = lineTransformer }));
+            return rowTransformer(new RowTransformerWithColumns(indices, new RowTransformerShimOr { lineTransformer = lineTransformer }));
+        }
+        
+        public Pnyx columnTransformer(ColumnIndex columnIndex, ILineTransformer lineTransformer)
+        {
+            ColumnIndex[] indices = [columnIndex.Index];
+            return rowTransformer(new RowTransformerWithColumns(indices, new RowTransformerShimOr { lineTransformer = lineTransformer }));
+        }
+        
+        public Pnyx columnTransformer(ColumnIndex columnIndex, Func<String, String> transform)
+        {
+            ColumnIndex[] indices = [columnIndex.Index];
+            ILineTransformer lineTransformer = new LineTransformerFunc { lineTransformerFunc = transform };
+            return rowTransformer(new RowTransformerWithColumns(indices, new RowTransformerShimOr { lineTransformer = lineTransformer }));
         }
 
         public Pnyx nameValuePairPart(INameValuePairPart pairPart)
@@ -1519,19 +1612,20 @@ namespace pnyx.net.fluent
             }                       
         }
 
-        public Pnyx sort(
+        public Pnyx sort
+        (
             bool descending = false, 
             bool caseSensitive = false,
             bool unique = false,
-            int[] columnNumbers = null,
+            ColumnIndex[] columnIndices = null,
             String tempDirectory = null,
             int? buffer = null
-            )
+        )
         {
             requireStart(line: true, row: true);
 
             if (state == FluentState.Row)
-                return sortRow(columnNumbers, descending, caseSensitive, unique, tempDirectory, buffer);
+                return sortRow(columnIndices, descending, caseSensitive, unique, tempDirectory, buffer);
             else
                 return sortLine(descending, caseSensitive, unique, tempDirectory, buffer);
         }
@@ -1554,7 +1648,7 @@ namespace pnyx.net.fluent
         }
 
         public Pnyx sortRow(
-            int[] columnNumbers = null,
+            ColumnIndex[] columnIndices = null,
             bool descending = false,
             bool caseSensitive = false,
             bool unique = false,
@@ -1566,13 +1660,13 @@ namespace pnyx.net.fluent
             buffer = buffer ?? settings.bufferLines;
             tempDirectory = tempDirectory ?? settings.tempDirectory;
             
-            columnNumbers = columnNumbers ?? new int[] { 1 };            
+            columnIndices = columnIndices ?? [RowConstants.A];            
             List<RowComparer.ColumnDefinition> definitions = new List<RowComparer.ColumnDefinition>();
-            foreach (int columnNumber in columnNumbers)
+            foreach (ColumnIndex columnIndex in columnIndices)
             {
                 definitions.Add(new RowComparer.ColumnDefinition
                 {
-                    columnNumber = columnNumber,
+                    columnIndex = columnIndex,
                     comparer = new PnyxStringComparer(descending, caseSensitive)
                 });
             }
