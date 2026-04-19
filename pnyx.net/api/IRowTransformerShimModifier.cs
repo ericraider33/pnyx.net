@@ -1,7 +1,6 @@
-namespace pnyx.net.api
+namespace pnyx.net.api;
+
+public interface IRowTransformerShimModifier : IModifier
 {
-    public interface IRowTransformerShimModifier : IModifier
-    {
-        IRowTransformer shimLineTransformer(ILineTransformer lineTransformer);
-    }
+    IRowTransformer shimLineTransformer(ILineTransformer lineTransformer);
 }

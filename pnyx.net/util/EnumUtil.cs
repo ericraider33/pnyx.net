@@ -8,7 +8,7 @@ namespace pnyx.net.util;
 
 public static class EnumUtil
 {
-    public static T stringToEnum<T>(String text, T defaultValue = default) where T : Enum
+    public static T stringToEnum<T>(String? text, T defaultValue = default!) where T : Enum
     {
         if (String.IsNullOrEmpty(text))
             return defaultValue;
@@ -16,10 +16,10 @@ public static class EnumUtil
         return (T)Enum.Parse(typeof(T), text, true);
     }
 
-    public static T? stringToEnumNullable<T>(String text) where T : struct, Enum
+    public static T? stringToEnumNullable<T>(String? text) where T : struct, Enum
     {
         if (String.IsNullOrEmpty(text) || TextUtil.isEqualsIgnoreCase(text, "null"))
-            return default;
+            return null;
 
         try
         {
@@ -27,7 +27,7 @@ public static class EnumUtil
         }
         catch (ArgumentException)
         {
-            return default;
+            return null;
         }
     }
 
@@ -48,33 +48,39 @@ public static class EnumUtil
         return result;
     }
 
-    public static Dictionary<String, T> toDictionary<T>(IEqualityComparer<String> comparer = null) where T : Enum
+    public static Dictionary<String, T> toDictionary<T>(IEqualityComparer<String>? comparer = null) where T : Enum
     {
         comparer = comparer ?? StringComparer.OrdinalIgnoreCase;            
         Dictionary<String, T> enumValues = new Dictionary<String, T>(comparer);
             
         Type enumType = typeof(T);
         foreach (var value in Enum.GetValues(enumType))
-            enumValues.Add(Enum.GetName(enumType, value), (T) value);
+        {
+            string? name = Enum.GetName(enumType, value);
+            if (name == null)
+                continue;
+            
+            enumValues.Add(name, (T) value);
+        }
 
         return enumValues;
     }
 
-    public static String getLabel(this Enum val)
+    public static String? getLabel(this Enum? val)
     {
         if (val == null)
             return null;
         
         Type type = val.GetType();
-        string valAsName = type.GetEnumName(val);
+        string? valAsName = type.GetEnumName(val);
         if (valAsName == null)
             return null;
             
-        MemberInfo mi = type.GetMember(valAsName).FirstOrDefault();
+        MemberInfo? mi = type.GetMember(valAsName).FirstOrDefault();
         if (mi == null)
             return null;
 
-        DescriptionAttribute da = mi.GetCustomAttributes<DescriptionAttribute>().FirstOrDefault();
+        DescriptionAttribute? da = mi.GetCustomAttributes<DescriptionAttribute>().FirstOrDefault();
         if (da != null)
             return da.Description;
 
@@ -91,10 +97,10 @@ public static class EnumUtil
         return min((IEnumerable<T>) source);
     }
     
-    public static T max<T>(IEnumerable<T> source) where T : Enum
+    public static T max<T>(IEnumerable<T>? source) where T : Enum
     {
         if (source == null)
-            return default(T);
+            return default!;
 
         bool first = true;
         int m = 0;
@@ -111,15 +117,15 @@ public static class EnumUtil
         }
 
         if (first)
-            return default(T);
+            return default!;
 
         return (T) Enum.ToObject(typeof(T), m);
     }
 
-    public static T min<T>(IEnumerable<T> source) where T : Enum
+    public static T min<T>(IEnumerable<T>? source) where T : Enum
     {
         if (source == null)
-            return default;
+            return default!;
 
         bool first = true;
         int m = 0;
@@ -136,7 +142,7 @@ public static class EnumUtil
         }
 
         if (first)
-            return default;
+            return default!;
 
         return (T) Enum.ToObject(typeof(T), m);
     }

@@ -1,23 +1,29 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using pnyx.net.api;
 
 namespace pnyx.net.processors.converters;
 
 public class ObjectToNameValuePairProcessor : IObjectProcessor, INameValuePairPart
 {
-    public IObjectConverterFromNameValuePair converter;
-    public INameValuePairProcessor processor;
+    public IObjectConverterFromNameValuePair converter { get; }
+    public INameValuePairProcessor? processor { get; private set; }
     
-    public void processObject(object obj)
+    public ObjectToNameValuePairProcessor(IObjectConverterFromNameValuePair converter)
     {
-        IDictionary<string, Object> nameValuePair = converter.objectToNameValuePair(obj);
-        processor.processNameValuePair(nameValuePair);
+        this.converter = converter;
+    }
+    
+    public async Task processObject(object obj)
+    {
+        IDictionary<string, Object?> nameValuePair = converter.objectToNameValuePair(obj);
+        await processor!.processNameValuePair(nameValuePair);
     }
 
-    public void endOfFile()
+    public async Task endOfFile()
     {
-        processor.endOfFile();
+        await processor!.endOfFile();
     }
 
     public void setNextNameValuePairProcessor(INameValuePairProcessor next)

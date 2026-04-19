@@ -1,39 +1,39 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace pnyx.net.processors.sources
+namespace pnyx.net.processors.sources;
+
+public class RowProcessorFunc : IRowPart, IProcessor
 {
-    public class RowProcessorFunc : IRowPart, IProcessor
+    public Func<List<String>?>? header  { get; }        
+    public Func<IEnumerable<List<String?>>> source { get; }
+    public IRowProcessor? processor { get; private set; }
+
+    public RowProcessorFunc(Func<List<string>>? header, Func<IEnumerable<List<string?>>> source)
     {
-        public Func<List<String>> header  { get; private set; }        
-        public Func<IEnumerable<List<String>>> source { get; private set; }
-        public IRowProcessor next { get; private set; }
+        this.header = header;
+        this.source = source;
+    }
 
-        public RowProcessorFunc(Func<List<string>> header, Func<IEnumerable<List<string>>> source)
+    public void setNextRowProcessor(IRowProcessor next)
+    {
+        this.processor = next;
+    }
+
+    public async Task process()
+    {
+        if (header != null)
         {
-            this.header = header;
-            this.source = source;
+            List<String>? headerData = header();
+            if (headerData != null)
+                await processor!.rowHeader(headerData);
         }
 
-        public void setNextRowProcessor(IRowProcessor next)
-        {
-            this.next = next;
-        }
-
-        public void process()
-        {
-            if (header != null)
-            {
-                List<String> headerData = header();
-                if (headerData != null)
-                    next.rowHeader(headerData);
-            }
-
-            IEnumerable<List<String>> data = source();
-            foreach (List<String> row in data)
-                next.processRow(row);
+        IEnumerable<List<String?>> data = source();
+        foreach (List<String?> row in data)
+            await processor!.processRow(row);
             
-            next.endOfFile();
-        }
+        await processor!.endOfFile();
     }
 }

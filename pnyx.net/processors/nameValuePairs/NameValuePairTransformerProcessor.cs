@@ -1,27 +1,33 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using pnyx.net.api;
 
 namespace pnyx.net.processors.nameValuePairs;
 
 public class NameValuePairTransformerProcessor : INameValuePairPart, INameValuePairProcessor
 {
-    public INameValuePairTransformer transformer;
-    public INameValuePairProcessor processor;
-    
+    public INameValuePairTransformer transformer { get; }
+    public INameValuePairProcessor? processor { get; private set; }
+
+    public NameValuePairTransformerProcessor(INameValuePairTransformer transformer)
+    {
+        this.transformer = transformer;
+    }
+
     public void setNextNameValuePairProcessor(INameValuePairProcessor next)
     {
         processor = next;
     }
 
-    public void processNameValuePair(IDictionary<string, object> record)
+    public async Task processNameValuePair(IDictionary<string, object?> record)
     {
-        record = transformer.transformPairs(record);
-        if (record != null)
-            processor.processNameValuePair(record);
+        IDictionary<string, object?>? result = transformer.transformPairs(record);
+        if (result != null)
+            await processor!.processNameValuePair(result);
     }
 
-    public void endOfFile()
+    public async Task endOfFile()
     {
-        processor.endOfFile();
+        await processor!.endOfFile();
     }
 }

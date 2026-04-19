@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace pnyx.net.processors
+namespace pnyx.net.processors;
+
+public interface IRowProcessor : IPart
 {
-    public interface IRowProcessor
-    {
-        void rowHeader(List<String> header);
-        void processRow(List<String> row);
-        void endOfFile();
-    }
+    Task rowHeader(List<String> header);
+    Task processRow(List<String?> row);
+    Task endOfFile();
 }

@@ -6,8 +6,8 @@ namespace pnyx.net.impl.columns;
 
 public class RowFilterWithColumns : IRowFilter
 {
-    public ColumnIndex[] indexes { get; private set; }   
-    public IRowFilter rowFilter  { get; private set; }
+    public ColumnIndex[] indexes { get; }   
+    public IRowFilter rowFilter  { get; }
         
     public RowFilterWithColumns(ColumnIndex[] indexes, IRowFilter rowFilter)
     {

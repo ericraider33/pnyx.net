@@ -14,15 +14,15 @@ public class HasColumnIndexes : IRowFilter
     /// <summary>
     /// Function to perform a check whether content is present or not. Return True to keep row; false to reject / skip row 
     /// </summary>
-    private readonly Func<string, bool> checkContent;
+    private readonly Func<string, bool>? checkContent;
 
-    public HasColumnIndexes(IEnumerable<ColumnIndex> columns, bool verifyColumnHasText = true, Func<string, bool> checkContent = null)
+    public HasColumnIndexes(IEnumerable<ColumnIndex> columns, bool verifyColumnHasText = true, Func<string, bool>? checkContent = null)
     {
         this.columnIndexes = new HashSet<ColumnIndex>(columns);
         this.verifyColumnHasText = verifyColumnHasText;
         this.checkContent = checkContent;
 
-        maxColumnNumber = columnIndexes.Max(x => x);
+        maxColumnNumber = columnIndexes.Max(x => x) ?? 0;
     }
 
     public bool shouldKeepRow(List<String> row)

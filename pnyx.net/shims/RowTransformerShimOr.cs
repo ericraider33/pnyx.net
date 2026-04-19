@@ -2,37 +2,41 @@ using System;
 using System.Collections.Generic;
 using pnyx.net.api;
 
-namespace pnyx.net.shims
+namespace pnyx.net.shims;
+
+public class RowTransformerShimOr : IRowTransformer
 {
-    public class RowTransformerShimOr : IRowTransformer
+    public ILineTransformer lineTransformer { get; }
+
+    public RowTransformerShimOr(ILineTransformer lineTransformer)
     {
-        public ILineTransformer lineTransformer;
+        this.lineTransformer = lineTransformer;
+    }
 
-        public List<String> transformHeader(List<String> header)
-        {
-            return header;
-        }
+    public List<String> transformHeader(List<String> header)
+    {
+        return header;
+    }
         
-        public List<String> transformRow(List<String> row)
+    public List<String?>? transformRow(List<String?> row)
+    {
+        bool keep = false;
+        List<String?> result = new List<String?>(row.Count);
+        foreach (String? original in row)
         {
-            bool keep = false;
-            List<String> result = new List<String>(row.Count);
-            foreach (String original in row)
+            String? column = lineTransformer.transformLine(original ?? "");
+            if (column == null)
             {
-                String column = lineTransformer.transformLine(original);
-                if (column == null)
-                {
-                    result.Add("");                
-                }
-                else
-                {
-                    result.Add(column);                
-                    keep = true;
-                }
-
+                result.Add("");                
             }
-            
-            return keep ? result : null;
+            else
+            {
+                result.Add(column);                
+                keep = true;
+            }
+
         }
+            
+        return keep ? result : null;
     }
 }

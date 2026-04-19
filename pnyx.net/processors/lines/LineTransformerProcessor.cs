@@ -1,23 +1,29 @@
 using System;
+using System.Threading.Tasks;
 using pnyx.net.api;
 
 namespace pnyx.net.processors.lines;
 
 public class LineTransformerProcessor : ILinePart, ILineProcessor
 {
-    public ILineTransformer transform;
-    public ILineProcessor processor;
+    public ILineTransformer transform { get; }
+    public ILineProcessor? processor { get; private set; }
 
-    public void processLine(String line)
+    public LineTransformerProcessor(ILineTransformer transform)
     {
-        line = transform.transformLine(line);
-        if (line != null)
-            processor.processLine(line);
+        this.transform = transform;
     }
 
-    public void endOfFile()
+    public async Task processLine(String line)
     {
-        processor.endOfFile();
+        string? result = transform.transformLine(line);
+        if (result != null)
+            await processor!.processLine(result);
+    }
+
+    public async Task endOfFile()
+    {
+        await processor!.endOfFile();
     }
 
     public void setNextLineProcessor(ILineProcessor next)

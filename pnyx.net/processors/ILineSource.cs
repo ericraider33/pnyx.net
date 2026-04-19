@@ -1,9 +1,8 @@
 using pnyx.net.api;
 
-namespace pnyx.net.processors
+namespace pnyx.net.processors;
+
+public interface ILineSource : IPart
 {
-    public interface ILineSource
-    {
-        IStreamFactory streamFactory { get; }
-    }
+    IStreamFactory streamFactory { get; }
 }

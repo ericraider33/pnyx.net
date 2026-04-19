@@ -7,7 +7,7 @@ namespace pnyx.net.util;
 
 public static class RowUtil
 {
-    public static List<String> replaceColumn(List<String> row, ColumnIndex columnIndex, params String[] replacement)
+    public static List<String?> replaceColumn(List<String?> row, ColumnIndex columnIndex, params String[] replacement)
     {
         if (columnIndex > row.Count)
             return row;
@@ -21,7 +21,7 @@ public static class RowUtil
         return row;
     }
         
-    public static List<String> insertColumns(List<String> row, ColumnIndex columnIndex, params String[] replacement)
+    public static List<String?> insertColumns(List<String?> row, ColumnIndex columnIndex, params String[] replacement)
     {
         if (columnIndex > row.Count)
             return row;
@@ -32,10 +32,20 @@ public static class RowUtil
         return row;
     }
 
-    public static List<String> insertBlankColumns(List<String> row, ISet<ColumnIndex> columnIndices, String pad = "")
+    public static List<string> insertBlankColumnsHeader(List<string> row, ISet<ColumnIndex> columnIndices, string pad = "")
+    {
+        return insertBlankColumns_(row, columnIndices, pad);
+    }
+
+    public static List<string?> insertBlankColumns(List<string?> row, ISet<ColumnIndex> columnIndices, string pad = "")
+    {
+        return insertBlankColumns_(row, columnIndices, pad);
+    }
+
+    private static List<T> insertBlankColumns_<T>(List<T> row, ISet<ColumnIndex> columnIndices, T pad)
     {
         int finalSize = row.Count + columnIndices.Count;
-        List<String> result = new List<String>(finalSize);
+        List<T> result = new List<T>(finalSize);
         for (int source = 0; source < row.Count; source++)
         {
             if (columnIndices.Contains(source))
@@ -50,10 +60,20 @@ public static class RowUtil
         return result;
     }
 
-    public static List<String> duplicateColumns(List<String> row, ISet<ColumnIndex> columnIndices)
+    public static List<String> duplicateColumnsHeader(List<String> row, ISet<ColumnIndex> columnIndices)
+    {
+        return duplicateColumns_(row, columnIndices);
+    }
+
+    public static List<String?> duplicateColumns(List<String?> row, ISet<ColumnIndex> columnIndices)
+    {
+        return duplicateColumns_(row, columnIndices);
+    }
+    
+    private static List<T> duplicateColumns_<T>(List<T> row, ISet<ColumnIndex> columnIndices)
     {
         int finalSize = row.Count + columnIndices.Count;
-        List<String> result = new List<String>(finalSize);
+        List<T> result = new List<T>(finalSize);
         for (int source = 0; source < row.Count; source++)
         {
             if (columnIndices.Contains(source))
@@ -66,9 +86,9 @@ public static class RowUtil
         return result;
     }
 
-    public static List<String> removeColumns(List<String> row, ISet<ColumnIndex> columnIndices)
+    public static List<String?> removeColumns(List<String?> row, ISet<ColumnIndex> columnIndices)
     {
-        List<String> result = new List<String>(row.Count);
+        List<String?> result = new List<String?>(row.Count);
         for (int i = 0; i < row.Count; i++)
         {
             if (columnIndices.Contains(new ColumnIndex(i)))
@@ -80,9 +100,9 @@ public static class RowUtil
         return result;
     }
 
-    public static List<String> fixWidth(List<String> row, int columns, String pad = "")
+    public static List<String?> fixWidth(List<String?> row, int columns, String pad = "")
     {
-        List<String> result = new List<String>(columns);
+        List<String?> result = new List<String?>(columns);
 
         for (int i = 0; i < columns; i++)
         {
@@ -95,7 +115,7 @@ public static class RowUtil
         return result;
     }
 
-    public static bool isEqual(List<String> rowA, List<String> rowB)
+    public static bool isEqual(List<String?>? rowA, List<String?>? rowB)
     {
         if (rowA == null && rowB == null)
             return true;
@@ -116,11 +136,21 @@ public static class RowUtil
         return header;
     }
 
-    public static List<String> asRow(this String[] source)
+    public static List<String>? asRow(this String[]? source)
     {
         if (source == null)
             return null;
 
         return new List<String>(source);
+    }
+    
+    public static List<String?> toRow(this List<String> source)
+    {
+        return source.Cast<string?>().ToList();
+    }
+    
+    public static List<String> toHeader(this List<String?> source)
+    {
+        return source.Select(x => x ?? "").ToList();
     }
 }

@@ -1,26 +1,32 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using pnyx.net.api;
 
 namespace pnyx.net.processors.nameValuePairs;
 
 public class NameValuePairFilterProcessor : INameValuePairPart, INameValuePairProcessor
 {
-    public INameValuePairFilter filter;
-    public INameValuePairProcessor processor;
-    
+    public INameValuePairFilter filter { get; }
+    public INameValuePairProcessor? processor { get; private set; }
+
+    public NameValuePairFilterProcessor(INameValuePairFilter filter)
+    {
+        this.filter = filter;
+    }
+
     public void setNextNameValuePairProcessor(INameValuePairProcessor next)
     {
         processor = next;
     }
 
-    public void processNameValuePair(IDictionary<string, object> record)
+    public async Task processNameValuePair(IDictionary<string, object?> record)
     {
         if (filter.shouldKeepPair(record))
-            processor.processNameValuePair(record);
+            await processor!.processNameValuePair(record);
     }
 
-    public void endOfFile()
+    public async Task endOfFile()
     {
-        processor.endOfFile();
+        await processor!.endOfFile();
     }
 }

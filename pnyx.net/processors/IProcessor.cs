@@ -1,7 +1,8 @@
-﻿namespace pnyx.net.processors
+﻿using System.Threading.Tasks;
+
+namespace pnyx.net.processors;
+
+public interface IProcessor : IPart
 {
-    public interface IProcessor
-    {
-        void process();
-    }
+    Task process();
 }

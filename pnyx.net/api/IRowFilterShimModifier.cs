@@ -1,7 +1,6 @@
-namespace pnyx.net.api
+namespace pnyx.net.api;
+
+public interface IRowFilterShimModifier : IModifier
 {
-    public interface IRowFilterShimModifier : IModifier
-    {
-        IRowFilter shimLineFilter(ILineFilter lineFilter);
-    }
+    IRowFilter shimLineFilter(ILineFilter lineFilter);
 }

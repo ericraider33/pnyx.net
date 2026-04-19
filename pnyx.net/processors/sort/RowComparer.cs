@@ -4,12 +4,18 @@ using pnyx.net.impl.columns;
 
 namespace pnyx.net.processors.sort;
 
-public class RowComparer : IComparer<List<String>>
+public class RowComparer : IComparer<List<String?>>
 {
     public class ColumnDefinition
     {
-        public ColumnIndex columnIndex;
-        public IComparer<String> comparer;
+        public ColumnIndex columnIndex { get; }
+        public IComparer<String?> comparer { get; }
+
+        public ColumnDefinition(ColumnIndex columnIndex, IComparer<string?> comparer)
+        {
+            this.columnIndex = columnIndex;
+            this.comparer = comparer;
+        }
     }
 
     private readonly List<ColumnDefinition> definitions;
@@ -19,12 +25,12 @@ public class RowComparer : IComparer<List<String>>
         this.definitions = new List<ColumnDefinition>(definitions);
     }
         
-    public int Compare(List<String> x, List<String> y)
+    public int Compare(List<String?>? x, List<string?>? y)
     {
         foreach (ColumnDefinition cd in definitions)
         {
-            String colX = cd.columnIndex < x.Count ? x[cd.columnIndex] : "";
-            String colY = cd.columnIndex < y.Count ? y[cd.columnIndex] : "";
+            String? colX = x != null && cd.columnIndex < x.Count ? x[cd.columnIndex] : null;
+            String? colY = y != null && cd.columnIndex < y.Count ? y[cd.columnIndex] : null;
 
             int result = cd.comparer.Compare(colX, colY);
             if (result != 0)

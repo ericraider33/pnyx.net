@@ -1,32 +1,32 @@
 using System;
+using System.Threading.Tasks;
 
-namespace pnyx.net.processors.dest
+namespace pnyx.net.processors.dest;
+
+public class LineTeeProcessor : ILineProcessor, ILinePart
 {
-    public class LineTeeProcessor : ILineProcessor, ILinePart
+    public ILineProcessor? processor { get; private set; }
+    public ILineProcessor tee { get; }
+
+    public LineTeeProcessor(ILineProcessor tee)
     {
-        public ILineProcessor processor;
-        public ILineProcessor tee { get; private set; }
+        this.tee = tee;
+    }
 
-        public LineTeeProcessor(ILineProcessor tee)
-        {
-            this.tee = tee;
-        }
+    public async Task processLine(String line)
+    {
+        await processor!.processLine(line);
+        await tee.processLine(line);
+    }
 
-        public void processLine(String line)
-        {
-            processor.processLine(line);
-            tee.processLine(line);
-        }
+    public async Task endOfFile()
+    {
+        await processor!.endOfFile();
+        await tee.endOfFile();
+    }
 
-        public void endOfFile()
-        {
-            processor.endOfFile();
-            tee.endOfFile();
-        }
-
-        public void setNextLineProcessor(ILineProcessor next)
-        {
-            processor = next;
-        }
+    public void setNextLineProcessor(ILineProcessor next)
+    {
+        processor = next;
     }
 }

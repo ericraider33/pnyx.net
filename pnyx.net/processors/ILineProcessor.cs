@@ -1,10 +1,10 @@
 using System;
+using System.Threading.Tasks;
 
-namespace pnyx.net.processors
+namespace pnyx.net.processors;
+
+public interface ILineProcessor : IPart
 {
-    public interface ILineProcessor
-    {
-        void processLine(String line);
-        void endOfFile();
-    }
+    Task processLine(String line);
+    Task endOfFile();
 }

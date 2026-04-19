@@ -1,10 +1,9 @@
 using System.IO;
 
-namespace pnyx.net.api
+namespace pnyx.net.api;
+
+public interface IStreamFactory
 {
-    public interface IStreamFactory
-    {
-        Stream openStream();
-        void closeStream();
-    }
+    Stream openStream();
+    void closeStream();
 }

@@ -3,107 +3,110 @@ using System.IO;
 using System.Reflection;
 using Xunit;
 
-namespace pnyx.net.test.util
+namespace pnyx.net.test.util;
+
+public static class TestUtil
 {
-    public static class TestUtil
+    public const String ENV_TEST_FILES = "PNYX_TEST_FILES";
+    public const String ENV_TEST_OUTPUT = "PNYX_TEST_OUTPUT";
+        
+    public static String findTestFileLocation()
     {
-        public const String ENV_TEST_FILES = "PNYX_TEST_FILES";
-        public const String ENV_TEST_OUTPUT = "PNYX_TEST_OUTPUT";
+        String path = Environment.GetEnvironmentVariable(ENV_TEST_FILES);
+        if (path == null)
+        {
+            string assemblyName = typeof(TestUtil).Assembly.GetName().Name;
+                
+            path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            while (!path.EndsWith(assemblyName))
+            {
+                DirectoryInfo parent = Directory.GetParent(path);
+                if (parent == null)
+                    throw new IOException(String.Format("Could not find location to pnyx.net.test. Set '{0}' EVN to fix", ENV_TEST_FILES));
+                    
+                path = parent.FullName;
+            }
+
+            path = Path.Combine(path, "files");
+        }
+
+        if (!Directory.Exists(path))
+            throw new IOException(String.Format("Could not find location to test files: " + path));
+
+        return path;
+    }
         
-        public static String findTestFileLocation()
+    public static String findTestOutputLocation()
+    {
+        String path = Environment.GetEnvironmentVariable(ENV_TEST_OUTPUT);
+        if (path == null)
         {
-            String path = Environment.GetEnvironmentVariable(ENV_TEST_FILES);
-            if (path == null)
+            string assemblyName = typeof(TestUtil).Assembly.GetName().Name;
+                
+            path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            while (!path.EndsWith(assemblyName))
             {
-                path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                while (!path.EndsWith("pnyx.net.test"))
-                {
-                    DirectoryInfo parent = Directory.GetParent(path);
-                    if (parent == null)
-                        throw new IOException(String.Format("Could not find location to pnyx.net.test. Set '{0}' EVN to fix", ENV_TEST_FILES));
+                DirectoryInfo parent = Directory.GetParent(path);
+                if (parent == null)
+                    throw new IOException(String.Format("Could not find location to pnyx.net.test. Set '{0}' EVN to fix", ENV_TEST_OUTPUT));
                     
-                    path = parent.FullName;
-                }
-
-                path = Path.Combine(path, "files");
+                path = parent.FullName;
             }
 
-            if (!Directory.Exists(path))
-                throw new IOException(String.Format("Could not find location to test files: " + path));
+            path = Path.Combine(path, "out");
 
-            return path;
+            DirectoryInfo info = new DirectoryInfo(path);
+            if (!info.Exists)
+                info.Create();
         }
-        
-        public static String findTestOutputLocation()
+
+        if (!Directory.Exists(path))
+            throw new IOException(String.Format("Could not find location to test files: " + path));
+
+        return path;
+    }
+
+    public static String binaryDiff(String source, String dest)
+    {
+        FileStream sourceStream = null, destStream = null;
+
+        try
         {
-            String path = Environment.GetEnvironmentVariable(ENV_TEST_OUTPUT);
-            if (path == null)
+            sourceStream = new FileStream(source, FileMode.Open, FileAccess.Read);
+            destStream = new FileStream(dest, FileMode.Open, FileAccess.Read);
+
+            int lineNumber = 1;
+            int position = 0;
+            int current;
+            while ((current = sourceStream.ReadByte()) != -1)
             {
-                path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                while (!path.EndsWith("pnyx.net.test"))
-                {
-                    DirectoryInfo parent = Directory.GetParent(path);
-                    if (parent == null)
-                        throw new IOException(String.Format("Could not find location to pnyx.net.test. Set '{0}' EVN to fix", ENV_TEST_OUTPUT));
+                int compare = destStream.ReadByte();
+                if (compare == '\n')
+                    lineNumber++;
                     
-                    path = parent.FullName;
-                }
+                if (current != compare)
+                    return String.Format("Byte at pos=0x{0:x2}, lineNumber={5} is different 0x{1:x2} != 0x{2:x2} / {3} != {4}", 
+                        position, current, compare, (char)current, (char)Math.Max(0,compare), lineNumber);
 
-                path = Path.Combine(path, "out");
-
-                DirectoryInfo info = new DirectoryInfo(path);
-                if (!info.Exists)
-                    info.Create();
+                position++;
             }
 
-            if (!Directory.Exists(path))
-                throw new IOException(String.Format("Could not find location to test files: " + path));
+            if (destStream.ReadByte() != -1)
+                return "Destination file has more data then source file";
 
-            return path;
+            return null;
         }
-
-        public static String binaryDiff(String source, String dest)
+        finally 
         {
-            FileStream sourceStream = null, destStream = null;
-
-            try
-            {
-                sourceStream = new FileStream(source, FileMode.Open, FileAccess.Read);
-                destStream = new FileStream(dest, FileMode.Open, FileAccess.Read);
-
-                int lineNumber = 1;
-                int position = 0;
-                int current;
-                while ((current = sourceStream.ReadByte()) != -1)
-                {
-                    int compare = destStream.ReadByte();
-                    if (compare == '\n')
-                        lineNumber++;
-                    
-                    if (current != compare)
-                        return String.Format("Byte at pos=0x{0:x2}, lineNumber={5} is different 0x{1:x2} != 0x{2:x2} / {3} != {4}", 
-                            position, current, compare, (char)current, (char)Math.Max(0,compare), lineNumber);
-
-                    position++;
-                }
-
-                if (destStream.ReadByte() != -1)
-                    return "Destination file has more data then source file";
-
-                return null;
-            }
-            finally 
-            {
-                try { if (sourceStream != null) sourceStream.Dispose(); } catch (Exception) { /*ignore*/ }
-                try { if (destStream != null) destStream.Dispose(); } catch (Exception) { /*ignore*/ }
-            }
+            try { if (sourceStream != null) sourceStream.Dispose(); } catch (Exception) { /*ignore*/ }
+            try { if (destStream != null) destStream.Dispose(); } catch (Exception) { /*ignore*/ }
         }
+    }
 
-        public static void assertArrayEquals<T>(T[] a, T[] b)
-        {
-            String aText = String.Join(",", a);
-            String bText = String.Join(",", b);
-            Assert.Equal(aText, bText);
-        }
+    public static void assertArrayEquals<T>(T[] a, T[] b)
+    {
+        String aText = String.Join(",", a);
+        String bText = String.Join(",", b);
+        Assert.Equal(aText, bText);
     }
 }

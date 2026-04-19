@@ -6,8 +6,8 @@ namespace pnyx.net.impl.columns;
 
 public class RowTransformerWithColumns : IRowTransformer
 {
-    public ColumnIndex[] indexes { get; private set; }   
-    public IRowTransformer rowTransformer  { get; private set; }
+    public ColumnIndex[] indexes { get; }   
+    public IRowTransformer rowTransformer  { get; }
 
     public RowTransformerWithColumns(ColumnIndex[] indexes, IRowTransformer rowTransformer)
     {
@@ -15,21 +15,27 @@ public class RowTransformerWithColumns : IRowTransformer
         this.rowTransformer = rowTransformer;            
     }
 
-    public List<String> transformHeader(List<String> header)
+    public List<String>? transformHeader(List<String> header)
     {
         List<String> subColumns = subColumnsIn(header);
-        List<String> transformed = rowTransformer.transformHeader(subColumns);
+        List<String>? transformed = rowTransformer.transformHeader(subColumns);
+        if (transformed == null)
+            return null;
+        
         return subColumnsOut(transformed, header);
     }
 
-    public List<String> transformRow(List<String> row)
+    public List<String>? transformRow(List<String> row)
     {
         List<String> subColumns = subColumnsIn(row);
-        List<String> transformed = rowTransformer.transformRow(subColumns);
+        List<String>? transformed = rowTransformer.transformRow(subColumns);
+        if (transformed == null)
+            return null;
+        
         return subColumnsOut(transformed, row);
     }
 
-    private List<String>  subColumnsIn(List<String> row)
+    private List<String> subColumnsIn(List<String> row)
     {
         List<String> subColumns = new List<String>(indexes.Length);
         foreach (int columnIndex in indexes)

@@ -1,25 +1,31 @@
+using System.Threading.Tasks;
 using pnyx.net.api;
 
 namespace pnyx.net.processors.objects;
 
 public class ObjectFilterProcessor : IObjectPart, IObjectProcessor
 {
-    public IObjectFilter filter;
-    public IObjectProcessor processor;
+    public IObjectFilter filter { get; }
+    public IObjectProcessor? processor { get; private set; }
+    
+    public ObjectFilterProcessor(IObjectFilter filter)
+    {
+        this.filter = filter;
+    }
     
     public void setNextObjectProcessor(IObjectProcessor next)
     {
         processor = next;
     }
 
-    public void processObject(object obj)
+    public async Task processObject(object obj)
     {
         if (filter.shouldKeepObject(obj))
-            processor.processObject(obj);
+            await processor!.processObject(obj);
     }
 
-    public void endOfFile()
+    public async Task endOfFile()
     {
-        processor.endOfFile();
+        await processor!.endOfFile();
     }
 }

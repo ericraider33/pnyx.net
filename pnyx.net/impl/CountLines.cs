@@ -3,57 +3,56 @@ using System.Collections.Generic;
 using System.Linq;
 using pnyx.net.api;
 
-namespace pnyx.net.impl
+namespace pnyx.net.impl;
+
+public class CountLines : IRowBuffering, ILineBuffering
 {
-    public class CountLines : IRowBuffering, ILineBuffering
+    public bool checkData;
+        
+    private int lineCount;
+    private readonly List<int> rowCounts = new ();
+        
+    public List<string> rowHeader(List<string> header)
     {
-        public bool checkData;
-        
-        private int lineCount;
-        private List<int> rowCounts = new List<int>();
-        
-        public List<string> rowHeader(List<string> header)
-        {
-            // Assures headers are included in output even if no data in present in remainder of input
-            for (int i = rowCounts.Count; i < header.Count; i++)
-                rowCounts.Add(0);                                
+        // Assures headers are included in output even if no data in present in remainder of input
+        for (int i = rowCounts.Count; i < header.Count; i++)
+            rowCounts.Add(0);                                
 
-            return header;    // no-op
+        return header;    // no-op
+    }
+
+    public List<List<string?>>? bufferingRow(List<string?> row)
+    {
+        for (int i = rowCounts.Count; i < row.Count; i++)
+            rowCounts.Add(0);
+
+        for (int i = 0; i < row.Count; i++)
+        {
+            int rowCount = rowCounts[i];
+            if (!checkData || !String.IsNullOrEmpty(row[i]))
+                rowCount++;
+            rowCounts[i] = rowCount;
         }
 
-        public List<List<string>> bufferingRow(List<string> row)
-        {
-            for (int i = rowCounts.Count; i < row.Count; i++)
-                rowCounts.Add(0);
+        return null;
+    }
 
-            for (int i = 0; i < row.Count; i++)
-            {
-                int rowCount = rowCounts[i];
-                if (!checkData || !String.IsNullOrEmpty(row[i]))
-                    rowCount++;
-                rowCounts[i] = rowCount;
-            }
-
-            return null;
-        }
-
-        public List<string> bufferingLine(string line)
-        {
-            if (!checkData || !String.IsNullOrEmpty(line))
-                lineCount++;
+    public List<string>? bufferingLine(string line)
+    {
+        if (!checkData || !String.IsNullOrEmpty(line))
+            lineCount++;
             
-            return null;
-        }
+        return null;
+    }
 
-        List<string> ILineBuffering.endOfFile()
-        {
-            return new List<string> { lineCount.ToString() };
-        }
+    List<string> ILineBuffering.endOfFile()
+    {
+        return new List<string> { lineCount.ToString() };
+    }
 
-        List<List<string>> IRowBuffering.endOfFile()
-        {
-            List<String> output = rowCounts.Select(x => x.ToString()).ToList();
-            return new List<List<string>> { output };
-        }
+    List<List<string?>> IRowBuffering.endOfFile()
+    {
+        List<String?> output = rowCounts.Select(x => x.ToString()).Cast<string?>().ToList();
+        return new List<List<string?>> { output };
     }
 }

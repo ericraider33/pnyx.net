@@ -5,17 +5,17 @@ namespace pnyx.net.util;
 
 public static class CasingExtensions
 {
-    public static String kebobToCamel(this String name)
+    public static String? kebobToCamel(this String? name)
     {
         return toCamel(name, x: '-');
     }
 
-    public static String snakeToCamel(this String name)
+    public static String? snakeToCamel(this String? name)
     {
         return toCamel(name, x: '_');
     }
 
-    public static String toCamel(this String name, char? x = null)
+    public static String? toCamel(this String? name, char? x = null)
     {
         if (name == null)
             return null;
@@ -43,17 +43,17 @@ public static class CasingExtensions
         return result.ToString();
     }
 
-    public static String camelToKebob(this String name)
+    public static String? camelToKebob(this String? name)
     {
-        return fromCamel(name, '-');
+        return fromCamel(name);
     }
 
-    public static String camelToSnake(this String name)
+    public static String? camelToSnake(this String? name)
     {
         return fromCamel(name, '_');
     }
     
-    public static String fromCamel(this String text, char dash = '-')
+    public static String? fromCamel(this String? text, char dash = '-')
     {
         if (text == null)
             return null;
@@ -87,7 +87,7 @@ public static class CasingExtensions
         return CamelCharType.Other;
     }
 
-    public static String camelToSpace(this String text)
+    public static String? camelToSpace(this String? text)
     {
         if (text == null)
             return null;
@@ -114,7 +114,7 @@ public static class CasingExtensions
         return result.ToString();
     }
 
-    public static String spaceToCamel(this String text)
+    public static String? spaceToCamel(this String? text)
     {
         if (text == null)
             return null;

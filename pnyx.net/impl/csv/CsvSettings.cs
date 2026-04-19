@@ -15,12 +15,14 @@ public class CsvSettings : ICloneable
     public bool terminateQuoteOnEndOfFile => !strict;
     public bool allowUnquotedNewlines => !strict;
                 
-    public CsvSettings(bool strict = true, 
+    public CsvSettings
+    (
+        bool strict = true, 
         char? delimiter = null, 
         char? escapeChar = null,
-        char[] charsNeedEscape = null,
+        char[]? charsNeedEscape = null,
         TrimStyleEnum trimStyle = TrimStyleEnum.None
-        )
+    )
     {
         this.strict = strict;
         this.delimiter = delimiter ?? CsvUtil.DEFAULT_DELIMITER;
@@ -29,11 +31,12 @@ public class CsvSettings : ICloneable
         this.trimStyle = trimStyle;
     }
         
-    public CsvSettings setDefaults(
+    public CsvSettings setDefaults
+    (
         bool? strict = null, 
         char? delimiter = null, 
         char? escapeChar = null,
-        char[] charsNeedEscape = null,
+        char[]? charsNeedEscape = null,
         TrimStyleEnum? trimStyle = null
     )
     {

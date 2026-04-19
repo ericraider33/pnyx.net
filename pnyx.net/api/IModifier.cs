@@ -1,7 +1,8 @@
-namespace pnyx.net.api
+using pnyx.net.processors;
+
+namespace pnyx.net.api;
+
+public interface IModifier : IPart
 {
-    public interface IModifier
-    {
-        // common interface for all modifiers        
-    }
+    // common interface for all modifiers        
 }

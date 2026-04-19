@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace pnyx.net.api
+namespace pnyx.net.api;
+
+public interface IRowFilter
 {
-    public interface IRowFilter
-    {
-        bool shouldKeepRow(List<String> row);
-    }
+    bool shouldKeepRow(List<String?> row);
 }

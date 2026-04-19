@@ -1,7 +1,6 @@
-namespace pnyx.net.api
+namespace pnyx.net.api;
+
+public interface IStreamFactoryWrapper : IModifier
 {
-    public interface IStreamFactoryWrapper : IModifier
-    {
-        IStreamFactory wrapStreamFactory(IStreamFactory source);
-    }
+    IStreamFactory wrapStreamFactory(IStreamFactory source);
 }

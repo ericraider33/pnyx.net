@@ -2,33 +2,32 @@ using System;
 using System.Collections.Generic;
 using pnyx.net.api;
 
-namespace pnyx.net.impl.columns
+namespace pnyx.net.impl.columns;
+
+public class HeaderNames : IRowTransformer
 {
-    public class HeaderNames : IRowTransformer
+    public Dictionary<int, String> nameMap { get; }
+
+    public HeaderNames(Dictionary<int, String> nameMap)
     {
-        public readonly Dictionary<int, String> nameMap;
+        this.nameMap = nameMap;
+    }
 
-        public HeaderNames(Dictionary<int, String> nameMap)
+    public List<String> transformHeader(List<String> header)
+    {
+        foreach (KeyValuePair<int, String> namePair in nameMap)
         {
-            this.nameMap = nameMap;
+            int index = namePair.Key;
+            String name = namePair.Value;
+            if (index < header.Count)
+                header[index] = name;
         }
 
-        public List<String> transformHeader(List<String> header)
-        {
-            foreach (KeyValuePair<int, String> namePair in nameMap)
-            {
-                int index = namePair.Key;
-                String name = namePair.Value;
-                if (index < header.Count)
-                    header[index] = name;
-            }
+        return header;
+    }
 
-            return header;
-        }
-
-        public List<String> transformRow(List<String> row)
-        {
-            return row;
-        }
+    public List<String?>? transformRow(List<String?> row)
+    {
+        return row;
     }
 }

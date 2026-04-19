@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using pnyx.net.fluent;
 using pnyx.net.impl.columns;
 using Xunit;
@@ -22,32 +23,30 @@ Jupiter
 ";
     
     [Fact]
-    public void basic()
+    public async Task basic()
     {
-        
         string actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             p.readString(PLANETS_GODS);
             p.parseCsv();
             p.printColumn(2);
-            actual = p.processToString();
+            actual = await p.processToString();
         }
 
         Assert.Equal(roman, actual);
     }
     
     [Fact]
-    public void index()
+    public async Task index()
     {
-        
         string actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             p.readString(PLANETS_GODS);
             p.parseCsv();
             p.printColumn(RowConstants.B);
-            actual = p.processToString();
+            actual = await p.processToString();
         }
 
         Assert.Equal(roman, actual);

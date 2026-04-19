@@ -6,9 +6,14 @@ namespace pnyx.net.shims;
 
 public class NameValuePairTransformerFunc : INameValuePairTransformer
 {
-    public Func<IDictionary<String, Object>, IDictionary<String, Object>> transformFunc;
-    
-    public IDictionary<string, object> transformPairs(IDictionary<string, object> pairs)
+    public Func<IDictionary<String, Object?>, IDictionary<String, Object?>> transformFunc { get; }
+
+    public NameValuePairTransformerFunc(Func<IDictionary<string, object?>, IDictionary<string, object?>> transformFunc)
+    {
+        this.transformFunc = transformFunc;
+    }
+
+    public IDictionary<string, object?>? transformPairs(IDictionary<string, object?> pairs)
     {
         return transformFunc(pairs);
     }

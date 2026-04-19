@@ -4,7 +4,7 @@ namespace pnyx.net.util;
 
 public static class PhoneUtil
 {
-    public static String parsePhone(String phone, String defualtAreaCode = null)
+    public static String? parsePhone(String? phone, String? defualtAreaCode = null)
     {
         phone = ParseExtensions.extractNumeric(phone).emptyAsNull();
 
@@ -20,7 +20,7 @@ public static class PhoneUtil
         return phone.Length == 10 ? phone : null;
     }        
     
-    public static String formatPhone(String x)
+    public static String? formatPhone(String? x)
     {
         x = x.trimEmptyAsNull();
         if (x == null)

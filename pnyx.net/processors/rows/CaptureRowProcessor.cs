@@ -1,31 +1,35 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace pnyx.net.processors.rows;
 
 public class CaptureRowProcessor : IRowProcessor
 {
-    public List<String> header { get; private set; }
-    public List<List<String>> rows { get; }
+    public List<String>? header { get; private set; }
+    public List<List<String?>> rows { get; }
     public bool eof { get; private set; }
 
     public CaptureRowProcessor()
     {
-        rows = new List<List<String>>();        
+        rows = new List<List<String?>>();        
     }
 
-    public void rowHeader(List<String> header)
+    public Task rowHeader(List<String> rowHeader)
     {
-        this.header = header;
+        header = rowHeader;
+        return Task.CompletedTask;
     }
 
-    public void processRow(List<String> row)
+    public Task processRow(List<String?> row)
     {
         rows.Add(row);
+        return Task.CompletedTask;
     }
 
-    public void endOfFile()
+    public Task endOfFile()
     {
         eof = true;
+        return Task.CompletedTask;
     }
 }

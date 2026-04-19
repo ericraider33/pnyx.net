@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using pnyx.net.fluent;
 using pnyx.net.impl.columns;
 using Xunit;
@@ -13,22 +14,22 @@ public class HasColumnIndexesTest : BaseTest
     }
     
     [Fact]
-    public void basic()
+    public async Task basic()
     {
         String actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             p.readString(PLANETS_GODS);
             p.parseCsv();
             p.hasColumns(true, RowConstants.A);
-            actual = p.processToString();
+            actual = await p.processToString();
         }
 
         Assert.Equal(PLANETS_GODS, actual);
     }
     
     [Fact]
-    public void column_missing()
+    public async Task column_missing()
     {
         string columnsMissing =
             @"Aphrodite,Venus,""Goddess of love and beauty""
@@ -47,19 +48,19 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
 ";
         
         String actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             p.readString(columnsMissing);
             p.parseCsv();
             p.hasColumns(true, RowConstants.C);
-            actual = p.processToString();
+            actual = await p.processToString();
         }
 
         Assert.Equal(columnsMissingExpected, actual);
     }
     
     [Fact]
-    public void column_without_data()
+    public async Task column_without_data()
     {
         string columnsMissing =
             @"Aphrodite,Venus,""Goddess of love and beauty""
@@ -78,19 +79,19 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
 ";
         
         String actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             p.readString(columnsMissing);
             p.parseCsv();
             p.hasColumns(true, RowConstants.C);
-            actual = p.processToString();
+            actual = await p.processToString();
         }
 
         Assert.Equal(columnsMissingExpected, actual);
     }
     
     [Fact]
-    public void column_check_value()
+    public async Task column_check_value()
     {
         string columnsMissing =
 @"Aphrodite,Venus,""Goddess of love and beauty""
@@ -112,12 +113,12 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
 ";
         
         String actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             p.readString(columnsMissing);
             p.parseCsv();
             p.hasColumns(x => x != null && x.Contains("god", StringComparison.OrdinalIgnoreCase), RowConstants.C);
-            actual = p.processToString();
+            actual = await p.processToString();
         }
 
         Assert.Equal(columnsMissingExpected, actual);

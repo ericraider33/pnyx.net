@@ -1,7 +1,6 @@
-namespace pnyx.net.api
+namespace pnyx.net.api;
+
+public interface ILineFilterModifier : IModifier
 {
-    public interface ILineFilterModifier : IModifier
-    {
-        ILineFilter modifyLineFilter(ILineFilter lineFilter);
-    }
+    ILineFilter modifyLineFilter(ILineFilter lineFilter);
 }

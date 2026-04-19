@@ -1,30 +1,30 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace pnyx.net.processors.converters
+namespace pnyx.net.processors.converters;
+
+public class RowPassProcessor : IRowProcessor, IRowPart
 {
-    public class RowPassProcessor : IRowProcessor, IRowPart
+    public IRowProcessor? processor { get; private set; }
+
+    public async Task rowHeader(List<String> header)
     {
-        public IRowProcessor processor;
+        await processor!.rowHeader(header);
+    }
 
-        public void rowHeader(List<String> header)
-        {
-            processor.rowHeader(header);
-        }
+    public async Task processRow(List<String?> row)
+    {
+        await processor!.processRow(row);
+    }
 
-        public void processRow(List<String> row)
-        {
-            processor.processRow(row);
-        }
+    public async Task endOfFile()
+    {
+        await processor!.endOfFile();
+    }
 
-        public void endOfFile()
-        {
-            processor.endOfFile();
-        }
-
-        public void setNextRowProcessor(IRowProcessor next)
-        {
-            processor = next;
-        }
+    public void setNextRowProcessor(IRowProcessor next)
+    {
+        processor = next;
     }
 }

@@ -10,8 +10,8 @@ namespace pnyx.net.impl.csv;
 
 public class CsvRowConverter : IRowConverter
 {
-    public CsvSettings settings { get; }
-    private readonly StringBuilder stringBuilder = new StringBuilder();
+    public CsvSettings settings { get; set;  }
+    private readonly StringBuilder stringBuilder = new ();
 
     public CsvRowConverter()
     {
@@ -20,21 +20,21 @@ public class CsvRowConverter : IRowConverter
 
     public CsvRowConverter(CsvSettings settings)
     {
-        this.settings = settings ?? new CsvSettings();
+        this.settings = settings;
     }
         
-    public List<String> lineToRow(String source)
+    public List<String?> lineToRow(String source)
     {
         return CsvUtil.parseRow(source, settings.delimiter, settings.escapeChar,
             settings.allowStrayQuotes, settings.allowTextAfterClosingQuote, settings.terminateQuoteOnEndOfFile, settings.allowUnquotedNewlines,
             settings.trimStyle,
             stringBuilder
-        );
+        ) ?? new List<string?>();
     }
 
-    public String rowToLine(List<String> source)
+    public String rowToLine(List<String?> source)
     {
-        return CsvUtil.rowToString(source, settings.delimiter, settings.escapeChar, settings.charsNeedEscape);
+        return CsvUtil.rowToString(source, settings.delimiter, settings.escapeChar, settings.charsNeedEscape) ?? "";
     }
 
     public IRowProcessor buildRowDestination(StreamInformation streamInformation, Stream stream)

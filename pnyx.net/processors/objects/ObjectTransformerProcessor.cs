@@ -1,26 +1,32 @@
+using System.Threading.Tasks;
 using pnyx.net.api;
 
 namespace pnyx.net.processors.objects;
 
 public class ObjectTransformerProcessor : IObjectPart, IObjectProcessor
 {
-    public IObjectTransformer transformer;
-    public IObjectProcessor processor;
-    
+    public IObjectTransformer transformer { get; }
+    public IObjectProcessor? processor { get; private set; }
+
+    public ObjectTransformerProcessor(IObjectTransformer transformer)
+    {
+        this.transformer = transformer;
+    }
+
     public void setNextObjectProcessor(IObjectProcessor next)
     {
         processor = next;
     }
 
-    public void processObject(object obj)
+    public async Task processObject(object obj)
     {
-        obj = transformer.transformObject(obj);
-        if (obj != null)
-            processor.processObject(obj);
+        object? result = transformer.transformObject(obj);
+        if (result != null)
+            await processor!.processObject(result);
     }
 
-    public void endOfFile()
+    public async Task endOfFile()
     {
-        processor.endOfFile();
+        await processor!.endOfFile();
     }
 }

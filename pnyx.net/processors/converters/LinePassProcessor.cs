@@ -1,24 +1,24 @@
 using System;
+using System.Threading.Tasks;
 
-namespace pnyx.net.processors.converters
+namespace pnyx.net.processors.converters;
+
+public class LinePassProcessor : ILineProcessor, ILinePart
 {
-    public class LinePassProcessor : ILineProcessor, ILinePart
-    {
-        public ILineProcessor processor;
+    public ILineProcessor? processor { get; private set; }
         
-        public void processLine(String line)
-        {
-            processor.processLine(line);
-        }
+    public async Task processLine(String line)
+    {
+        await processor!.processLine(line);
+    }
 
-        public void endOfFile()
-        {
-            processor.endOfFile();
-        }
+    public async Task endOfFile()
+    {
+        await processor!.endOfFile();
+    }
 
-        public void setNextLineProcessor(ILineProcessor next)
-        {
-            processor = next;
-        }
+    public void setNextLineProcessor(ILineProcessor next)
+    {
+        processor = next;
     }
 }

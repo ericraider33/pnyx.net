@@ -73,7 +73,7 @@ public static class UsaStateUtil
         lookup.Add(stateName, abbreviation);
     }
 
-    public static String parseState(String input)
+    public static String? parseState(String? input)
     {
         if (String.IsNullOrEmpty(input))
             return null;

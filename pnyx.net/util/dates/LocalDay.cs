@@ -2,10 +2,10 @@ using System;
 
 namespace pnyx.net.util.dates;
 
-public readonly struct LocalDay : IComparable<LocalDay>, IFormattable, IUtcCapable
+public readonly struct LocalDay : IComparable<LocalDay>, IFormattable, IUtcCapable, IEquatable<LocalDay>
 {
     public TimeZoneInfo timeZone { get; }
-    public DateTime local { get; }
+    public DateOnly local { get; }
 
     public LocalDay(TimeZoneInfo timeZone, DateTime raw)
     {
@@ -13,18 +13,34 @@ public readonly struct LocalDay : IComparable<LocalDay>, IFormattable, IUtcCapab
             throw new ArgumentException("Date must not contain hours/minutes/seconds/millisecond");
         
         this.timeZone = timeZone;
-        local = raw;
+        local = DateOnly.FromDateTime(raw);
+    }
+
+    public LocalDay(TimeZoneInfo timeZone, DateOnly local)
+    {
+        this.timeZone = timeZone;
+        this.local = local;
+    }
+
+    public static LocalDay fromDateOnly(TimeZoneInfo timeZone, DateOnly local)
+    {
+        return new LocalDay(timeZone, local);
+    }
+
+    public static LocalDay? fromDateOnly(TimeZoneInfo timeZone, DateOnly? local)
+    {
+        if (local == null)
+            return null;
+        
+        return new LocalDay(timeZone, local.Value);
     }
     
     public static LocalDay fromLocal(TimeZoneInfo timeZone, DateTime localTimestamp)
     {
-        if (timeZone == null)
-            throw new ArgumentException(nameof(timeZone));
-            
         return new LocalDay(timeZone, localTimestamp.Date);
     }
     
-    public static LocalDay? fromLocal(TimeZoneInfo timeZone, DateTime? localTimestamp)
+    public static LocalDay? fromLocal(TimeZoneInfo? timeZone, DateTime? localTimestamp)
     {
         if (localTimestamp == null || timeZone == null)
             return null;
@@ -37,7 +53,7 @@ public readonly struct LocalDay : IComparable<LocalDay>, IFormattable, IUtcCapab
         return LocalTimestamp.fromUtc(timeZone, utcTime).day;
     }
     
-    public static LocalDay? fromUtc(TimeZoneInfo timeZone, DateTime? utcTime)
+    public static LocalDay? fromUtc(TimeZoneInfo? timeZone, DateTime? utcTime)
     {
         if (utcTime == null || timeZone == null)
             return null;
@@ -52,13 +68,21 @@ public readonly struct LocalDay : IComparable<LocalDay>, IFormattable, IUtcCapab
             
         return new LocalDay(timeZone, localDate.Value.Date);
     }
+
+    public LocalDay? withTimeZone(DateOnly? dateOnly)
+    {
+        if (dateOnly == null)
+            return null;
+            
+        return new LocalDay(timeZone, dateOnly.Value);
+    }
     
     public DateTime utc 
     {
         get
         {
-            DateTime x = new DateTime(local.Ticks, DateTimeKind.Unspecified);
-            return TimeZoneInfo.ConvertTimeToUtc(x, timeZone);
+            DateTime midnight = local.ToDateTime(TimeOnly.MinValue);
+            return TimeZoneInfo.ConvertTimeToUtc(midnight, timeZone);
         }
     }
 
@@ -67,7 +91,7 @@ public readonly struct LocalDay : IComparable<LocalDay>, IFormattable, IUtcCapab
         return utc.CompareTo(other.utc);
     }
 
-    public string ToString(string format, IFormatProvider formatProvider)
+    public string ToString(string? format, IFormatProvider? formatProvider)
     {
         return local.ToString(format, formatProvider);
     }
@@ -77,7 +101,7 @@ public readonly struct LocalDay : IComparable<LocalDay>, IFormattable, IUtcCapab
         return local.toIso8601Date();
     }
         
-    public static LocalDay parse(String text, TimeZoneInfo timeZone = null)
+    public static LocalDay parse(String text, TimeZoneInfo? timeZone = null)
     {
         DateTime asDate = DateUtil.parseIso8601Date(text);
         return fromLocal(timeZone ?? TimeZoneInfo.Local, asDate);
@@ -89,7 +113,7 @@ public readonly struct LocalDay : IComparable<LocalDay>, IFormattable, IUtcCapab
             && local.Equals(other.local);
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         return obj is LocalDay other && Equals(other);
     }
@@ -128,15 +152,23 @@ public readonly struct LocalDay : IComparable<LocalDay>, IFormattable, IUtcCapab
     {
         return a.CompareTo(b) <= 0;
     }
+
+    public DateTime asLocalDateTime()
+    {
+        DateTime midnight = local.ToDateTime(TimeOnly.MinValue);
+        return midnight;
+    }
     
     public LocalTimestamp asTimestamp()
     {
-        return new LocalTimestamp(timeZone, local);
+        return new LocalTimestamp(timeZone, asLocalDateTime());
     }
     
     public LocalTimestamp add(TimeSpan duration)
     {
-        return new LocalTimestamp(timeZone, local + duration);
+        DateTime localDateTime = local.ToDateTime(TimeOnly.MinValue);
+        localDateTime += duration;
+        return new LocalTimestamp(timeZone, localDateTime);
     }
         
     public LocalDay addDays(int x)

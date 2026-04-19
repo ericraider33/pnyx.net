@@ -7,8 +7,8 @@ namespace pnyx.net.impl.columns;
 
 public class HasColumns : IRowFilter
 {
-    public readonly bool verifyColumnHasText;
-    public readonly HashSet<int> columnNumbers;
+    public bool verifyColumnHasText { get; }
+    public HashSet<int> columnNumbers { get; }
     private readonly int maxColumnNumber;
 
     public HasColumns(IEnumerable<int> columns, bool verifyColumnHasText = true)

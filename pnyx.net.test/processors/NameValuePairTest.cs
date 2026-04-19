@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using pnyx.net.errors;
 using pnyx.net.fluent;
 using Xunit;
@@ -17,15 +18,15 @@ Odyssey,Homer,-1000
 """;
     
     [Fact]
-    public void verify_basic_usage()
+    public async Task verify_basic_usage()
     {
         List<IDictionary<String, Object>> actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             p.readString(csvInputA);
             p.parseCsv(hasHeader: true);
             p.rowToNameValuePair();
-            actual = p.processCaptureNameValuePairs();
+            actual = await p.processCaptureNameValuePairs();
         }
 
         Assert.Equal(3, actual.Count);
@@ -38,13 +39,13 @@ Odyssey,Homer,-1000
     }
 
     [Fact]
-    public void test_missing_header()
+    public async Task test_missing_header()
     {
         Pnyx p = new Pnyx();
         p.readString(csvInputA);
         p.parseCsv(hasHeader: false);
         p.rowToNameValuePair();
-        Assert.Throws<IllegalStateException>(() => p.processCaptureNameValuePairs());
+        await Assert.ThrowsAsync<IllegalStateException>(p.processCaptureNameValuePairs);
     }
 
     [Theory]
@@ -53,19 +54,19 @@ Odyssey,Homer,-1000
     [InlineData("with-dash", "with-dash")]
     [InlineData("with_dash", "with_dash")]
     [InlineData("  trim  ", "trim")]
-    public void header_clean_up(String header, String expected)
+    public async Task header_clean_up(String header, String expected)
     {
         List<IDictionary<String, Object>> actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             String source = $"{header}\nrecord";
             p.readString(source);
             p.parseCsv(hasHeader: true);
             p.rowToNameValuePair();
-            actual = p.processCaptureNameValuePairs();
+            actual = await p.processCaptureNameValuePairs();
         }
 
-        Assert.Equal(1, actual.Count);
+        Assert.Single(actual);
 
         IDictionary<String, Object> first = actual[0];
         String propertyName = String.Join(",", first.Keys);
@@ -77,26 +78,26 @@ Odyssey,Homer,-1000
     [InlineData(1800, 2)]
     [InlineData(1845, 1)]
     [InlineData(1900, 0)]
-    public void filter(int year, int expected)
+    public async Task filter(int year, int expected)
     {
         List<IDictionary<String, Object>> actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             p.readString(csvInputA);
             p.parseCsv(hasHeader: true);
             p.rowToNameValuePair();
             p.nameValuePairFilter(x => int.Parse((String)x["PublicationDate"]) >= year);
-            actual = p.processCaptureNameValuePairs();
+            actual = await p.processCaptureNameValuePairs();
         }
 
         Assert.Equal(expected, actual.Count);
     }  
     
     [Fact]
-    public void transform()
+    public async Task transform()
     {
         List<IDictionary<String, Object>> actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             p.readString(csvInputA);
             p.parseCsv(hasHeader: true);
@@ -106,7 +107,7 @@ Odyssey,Homer,-1000
                 x.Remove("PublicationDate");
                 return x;
             });
-            actual = p.processCaptureNameValuePairs();
+            actual = await p.processCaptureNameValuePairs();
         }
 
         Assert.Equal(3, actual.Count);

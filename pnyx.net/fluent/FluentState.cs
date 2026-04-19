@@ -1,17 +1,16 @@
-namespace pnyx.net.fluent
+namespace pnyx.net.fluent;
+
+public enum FluentState
 {
-    public enum FluentState
-    {
-        New,
-        Start,
-        Line,
-        Row,
-        NameValuePair,
-        Object,
-        End,
-        Compiled,
-        CompiledServile, 
-        Processed,
-        Disposed
-    }
+    New,
+    Start,
+    Line,
+    Row,
+    NameValuePair,
+    Object,
+    End,
+    Compiled,
+    CompiledServile, 
+    Processed,
+    Disposed
 }

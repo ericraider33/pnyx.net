@@ -1,181 +1,190 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using pnyx.net.api;
 using pnyx.net.processors;
 
-namespace pnyx.net.impl
+namespace pnyx.net.impl;
+
+public class Print : IRowProcessor, ILinePart, ILineProcessor
 {
-    public class Print : IRowProcessor, ILinePart, ILineProcessor
+    public String[] formatStrings { get; }
+    public IRowConverter? rowConverter { get; }
+    public ILineProcessor? processor { get; set; }
+    
+    private readonly StringBuilder formatBuilder = new ();
+    private readonly List<String?> emptyRow = new ();
+
+    public Print(string[] formatStrings, IRowConverter? rowConverter = null)
     {
-        public String[] formatStrings;
-        public ILineProcessor processor;
-        public IRowConverter rowConverter;
-        private readonly StringBuilder formatBuilder = new StringBuilder();
-        private readonly List<String> emptyRow = new List<String>();
+        this.formatStrings = formatStrings;
+        this.rowConverter = rowConverter;
+    }
 
-        public void rowHeader(List<String> header)
+    public async Task rowHeader(List<String> header)
+    {
+        foreach (String format in formatStrings)
         {
-            foreach (String format in formatStrings)
-            {
-                String output = print(format, null, header);
-                processor.processLine(output);            
-            }
+            List<String?> asRow = header.Cast<string?>().ToList();
+            String? output = print(format, null, asRow);
+            await processor!.processLine(output ?? "");            
         }
+    }
 
-        public void processRow(List<String> row)
+    public async Task processRow(List<String?> row)
+    {
+        foreach (String format in formatStrings)
         {
-            foreach (String format in formatStrings)
-            {
-                String output = print(format, null, row);
-                processor.processLine(output);            
-            }
+            String? output = print(format, null, row);
+            await processor!.processLine(output ?? "");            
         }
+    }
 
-        public void processLine(String line)
+    public async Task processLine(String line)
+    {
+        foreach (String format in formatStrings)
         {
-            foreach (String format in formatStrings)
-            {
-                String output = print(format, line, emptyRow);
-                processor.processLine(output);
-            }
+            String? output = print(format, line, emptyRow);
+            await processor!.processLine(output ?? "");
         }
+    }
 
-        public void endOfFile()
-        {
-            processor.endOfFile();            
-        }
+    public async Task endOfFile()
+    {
+        await processor!.endOfFile();            
+    }
 
-        public void setNextLineProcessor(ILineProcessor next)
-        {
-            processor = next;
-        }
+    public void setNextLineProcessor(ILineProcessor next)
+    {
+        processor = next;
+    }
         
-        private enum State { Text, Slash, Dollar, Number }
+    private enum State { Text, Slash, Dollar, Number }
 
-        public String print(String format, String line, List<String> row)
-        {
-            if (row == null)
-                return null;
+    public String? print(String format, String? line, List<String?>? row)
+    {
+        if (row == null)
+            return null;
 
-            formatBuilder.Clear();
+        formatBuilder.Clear();
             
-            State state = State.Text;
-            int column = 0;
-            for (int i = 0; i < format.Length; i++)
+        State state = State.Text;
+        int column = 0;
+        for (int i = 0; i < format.Length; i++)
+        {
+            char c = format[i];
+            if (state == 0)
             {
-                char c = format[i];
-                if (state == 0)
+                switch (c)
                 {
-                    switch (c)
-                    {
-                        case '$': state = State.Dollar; column = 0; break;
-                        case '\\': state = State.Slash; break;
-                        default: formatBuilder.Append(c); break;
-                    }
+                    case '$': state = State.Dollar; column = 0; break;
+                    case '\\': state = State.Slash; break;
+                    default: formatBuilder.Append(c); break;
                 }
-                else if (state == State.Slash)
-                {
-                    switch (c)
-                    {
-                        case '\\': formatBuilder.Append('\\'); break;
-                        case 'n': formatBuilder.Append('\n'); break;
-                        case 'r': formatBuilder.Append('\r'); break;
-                        case 't': formatBuilder.Append('\t'); break;
-                        default: formatBuilder.Append('\\').Append(c); break;
-                    }
-                    state = State.Text;
-                }
-                else if (state == State.Dollar)
-                {
-                    switch (c)
-                    {
-                        case '$': formatBuilder.Append('$'); break;
-                        case '0':
-                        case '1':
-                        case '2':
-                        case '3':
-                        case '4':
-                        case '5':
-                        case '6':
-                        case '7':
-                        case '8':
-                        case '9':
-                            int value = c - '0';
-                            column = column * 10 + value;
-                            state = State.Number;
-                            break;
-                        
-                        default:                            
-                            formatBuilder.Append('$').Append(c);
-                            state = State.Text;
-                            break;
-                    }
-                }
-                else if (state == State.Number)
-                {
-                    switch (c)
-                    {
-                        case '0':
-                        case '1':
-                        case '2':
-                        case '3':
-                        case '4':
-                        case '5':
-                        case '6':
-                        case '7':
-                        case '8':
-                        case '9':
-                            int value = c - '0';
-                            column = column * 10 + value;
-                            break;
-
-                        default:
-                            replace(column, ref line, row);
-
-                            if (c == '$')
-                            {
-                                state = State.Dollar;
-                                column = 0;
-                            }
-                            else if (c == '\\')
-                            {
-                                state = State.Slash;
-                            }
-                            else
-                            {
-                                formatBuilder.Append(c);
-                                state = State.Text;                                
-                            }
-                            break;
-                    }
-                }
-                
             }
-
-            if (state == State.Dollar)
-                formatBuilder.Append('$');
             else if (state == State.Slash)
-                formatBuilder.Append('\\'); 
+            {
+                switch (c)
+                {
+                    case '\\': formatBuilder.Append('\\'); break;
+                    case 'n': formatBuilder.Append('\n'); break;
+                    case 'r': formatBuilder.Append('\r'); break;
+                    case 't': formatBuilder.Append('\t'); break;
+                    default: formatBuilder.Append('\\').Append(c); break;
+                }
+                state = State.Text;
+            }
+            else if (state == State.Dollar)
+            {
+                switch (c)
+                {
+                    case '$': formatBuilder.Append('$'); break;
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9':
+                        int value = c - '0';
+                        column = column * 10 + value;
+                        state = State.Number;
+                        break;
+                        
+                    default:                            
+                        formatBuilder.Append('$').Append(c);
+                        state = State.Text;
+                        break;
+                }
+            }
             else if (state == State.Number)
-                replace(column, ref line, row);
+            {
+                switch (c)
+                {
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9':
+                        int value = c - '0';
+                        column = column * 10 + value;
+                        break;
 
-            return formatBuilder.ToString();
+                    default:
+                        replace(column, ref line, row);
+
+                        if (c == '$')
+                        {
+                            state = State.Dollar;
+                            column = 0;
+                        }
+                        else if (c == '\\')
+                        {
+                            state = State.Slash;
+                        }
+                        else
+                        {
+                            formatBuilder.Append(c);
+                            state = State.Text;                                
+                        }
+                        break;
+                }
+            }
+                
         }
 
-        private void replace(int column, ref String line, List<String> row)
+        if (state == State.Dollar)
+            formatBuilder.Append('$');
+        else if (state == State.Slash)
+            formatBuilder.Append('\\'); 
+        else if (state == State.Number)
+            replace(column, ref line, row);
+
+        return formatBuilder.ToString();
+    }
+
+    private void replace(int column, ref String? line, List<String?> row)
+    {
+        if (column == 0)
         {
-            if (column == 0)
-            {
-                if (line == null)
-                    line = rowConverter != null ? rowConverter.rowToLine(row) : "";
+            if (line == null)
+                line = rowConverter != null ? rowConverter.rowToLine(row) : "";
                 
-                formatBuilder.Append(line);                
-            }
-            else if (column <= row.Count)
-            {
-                formatBuilder.Append(row[column - 1]);
-            }
+            formatBuilder.Append(line);                
+        }
+        else if (column <= row.Count)
+        {
+            formatBuilder.Append(row[column - 1]);
         }
     }
 }

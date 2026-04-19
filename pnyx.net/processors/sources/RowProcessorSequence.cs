@@ -1,70 +1,77 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using pnyx.net.errors;
 using pnyx.net.util;
 
-namespace pnyx.net.processors.sources
+namespace pnyx.net.processors.sources;
+
+public class RowProcessorSequence : IRowPart, IProcessor
 {
-    public class RowProcessorSequence : IRowPart, IProcessor
+    public List<IProcessor> processors { get; } = new();
+    public IRowProcessor? processor { get; private set; }
+
+    private int index;
+    private readonly StreamInformation streamInformation;
+
+    public RowProcessorSequence(StreamInformation streamInformation)
     {
-        public readonly List<IProcessor> processors = new List<IProcessor>();
-        public IRowProcessor next { get; private set; }
+        this.streamInformation = streamInformation;
+    }
 
-        private int index;
-        private StreamInformation streamInformation;
+    public void setNextRowProcessor(IRowProcessor next)
+    {
+        this.processor = next;
+    }
 
-        public RowProcessorSequence(StreamInformation streamInformation)
+    public async Task process()
+    {
+        RowProcessorCollector collector = new RowProcessorCollector(processor!);
+        foreach (IProcessor part in processors)
         {
-            this.streamInformation = streamInformation;
+            if (!(part is IRowPart))
+                throw new IllegalStateException("Processor must implement IRowPart");
+            
+            ((IRowPart)part).setNextRowProcessor(collector);
         }
+            
+        while (index < processors.Count && streamInformation.active)
+        {
+            IProcessor current = processors[index];                
+            await current.process();                
+            index++;
+        }
+            
+        await processor!.endOfFile();
+    }
 
-        public void setNextRowProcessor(IRowProcessor next)
+    private class RowProcessorCollector : IRowProcessor
+    {
+        private readonly IRowProcessor next;
+        private bool hasRowHeader;
+
+        public RowProcessorCollector(IRowProcessor next)
         {
             this.next = next;
         }
 
-        public void process()
+        public async Task rowHeader(List<String> header)
         {
-            RowProcessorCollector collector = new RowProcessorCollector(next);
-            foreach (IRowPart part in processors)
-                part.setNextRowProcessor(collector);
-            
-            while (index < processors.Count && streamInformation.active)
-            {
-                IProcessor current = processors[index];                
-                current.process();                
-                index++;
-            }
-            
-            next.endOfFile();
+            if (hasRowHeader)
+                return;
+
+            await next.rowHeader(header);
+            hasRowHeader = true;
         }
 
-        private class RowProcessorCollector : IRowProcessor
+        public async Task processRow(List<String?> row)
         {
-            private readonly IRowProcessor next;
-            private bool hasRowHeader;
+            await next.processRow(row);
+        }
 
-            public RowProcessorCollector(IRowProcessor next)
-            {
-                this.next = next;
-            }
-
-            public void rowHeader(List<String> header)
-            {
-                if (hasRowHeader)
-                    return;
-
-                next.rowHeader(header);
-                hasRowHeader = true;
-            }
-
-            public void processRow(List<String> row)
-            {
-                next.processRow(row);
-            }
-
-            public void endOfFile()
-            {
-            }
+        public Task endOfFile()
+        {
+            return Task.CompletedTask;
         }
     }
 }

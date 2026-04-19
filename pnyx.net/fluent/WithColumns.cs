@@ -5,8 +5,13 @@ namespace pnyx.net.fluent;
 
 public class WithColumns : IRowFilterModifier, IRowTransformerModifer
 {
-    public ColumnIndex[] indexes;                                // zero-based
-        
+    public ColumnIndex[] indexes { get; set; }
+
+    public WithColumns(ColumnIndex[] indexes)
+    {
+        this.indexes = indexes;
+    }
+
     public IRowFilter modifyRowFilter(IRowFilter rowFilter)
     {
         return new RowFilterWithColumns(indexes, rowFilter);

@@ -15,9 +15,7 @@ public class GrepTest
     [InlineData("John Emerich Edward Dalberg-Acton", "Edward.*", false, false)]
     public void grep(String source, String textToFind, bool caseSensitive, bool expected)
     {
-        Grep grep = new Grep();
-        grep.textToFind = textToFind;
-        grep.caseSensitive = caseSensitive;
+        Grep grep = new Grep(textToFind, caseSensitive);
             
         Assert.Equal(expected, grep.shouldKeepLine(source));
     }

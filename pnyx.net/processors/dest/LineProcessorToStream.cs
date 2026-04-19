@@ -1,71 +1,73 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
+using pnyx.net.errors;
 using pnyx.net.util;
 
-namespace pnyx.net.processors.dest
+namespace pnyx.net.processors.dest;
+
+public class LineProcessorToStream : ILineProcessor, IAsyncDisposable
 {
-    public class LineProcessorToStream : ILineProcessor, IDisposable
-    {
-        public Stream stream { get; private set; }
-        public TextWriter writer { get; private set; }
-        public readonly StreamInformation streamInformation;
+    public readonly StreamInformation streamInformation;
 
-        private String previousLine;
-        private bool closed;
+    private TextWriter? writer;
+    private Stream? stream;
+    private String? previousLine;
         
-        public LineProcessorToStream(StreamInformation streamInformation, Stream stream)
+    public LineProcessorToStream(StreamInformation streamInformation, Stream stream)
+    {
+        this.stream = stream;
+        this.streamInformation = streamInformation;
+    }
+
+    public async Task processLine(String line)
+    {
+        if (previousLine != null && writer != null)
         {
-            this.stream = stream;
-            this.streamInformation = streamInformation;
+            await writer.WriteAsync(previousLine);
+            await writer.WriteAsync(streamInformation.getOutputNewline());
         }
-
-        public void processLine(String line)
+        else
         {
-            if (previousLine != null)
-            {
-                writer.Write(previousLine);
-                writer.Write(streamInformation.getOutputNewline());
-            }
-            else
-            {
-                writer = new StreamWriter(stream, streamInformation.getOutputEncoding());
-            }
-
-            previousLine = line;
-        }
-
-        public void endOfFile()
-        {
-            if (previousLine != null)
-            {              
-                writer.Write(previousLine);
-                if (streamInformation.endsWithNewLine)
-                    writer.Write(streamInformation.getOutputNewline());
-            }
-            else
-            {
-                writer = new StreamWriter(stream, streamInformation.getOutputEncoding());                        
-            }
-
-            previousLine = null;
-            writer.Flush();
+            if (stream == null)
+                throw new IllegalStateException("Stream has already been disposed");
             
-            writer.Close();
-            closed = true;
+            writer = new StreamWriter(stream, streamInformation.getOutputEncoding());
         }
 
-        public void Dispose()
+        previousLine = line;
+    }
+
+    public async Task endOfFile()
+    {
+        if (previousLine != null && writer != null)
+        {              
+            await writer.WriteAsync(previousLine);
+            if (streamInformation.endsWithNewLine)
+                await writer.WriteAsync(streamInformation.getOutputNewline());
+        }
+        else
         {
-            if (writer != null)
-            {
-                if (!closed)
-                    writer.Flush();
-                
-                writer.Dispose();
-            }
+            if (stream == null)
+                throw new IllegalStateException("Stream has already been disposed");
 
-            stream = null;
-            writer = null;
+            writer = new StreamWriter(stream, streamInformation.getOutputEncoding());                        
         }
+
+        previousLine = null;
+        await writer.FlushAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (writer != null)
+        {
+            await writer.FlushAsync();
+            await writer.DisposeAsync();
+        }
+
+        stream = null;
+        writer = null;
+        previousLine = null;
     }
 }

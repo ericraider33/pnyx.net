@@ -5,5 +5,5 @@ namespace pnyx.net.api;
 
 public interface INameValuePairTransformer
 {
-    IDictionary<String, Object> transformPairs(IDictionary<String, Object> pairs);
+    IDictionary<String, Object?>? transformPairs(IDictionary<String, Object?> pairs);
 }

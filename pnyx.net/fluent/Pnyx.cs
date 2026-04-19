@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using pnyx.net.api;
 using pnyx.net.errors;
 using pnyx.net.impl;
@@ -22,1686 +22,1700 @@ using pnyx.net.processors.sources;
 using pnyx.net.shims;
 using pnyx.net.util;
 
-namespace pnyx.net.fluent
+namespace pnyx.net.fluent;
+
+public class Pnyx : IAsyncDisposable
 {
-    public class Pnyx : IDisposable
+    public FluentState state { get; private set; }
+    public StreamInformation streamInformation { get; private set; }
+    public INumberedInputOutput? numberedInputOutput { get; private set; }
+    public Settings settings { get; private set; }
+
+    private IProcessor? processor;
+    private IRowConverter? rowConverter;
+    private IObjectConverterFromNameValuePair? objectConverterFromNameValuePair;
+    private IObjectConverterFromRow? objectConverterFromRow;
+    private readonly List<IPart> parts = new();
+    private readonly List<IAsyncDisposable> resources = new();
+    private readonly List<String> sourceFiles = new();
+        
+    private EventHandler<Pnyx>? stateDisposeHandler;
+    public event EventHandler<Pnyx> stateDisposed
     {
-        public FluentState state { get; private set; }
-        public StreamInformation streamInformation { get; private set; }
-        public INumberedInputOutput numberedInputOutput { get; private set; }
-        public readonly Settings settings;
-        private IProcessor processor;
-        private IRowConverter rowConverter;
-        private IObjectConverterFromNameValuePair objectConverterFromNameValuePair;
-        private IObjectConverterFromRow objectConverterFromRow;
-        private readonly ArrayList parts;
-        private readonly List<IDisposable> resources;
-        private readonly List<String> sourceFiles;
+        add => stateDisposeHandler += value;
+        remove => stateDisposeHandler -= value;
+    }
+            
+    public Pnyx(Settings? settings = null, StreamInformation? streamInformation = null)
+    {
+        this.settings = settings ?? SettingsHome.settingsFactory.buildSettings();
+        this.streamInformation = streamInformation ?? this.settings.buildStreamInformation();
+    }
+
+    public Pnyx setSettings
+    (
+        String? tempDirectory = null,
+        int? bufferLines = null,
+        Encoding? defaultEncoding = null,
+        Encoding? outputEncoding = null,
+        bool? detectEncodingFromByteOrderMarks = null,
+        bool? outputByteOrderMarks = null,            
+        String? defaultNewline = null,
+        String? outputNewline = null,                  
+        bool? backupRewrite = null,
+        bool? processOnDispose = null,
+        bool? stdIoDefault = null,
+        char? csvDelimiter = null,
+        char? csvEscapeChar = null
+    )
+    {
+        if (tempDirectory != null) settings.tempDirectory = tempDirectory;
+        if (bufferLines != null) settings.bufferLines = bufferLines.Value;
+        if (defaultEncoding != null) settings.defaultEncoding = defaultEncoding; 
+        if (outputEncoding != null) settings.outputEncoding = outputEncoding;            
+        if (detectEncodingFromByteOrderMarks != null) settings.detectEncodingFromByteOrderMarks = detectEncodingFromByteOrderMarks.Value;
+        if (outputByteOrderMarks != null) settings.outputByteOrderMarks = outputByteOrderMarks.Value;                       
+        if (defaultNewline != null) settings.defaultNewline = defaultNewline;
+        if (outputNewline != null) settings.outputNewline = outputNewline;
+        if (backupRewrite != null) settings.backupRewrite = backupRewrite.Value;
+        if (processOnDispose != null) settings.processOnDispose = processOnDispose.Value;
+        if (stdIoDefault != null) settings.stdIoDefault = stdIoDefault.Value;
+        if (csvDelimiter != null) settings.csvDelimiter = csvDelimiter.Value;
+        if (csvEscapeChar != null) settings.csvEscapeChar = csvEscapeChar.Value;
+            
+        return this;
+    }
+
+    public Pnyx setNumberedInputOutput(INumberedInputOutput toSet)
+    {
+        this.numberedInputOutput = toSet;
+        return this;
+    }
+
+    public Pnyx readLine(ILinePart lineProcessor)
+    {
+        if (state != FluentState.New || parts.Count > 0)
+            throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
+            
+        parts.Add(lineProcessor);
+        state = FluentState.Line;
+            
+        return this;
+    }
+
+    public Pnyx readRow(IRowPart rowProcessor, IRowConverter converter)
+    {
+        if (state != FluentState.New || parts.Count > 0)
+            throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
+            
+        parts.Add(rowProcessor);
+        rowConverter = converter;
+        state = FluentState.Row;
+            
+        return this;            
+    }
         
-        private EventHandler<Pnyx> stateProcessedHandler;
-        public event EventHandler<Pnyx> stateProcessed
-        {
-            add => stateProcessedHandler += value;
-            remove => stateProcessedHandler -= value;
-        }
+    public Pnyx readObject(IObjectPart objectProcessor)
+    {
+        if (state != FluentState.New || parts.Count > 0)
+            throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
             
-        public Pnyx(Settings settings = null, StreamInformation streamInformation = null)
-        {
-            this.settings = settings ?? SettingsHome.settingsFactory.buildSettings();
-            this.streamInformation = streamInformation ?? this.settings.buildStreamInformation();
+        parts.Add(objectProcessor);
+        state = FluentState.Object;
             
-            parts = new ArrayList();
-            resources = new List<IDisposable>();
-            sourceFiles = new List<String>();
-        }
+        return this;            
+    }
 
-        public Pnyx setSettings(
-            String tempDirectory = null,
-            int? bufferLines = null,
-            Encoding defaultEncoding = null,
-            Encoding outputEncoding = null,
-            bool? detectEncodingFromByteOrderMarks = null,
-            bool? outputByteOrderMarks = null,            
-            String defaultNewline = null,
-            String outputNewline = null,                  
-            bool? backupRewrite = null,
-            bool? processOnDispose = null,
-            bool? stdIoDefault = null,
-            char? csvDelimiter = null,
-            char? csvEscapeChar = null
-            )
-        {
-            if (tempDirectory != null) settings.tempDirectory = tempDirectory;
-            if (bufferLines != null) settings.bufferLines = bufferLines.Value;
-            if (defaultEncoding != null) settings.defaultEncoding = defaultEncoding; 
-            if (outputEncoding != null) settings.outputEncoding = outputEncoding;            
-            if (detectEncodingFromByteOrderMarks != null) settings.detectEncodingFromByteOrderMarks = detectEncodingFromByteOrderMarks.Value;
-            if (outputByteOrderMarks != null) settings.outputByteOrderMarks = outputByteOrderMarks.Value;                       
-            if (defaultNewline != null) settings.defaultNewline = defaultNewline;
-            if (outputNewline != null) settings.outputNewline = outputNewline;
-            if (backupRewrite != null) settings.backupRewrite = backupRewrite.Value;
-            if (processOnDispose != null) settings.processOnDispose = processOnDispose.Value;
-            if (stdIoDefault != null) settings.stdIoDefault = stdIoDefault.Value;
-            if (csvDelimiter != null) settings.csvDelimiter = csvDelimiter.Value;
-            if (csvEscapeChar != null) settings.csvEscapeChar = csvEscapeChar.Value;
-            
-            return this;
-        }
+    public Pnyx readLine(Func<IEnumerable<String>> source)
+    {
+        return readLine(new LineProcessorFunc(source));
+    }
 
-        public Pnyx setNumberedInputOutput(INumberedInputOutput numberedInputOutput)
-        {
-            this.numberedInputOutput = numberedInputOutput;
-            return this;
-        }
+    public Pnyx readRow
+    (
+        Func<IEnumerable<List<String?>>> source, 
+        Func<List<String>>? header = null,
+        IRowConverter? converter = null
+    )
+    {
+        IRowPart rowProcessor = new RowProcessorFunc(header, source);
+        rowConverter = converter ?? new CsvRowConverter();
+        return readRow(rowProcessor, rowConverter);
+    }
 
-        public Pnyx readLine(ILinePart lineProcessor)
-        {
-            if (state != FluentState.New || parts.Count > 0)
-                throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
+    public Pnyx readStreamFactory(IStreamFactory streamFactory)
+    {
+        CatModifier? cat = retrieveModifier<CatModifier>(stopAtFirstModifier: false);
+        if (state == FluentState.Start && cat == null)
+            throw new IllegalStateException("Use cat method to read from multiple sources");
             
-            parts.Add(lineProcessor);
+        if (state != FluentState.New && state != FluentState.Start)
+            throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
+
+        // Check for wrapper
+        IStreamFactoryWrapper? wrapper = retrieveModifier<IStreamFactoryWrapper>(consume: true);
+        if (wrapper != null)
+            streamFactory = wrapper.wrapStreamFactory(streamFactory);
+            
+        // Builds processor
+        IStreamFactoryModifier? streamModifier = retrieveModifier<IStreamFactoryModifier>();
+        IProcessor readProcessor;
+        if (streamModifier != null)
+            readProcessor = streamModifier.buildProcessor(streamInformation, streamFactory);
+        else
+            readProcessor = new StreamToLineProcessor(streamInformation, streamFactory);
+
+        // Check if processor is a row-source
+        if (readProcessor is IRowSource rowSource)
+            rowConverter = rowSource.getRowConverter();
+            
+        parts.Add(readProcessor);
+        state = FluentState.Start;
+        return this;
+    }
+
+    public Pnyx read(String path)
+    {
+        sourceFiles.Add(path);
+        return readStreamFactory(new FileStreamFactory(path));
+    }
+
+    public Pnyx readArg(int argNumber)
+    {
+        if (numberedInputOutput == null)
+            throw new IllegalStateException("readArg is only valid when used via command line or INumberedInputOutput is provided");
+
+        String fileName = numberedInputOutput.getFileName(argNumber);
+        return read(fileName);
+    }
+
+    public Pnyx readStream(Stream input)
+    {            
+        return readStreamFactory(new GenericStreamFactory(input));
+    }
+
+    public Pnyx readString(String source)
+    {
+        return readStreamFactory(new StringStreamFactory(source));
+    }
+
+    public Pnyx readStdin()
+    {
+        return readStream(Console.OpenStandardInput());
+    }
+
+    public Pnyx readObject(Func<IEnumerable<object>> source)
+    {
+        return readObject(new ObjectProcessorFunc(source));
+    }
+
+    public Pnyx cat(Action<Pnyx> block)
+    {
+        if (state != FluentState.New)
+            throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
+
+        CatModifier cat = new CatModifier();
+        int indexToReplace = parts.Count;
+        parts.Add(cat);
+        state = FluentState.Start;
+            
+        // Runs actions for grouping
+        block(this);
+
+        if (state == FluentState.New || state == FluentState.Start)
+        {
+            LineProcessorSequence lpSequence = new LineProcessorSequence(streamInformation);
+            for (int i = indexToReplace+1; i < parts.Count;)
+            {
+                IProcessor subProcessor = parts[i].requireTypes<IProcessor, ILinePart>(); 
+                parts.RemoveAt(i);
+                lpSequence.processors.Add(subProcessor);
+            }
+                
+            parts[indexToReplace] = lpSequence;            // replace CatModifier with LineSequenceProcessor
             state = FluentState.Line;
-            
-            return this;
         }
-
-        public Pnyx readRow(IRowPart rowProcessor, IRowConverter rowConverter)
+        else if (state == FluentState.Row)
         {
-            if (state != FluentState.New || parts.Count > 0)
-                throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
-            
-            parts.Add(rowProcessor);
-            this.rowConverter = rowConverter;
-            state = FluentState.Row;
-            
-            return this;            
-        }
-        
-        public Pnyx readObject(IObjectPart objectProcessor)
-        {
-            if (state != FluentState.New || parts.Count > 0)
-                throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
-            
-            parts.Add(objectProcessor);
-            state = FluentState.Object;
-            
-            return this;            
-        }
-
-        public Pnyx readLine(Func<IEnumerable<String>> source)
-        {
-            return readLine(new LineProcessorFunc(source));
-        }
-
-        public Pnyx readRow(Func<IEnumerable<List<String>>> source, 
-            Func<List<String>> header = null,
-            IRowConverter rowConverter = null
-            )
-        {
-            IRowPart rowProcessor = new RowProcessorFunc(header, source);
-            rowConverter = rowConverter ?? new CsvRowConverter();
-            return readRow(rowProcessor, rowConverter);
-        }
-
-        public Pnyx readStreamFactory(IStreamFactory streamFactory)
-        {
-            CatModifier cat = retrieveModifier<CatModifier>(stopAtFirstModifier: false);
-            if (state == FluentState.Start && cat == null)
-                throw new IllegalStateException("Use cat method to read from multiple sources");
-            
-            if (state != FluentState.New && state != FluentState.Start)
-                throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
-
-            // Check for wrapper
-            IStreamFactoryWrapper wrapper = retrieveModifier<IStreamFactoryWrapper>(consume: true);
-            if (wrapper != null)
-                streamFactory = wrapper.wrapStreamFactory(streamFactory);
-            
-            // Builds processor
-            IStreamFactoryModifier streamModifier = retrieveModifier<IStreamFactoryModifier>();
-            IProcessor readProcessor;
-            if (streamModifier != null)
-                readProcessor = streamModifier.buildProcessor(streamInformation, streamFactory);
-            else
-                readProcessor = new StreamToLineProcessor(streamInformation, streamFactory);
-
-            // Check if processor is a row-source
-            IRowSource rowSource = readProcessor as IRowSource;
-            if (rowSource != null)
-                rowConverter = rowSource.getRowConverter();
-            
-            parts.Add(readProcessor);
-            state = FluentState.Start;
-            return this;
-        }
-
-        public Pnyx read(String path)
-        {
-            sourceFiles.Add(path);
-            return readStreamFactory(new FileStreamFactory(path));
-        }
-
-        public Pnyx readArg(int argNumber)
-        {
-            if (numberedInputOutput == null)
-                throw new IllegalStateException("readArg is only valid when used via command line or INumberedInputOutput is provided");
-
-            String fileName = numberedInputOutput.getFileName(argNumber);
-            return read(fileName);
-        }
-
-        public Pnyx readStream(Stream input)
-        {            
-            return readStreamFactory(new GenericStreamFactory(input));
-        }
-
-        public Pnyx readString(String source)
-        {
-            return readStreamFactory(new StringStreamFactory(source));
-        }
-
-        public Pnyx readStdin()
-        {
-            return readStream(Console.OpenStandardInput());
-        }
-
-        public Pnyx readObject(Func<IEnumerable<object>> source)
-        {
-            return readObject(new ObjectProcessorFunc(source));
-        }
-
-        public Pnyx cat(Action<Pnyx> block)
-        {
-            if (state != FluentState.New)
-                throw new IllegalStateException("Pnyx is not in New state: {0}", state.ToString());
-
-            CatModifier cat = new CatModifier();
-            int indexToReplace = parts.Count;
-            parts.Add(cat);
-            state = FluentState.Start;
-            
-            // Runs actions for grouping
-            block(this);
-
-            if (state == FluentState.New || state == FluentState.Start)
+            RowProcessorSequence rpSequence = new RowProcessorSequence(streamInformation);
+            for (int i = indexToReplace+1; i < parts.Count;)
             {
-                LineProcessorSequence lpSequence = new LineProcessorSequence(streamInformation);
-                for (int i = indexToReplace+1; i < parts.Count;)
-                {
-                    IProcessor subProcessor = (IProcessor)parts[i];
-                    if (!(subProcessor is ILinePart))
-                        throw new IllegalStateException("Processor isn't compatible with sequenced line processing: {0}", subProcessor.GetType().Name);
-                    
-                    parts.RemoveAt(i);
-                    lpSequence.processors.Add(subProcessor);
-                }
-                
-                parts[indexToReplace] = lpSequence;            // replace CatModifier with LineSequenceProcessor
-                state = FluentState.Line;
+                IProcessor subProcessor = parts[i].requireTypes<IProcessor, IRowPart>(); 
+                parts.RemoveAt(i);
+                rpSequence.processors.Add(subProcessor);
             }
-            else if (state == FluentState.Row)
-            {
-                RowProcessorSequence rpSequence = new RowProcessorSequence(streamInformation);
-                for (int i = indexToReplace+1; i < parts.Count;)
-                {
-                    IProcessor subProcessor = (IProcessor)parts[i];
-                    if (!(subProcessor is IRowPart))
-                        throw new IllegalStateException("Processor isn't compatible with sequenced row processing: {0}", subProcessor.GetType().Name);
-                    
-                    parts.RemoveAt(i);
-                    rpSequence.processors.Add(subProcessor);
-                }
                 
-                parts[indexToReplace] = rpSequence;            // replace CatModifier with LineSequenceProcessor
-            }
-
-            return this;
+            parts[indexToReplace] = rpSequence;            // replace CatModifier with LineSequenceProcessor
         }
 
-        public Pnyx asCsv(Action<Pnyx> block, 
-            bool strict = true, 
-            bool hasHeader = false,
-            char? delimiter = null,
-            char? escapeChar = null,
-            TrimStyleEnum? trimStyle = null
-            )
-        {
-            if (state != FluentState.New && state != FluentState.Start)
-                throw new IllegalStateException("Pnyx is not in New,Start state: {0}", state.ToString());
+        return this;
+    }
 
-            CsvSettings csvSettings = settings.buildCsvSettings().setDefaults(strict, delimiter, escapeChar, trimStyle: trimStyle);
+    public Pnyx asCsv
+    (
+        Action<Pnyx> block, 
+        bool strict = true, 
+        bool hasHeader = false,
+        char? delimiter = null,
+        char? escapeChar = null,
+        TrimStyleEnum? trimStyle = null
+    )
+    {
+        if (state != FluentState.New && state != FluentState.Start)
+            throw new IllegalStateException("Pnyx is not in New,Start state: {0}", state.ToString());
+
+        CsvSettings csvSettings = settings.buildCsvSettings().setDefaults(strict, delimiter, escapeChar, trimStyle: trimStyle);
             
-            int indexModifier = parts.Count;
-            parts.Add(new CsvModifer(csvSettings, hasHeader));
+        int indexModifier = parts.Count;
+        parts.Add(new CsvModifer(csvSettings, hasHeader));
 
-            block(this);
+        block(this);
 
+        if (state != FluentState.Start)
+            throw new IllegalStateException("CSV modifier only accepts allows reads: {0}", state.ToString());
+
+        state = FluentState.Row;
+        parts.RemoveAt(indexModifier);
+            
+        return this;
+    }
+
+    private void requireStart(bool line, bool row)
+    {
+        if (state == FluentState.New)
+            defaultInput();
+
+        if (line && row)
+        {
+            if (state != FluentState.Line && state != FluentState.Row && state != FluentState.Start)
+                throw new IllegalStateException("Pnyx is not in Line,Row,Start state: {0}", state.ToString());            
+        }
+        else if (line)
+        {
+            if (state != FluentState.Line && state != FluentState.Start)
+                throw new IllegalStateException("Pnyx is not in Line,Start state: {0}", state.ToString());                            
+        }
+        else if (row)
+        {
+            if (state != FluentState.Row)
+                throw new IllegalStateException("Pnyx is not in Row state: {0}", state.ToString());                                            
+        }
+        else
+        {
             if (state != FluentState.Start)
-                throw new IllegalStateException("CSV modifier only accepts allows reads: {0}", state.ToString());
-
-            state = FluentState.Row;
-            parts.RemoveAt(indexModifier);
-            
-            return this;
+                throw new IllegalStateException("Pnyx is not in Start state: {0}", state.ToString());
         }
+    }
 
-        private void requireStart(bool line, bool row)
-        {
-            if (state == FluentState.New)
-                defaultInput();
-
-            if (line && row)
-            {
-                if (state != FluentState.Line && state != FluentState.Row && state != FluentState.Start)
-                    throw new IllegalStateException("Pnyx is not in Line,Row,Start state: {0}", state.ToString());            
-            }
-            else if (line)
-            {
-                if (state != FluentState.Line && state != FluentState.Start)
-                    throw new IllegalStateException("Pnyx is not in Line,Start state: {0}", state.ToString());                            
-            }
-            else if (row)
-            {
-                if (state != FluentState.Row)
-                    throw new IllegalStateException("Pnyx is not in Row state: {0}", state.ToString());                                            
-            }
-            else
-            {
-                if (state != FluentState.Start)
-                    throw new IllegalStateException("Pnyx is not in Start state: {0}", state.ToString());
-            }
-        }
-
-        private void requireNameValuePair()
-        {
-            if (state == FluentState.Row)
-                rowToNameValuePair();
+    private void requireNameValuePair()
+    {
+        if (state == FluentState.Row)
+            rowToNameValuePair();
                 
-            if (state != FluentState.NameValuePair)
-                throw new IllegalStateException("Pnyx is not in NameValuePair state: {0}", state.ToString());
-        }
+        if (state != FluentState.NameValuePair)
+            throw new IllegalStateException("Pnyx is not in NameValuePair state: {0}", state.ToString());
+    }
         
-        private void requireObject()
-        {
-            if (state != FluentState.Object)
-                throw new IllegalStateException("Pnyx is not in NameValuePair state: {0}", state.ToString());
-        }
+    private void requireObject()
+    {
+        if (state != FluentState.Object)
+            throw new IllegalStateException("Pnyx is not in NameValuePair state: {0}", state.ToString());
+    }
         
-        public Pnyx head(int limit = 1)
-        {
-            if (limit < 1)
-                throw new InvalidArgumentException("Head limit must be greater than zero");
+    public Pnyx head(int limit = 1)
+    {
+        if (limit < 1)
+            throw new InvalidArgumentException("Head limit must be greater than zero");
 
-            HeadFilter head = new HeadFilter(streamInformation, limit);
+        HeadFilter head = new HeadFilter(streamInformation, limit);
             
-            if (state == FluentState.Row)
-                return rowFilter(head);
+        if (state == FluentState.Row)
+            return rowFilter(head);
+        else
+            return lineFilter(head);
+    }
+
+    public Pnyx tail(int limit = 1)
+    {
+        if (limit < 1)
+            throw new InvalidArgumentException("Tail limit must be greater than zero");
+
+        if (state == FluentState.Row)
+            return rowBuffering(new TailRowBuffer(limit));
+
+        return lineBuffering(new TailLineBuffer(limit));
+    }
+
+    public Pnyx tailStream(Action<Pnyx> block, int limit = 1)
+    {
+        if (limit < 1)
+            throw new InvalidArgumentException("Tail limit must be greater than zero");
+
+        if (state != FluentState.New && state != FluentState.Start)
+            throw new IllegalStateException("Pnyx is not in New,Start state: {0}", state.ToString());
+
+        int indexToCheck = parts.Count;
+        parts.Add(new TailModifier(limit, streamInformation));
+            
+        // Runs block
+        block(this);
+            
+        // Verify that tail is consumed
+        if (parts[indexToCheck].GetType() == typeof(TailModifier))
+            throw new IllegalStateException("Tail must be consumed by nested block");
+            
+        return this;
+    }
+        
+    public Pnyx lineToRow(IRowConverter converter, bool hasHeader = false)
+    {
+        requireStart(line: true, row: false);
+            
+        parts.Add(new LineToRowProcessor(converter, hasHeader));
+        state = FluentState.Row;
+        rowConverter = converter;
+
+        return this;
+    }
+
+    public Pnyx rowToLine(IRowConverter? converter = null)
+    {
+        requireStart(line: false, row: true);
+
+        converter = converter ?? rowConverter;
+        parts.Add(new RowToLineProcessor(converter!));
+        state = FluentState.Line;
+        rowConverter = null;
+
+        return this;
+    }
+
+    public Pnyx rowToNameValuePair()
+    {
+        requireStart(line: false, row: true);
+
+        parts.Add(new RowToNameValuePairProcessor());
+        state = FluentState.NameValuePair;
+
+        return this;
+    }
+
+    public Pnyx rowToObject(IObjectConverterFromRow? converter = null)
+    {
+        requireStart(line: false, row: true);
+
+        objectConverterFromRow = converter ?? objectConverterFromRow;
+        if (objectConverterFromRow == null)
+            throw new IllegalStateException("Object converter is not set");       
+        
+        parts.Add(new RowToObjectProcessor(objectConverterFromRow));
+        state = FluentState.Object;
+            
+        return this;
+    }
+
+    public Pnyx objectToRow(IObjectConverterFromRow? converter = null)
+    {
+        requireObject();
+
+        objectConverterFromRow = converter ?? objectConverterFromRow;
+        if (objectConverterFromRow == null)
+            throw new IllegalStateException("Object converter is not set");       
+        
+        parts.Add(new ObjectToRowProcessor(objectConverterFromRow));
+        state = FluentState.Row;
+        objectConverterFromRow = null;
+            
+        return this;
+    }
+
+    public Pnyx nameValuePairToObject(IObjectConverterFromNameValuePair? converter = null)
+    {
+        requireNameValuePair();
+
+        objectConverterFromNameValuePair = converter ?? objectConverterFromNameValuePair;
+        if (objectConverterFromNameValuePair == null)
+            throw new IllegalStateException("Object converter is not set");      
+        
+        parts.Add(new NameValuePairToObjectProcessor(objectConverterFromNameValuePair));
+        state = FluentState.Object;
+            
+        return this;
+    }
+        
+    /// <summary>
+    /// Changes the Pnyx state from NameValuePair to Row.
+    /// </summary>
+    /// <param name="newRowConverter">Row converter to use, or NULL to default to CsvRowConverter</param>
+    /// <param name="header">Explicit header. When null, names will be sorted</param>
+    public Pnyx nameValuePairToRow(IRowConverter? newRowConverter = null, List<string>? header = null)
+    {
+        requireNameValuePair();
+        
+        if (newRowConverter != null)
+            rowConverter = newRowConverter;
+        else if (rowConverter == null)
+            rowConverter = new CsvRowConverter();
+            
+        parts.Add(new NameValuePairToRowProcessor(header));
+        state = FluentState.Row;
+            
+        return this;
+    }
+
+    public Pnyx objectToNameValuePair(IObjectConverterFromNameValuePair? converter = null)
+    {
+        requireObject();
+            
+        objectConverterFromNameValuePair = converter ?? objectConverterFromNameValuePair;
+        if (objectConverterFromNameValuePair == null)
+            throw new IllegalStateException("Object converter is not set");
+        
+        parts.Add(new ObjectToNameValuePairProcessor(objectConverterFromNameValuePair));
+        state = FluentState.NameValuePair;
+        objectConverterFromNameValuePair = null;
+            
+        return this;
+    }
+
+    public Pnyx print(params String[] format)
+    {   
+        requireStart(line: true, row: true);
+            
+        if (state == FluentState.Row)
+        {
+            parts.Add(new Print(format, rowConverter));
+            state = FluentState.Line;
+            rowConverter = null;
+        }
+        else if (state == FluentState.Start || state == FluentState.Line)
+        {
+            parts.Add(new Print(format));
+            state = FluentState.Line;                
+        }
+
+        return this;                
+    }
+
+    public Pnyx columnDefinition(int? limit = null, bool maxWidth = false, bool hasHeaderRow = false, bool minWidth = false, bool nullable = false, bool swapRowsAndColumns = true)
+    {
+        ColumnDefinition buffering = new ColumnDefinition(streamInformation);
+        if (limit.HasValue)
+            buffering.limit = limit.Value;
+
+        ColumnDefinition.Flags flag = ColumnDefinition.Flags.None;
+        if (hasHeaderRow) flag |= ColumnDefinition.Flags.Header;
+        if (maxWidth) flag |= ColumnDefinition.Flags.MaxWidth;
+        if (minWidth) flag |= ColumnDefinition.Flags.MinWidth;
+        if (nullable) flag |= ColumnDefinition.Flags.Nullable;
+            
+        if (flag != ColumnDefinition.Flags.None)
+            buffering.flag = flag;                            // only override 'all' if specific flags are set
+
+        rowBuffering(buffering);
+            
+        if (swapRowsAndColumns)
+            swapColumnsAndRows();                             // auto swaps row and columns for a more readable, SQL pseudo output 
+
+        return this;
+    }
+
+    public Pnyx swapColumnsAndRows()
+    {
+        return rowBuffering(new SwapColumnsAndRows());
+    }
+
+    public Pnyx hasColumns(bool verifyColumnHasText, params int[] columnNumbers)
+    {
+        if (columnNumbers.Length == 0)
+            throw new InvalidArgumentException("At least one columnNumber is required");
+            
+        return rowFilter(new HasColumns(columnNumbers, verifyColumnHasText));
+    }
+
+    public Pnyx hasColumns(bool verifyColumnHasText, params ColumnIndex[] columnIndexes)
+    {
+        if (columnIndexes.Length == 0)
+            throw new InvalidArgumentException("At least one columnIndex is required");
+            
+        return rowFilter(new HasColumnIndexes(columnIndexes, verifyColumnHasText));
+    }
+
+    public Pnyx hasColumns(Func<string, bool> checkContent, params ColumnIndex[] columnIndexes)
+    {
+        if (columnIndexes.Length == 0)
+            throw new InvalidArgumentException("At least one columnIndex is required");
+            
+        return rowFilter(new HasColumnIndexes(columnIndexes, verifyColumnHasText: false, checkContent: checkContent));
+    }
+
+    public Pnyx widthColumns(int columns, String pad = "")
+    {
+        return rowTransformer(new WidthColumns(columns, pad));
+    }
+
+    public Pnyx removeColumns(params int[] columnNumbers)
+    {            
+        ColumnIndex[] columnIndices = ColumnIndex.convertColumnNumbersToIndex(columnNumbers);
+        return rowTransformer(new RemoveColumns(columnIndices));
+    }
+
+    public Pnyx removeColumns(params ColumnIndex[] columnIndices)
+    {            
+        return rowTransformer(new RemoveColumns(columnIndices));
+    }
+
+    public Pnyx insertColumnsWithPadding(String pad = "", params int[] columnNumbers)
+    {
+        ColumnIndex[] columnIndices = convertColumnNumbersToIndex(columnNumbers);
+        return rowTransformer(new InsertColumns(columnIndices) { pad = pad });
+    }
+
+    public Pnyx insertColumnsWithPadding(String pad = "", params ColumnIndex[] columnIndices)
+    {
+        return rowTransformer(new InsertColumns(columnIndices) { pad = pad });
+    }
+
+    public Pnyx insertColumns(params int[] columnNumbers)
+    {
+        ColumnIndex[] columnIndices = convertColumnNumbersToIndex(columnNumbers);
+        return rowTransformer(new InsertColumns(columnIndices));
+    }
+
+    public Pnyx insertColumns(params ColumnIndex[] columnIndices)
+    {
+        return rowTransformer(new InsertColumns(columnIndices));
+    }
+
+    public Pnyx duplicateColumns(params int[] columnNumbers)
+    {
+        ColumnIndex[] columnIndices = convertColumnNumbersToIndex(columnNumbers);
+        return rowTransformer(new DuplicateColumns(columnIndices));
+    }
+
+    public Pnyx duplicateColumns(params ColumnIndex[] columnIndices)
+    {
+        return rowTransformer(new DuplicateColumns(columnIndices));
+    }
+
+    public Pnyx headerNames(params Object?[] columnNumbersAndNames)
+    {
+        if (columnNumbersAndNames == null)
+            throw new InvalidArgumentException("At least one name is required");
+            
+        int index = 0;
+        Dictionary<int, String> nameMap = new Dictionary<int, String>(columnNumbersAndNames.Length);
+        foreach (Object? val in columnNumbersAndNames)
+        {
+            if (val == null)
+                throw new InvalidArgumentException("Null is not a valid parameter");
+
+            if (val is ColumnIndex)
+            {
+                index = ((ColumnIndex)val).Index;
+            }
+            else if (val is int)
+            {
+                index = (int) val - 1;
+                if (index < 0)
+                    throw new InvalidArgumentException("Column number must be 1 or greater: {0}", val);
+            }
+            else if (val is String)
+            {
+                nameMap.Add(index, (String)val);
+                index++;
+            }
             else
-                return lineFilter(head);
-        }
-
-        public Pnyx tail(int limit = 1)
-        {
-            if (limit < 1)
-                throw new InvalidArgumentException("Tail limit must be greater than zero");
-
-            if (state == FluentState.Row)
-                return rowBuffering(new TailRowBuffer(limit));
-
-            return lineBuffering(new TailLineBuffer(limit));
-        }
-
-        public Pnyx tailStream(Action<Pnyx> block, int limit = 1)
-        {
-            if (limit < 1)
-                throw new InvalidArgumentException("Tail limit must be greater than zero");
-
-            if (state != FluentState.New && state != FluentState.Start)
-                throw new IllegalStateException("Pnyx is not in New,Start state: {0}", state.ToString());
-
-            int indexToCheck = parts.Count;
-            parts.Add(new TailModifier(limit, streamInformation));
-            
-            // Runs block
-            block(this);
-            
-            // Verify that tail is consumed
-            if (parts[indexToCheck].GetType() == typeof(TailModifier))
-                throw new IllegalStateException("Tail must be consumed by nested block");
-            
-            return this;
+                throw new InvalidArgumentException("Value should be either an integer index or a header name, but found value '{0}' of type '{1}'", val, val.GetType().Name);
         }
         
-        public Pnyx lineToRow(IRowConverter converter, bool hasHeader = false)
-        {
-            requireStart(line: true, row: false);
+        if (nameMap.Count == 0)
+            throw new InvalidArgumentException("At least one name is required");
             
-            parts.Add(new LineToRowProcessor { rowConverter = converter, hasHeader = hasHeader});
-            state = FluentState.Row;
-            rowConverter = converter;
+        return rowTransformer(new HeaderNames(nameMap));
+    }
 
-            return this;
-        }
-
-        public Pnyx rowToLine(IRowConverter converter = null)
-        {
-            requireStart(line: false, row: true);
-
-            converter = converter ?? rowConverter;
-            parts.Add(new RowToLineProcessor { rowConverter = converter });
-            state = FluentState.Line;
-            rowConverter = null;
-
-            return this;
-        }
-
-        public Pnyx rowToNameValuePair()
-        {
-            requireStart(line: false, row: true);
-
-            parts.Add(new RowToNameValuePairProcessor());
-            state = FluentState.NameValuePair;
-
-            return this;
-        }
-
-        public Pnyx rowToObject(IObjectConverterFromRow converter = null)
-        {
-            requireStart(line: false, row: true);
-
-            objectConverterFromRow ??= converter;
-            parts.Add(new RowToObjectProcessor { converter = objectConverterFromRow });
-            state = FluentState.Object;
-            
-            return this;
-        }
-
-        public Pnyx objectToRow(IObjectConverterFromRow converter = null)
-        {
-            requireObject();
-            
-            parts.Add(new ObjectToRowProcessor { converter = converter ?? objectConverterFromRow });
-            state = FluentState.Row;
-            objectConverterFromRow = null;
-            
-            return this;
-        }
-
-        public Pnyx nameValuePairToObject(IObjectConverterFromNameValuePair converter = null)
-        {
-            if (state != FluentState.NameValuePair)
-                throw new IllegalStateException("Pnyx is not in NameValuePair state: {0}", state.ToString());
-
-            objectConverterFromNameValuePair ??= converter;
-            parts.Add(new NameValuePairToObjectProcessor { converter = objectConverterFromNameValuePair });
-            state = FluentState.Object;
-            
-            return this;
-        }
+    public Pnyx selectColumns(params int[] columnNumbers)
+    {
+        ColumnIndex[] columnIndices = convertColumnNumbersToIndex(columnNumbers);            
+        return rowTransformer(new SelectColumns(columnIndices));
+    }
         
-        /// <summary>
-        /// Changes the Pnyx state from NameValuePair to Row.
-        /// </summary>
-        /// <param name="newRowConverter">Row converter to use, or NULL to default to CsvRowConverter</param>
-        /// <param name="header">Explicit header. When null, names will be sorted</param>
-        public Pnyx nameValuePairToRow(CsvRowConverter newRowConverter = null, List<string> header = null)
-        {
-            if (state != FluentState.NameValuePair)
-                throw new IllegalStateException("Pnyx is not in NameValuePair state: {0}", state.ToString());
-
-            
-            if (newRowConverter != null)
-                rowConverter = newRowConverter;
-            else if (rowConverter == null)
-                rowConverter = new CsvRowConverter();
-            
-            parts.Add(new NameValuePairToRowProcessor(header));
-            state = FluentState.Row;
-            
-            return this;
-        }
-
-        public Pnyx objectToNameValuePair(IObjectConverterFromNameValuePair converter = null)
-        {
-            requireObject();
-            
-            parts.Add(new ObjectToNameValuePairProcessor { converter = converter ?? objectConverterFromNameValuePair });
-            state = FluentState.NameValuePair;
-            objectConverterFromNameValuePair = null;
-            
-            return this;
-        }
-
-        public Pnyx print(params String[] format)
-        {   
-            requireStart(line: true, row: true);
-            
-            if (state == FluentState.Row)
-            {
-                parts.Add(new Print { formatStrings = format, rowConverter = rowConverter });
-                state = FluentState.Line;
-                rowConverter = null;
-            }
-            else if (state == FluentState.Start || state == FluentState.Line)
-            {
-                parts.Add(new Print { formatStrings = format });
-                state = FluentState.Line;                
-            }
-
-            return this;                
-        }
-
-        public Pnyx columnDefinition(int? limit = null, bool maxWidth = false, bool hasHeaderRow = false, bool minWidth = false, bool nullable = false, bool swapRowsAndColumns = true)
-        {
-            ColumnDefinition buffering = new ColumnDefinition(streamInformation);
-            if (limit.HasValue)
-                buffering.limit = limit.Value;
-
-            ColumnDefinition.Flags flag = ColumnDefinition.Flags.None;
-            if (hasHeaderRow) flag |= ColumnDefinition.Flags.Header;
-            if (maxWidth) flag |= ColumnDefinition.Flags.MaxWidth;
-            if (minWidth) flag |= ColumnDefinition.Flags.MinWidth;
-            if (nullable) flag |= ColumnDefinition.Flags.Nullable;
-            
-            if (flag != ColumnDefinition.Flags.None)
-                buffering.flag = flag;                            // only override 'all' if specific flags are set
-
-            rowBuffering(buffering);
-            
-            if (swapRowsAndColumns)
-                swapColumnsAndRows();                             // auto swaps row and columns for a more readable, SQL pseudo output 
-
-            return this;
-        }
-
-        public Pnyx swapColumnsAndRows()
-        {
-            return rowBuffering(new SwapColumnsAndRows());
-        }
-
-        public Pnyx hasColumns(bool verifyColumnHasText, params int[] columnNumbers)
-        {
-            if (columnNumbers.Length == 0)
-                throw new InvalidArgumentException("At least one columnNumber is required");
-            
-            return rowFilter(new HasColumns(columnNumbers, verifyColumnHasText));
-        }
-
-        public Pnyx hasColumns(bool verifyColumnHasText, params ColumnIndex[] columnIndexes)
-        {
-            if (columnIndexes.Length == 0)
-                throw new InvalidArgumentException("At least one columnIndex is required");
-            
-            return rowFilter(new HasColumnIndexes(columnIndexes, verifyColumnHasText));
-        }
-
-        public Pnyx hasColumns(Func<string, bool> checkContent, params ColumnIndex[] columnIndexes)
-        {
-            if (columnIndexes.Length == 0)
-                throw new InvalidArgumentException("At least one columnIndex is required");
-            
-            return rowFilter(new HasColumnIndexes(columnIndexes, verifyColumnHasText: false, checkContent: checkContent));
-        }
-
-        public Pnyx widthColumns(int columns, String pad = "")
-        {
-            return rowTransformer(new WidthColumns { columns = columns, pad = pad });
-        }
-
-        public Pnyx removeColumns(params int[] columnNumbers)
-        {            
-            ColumnIndex[] columnIndices = ColumnIndex.convertColumnNumbersToIndex(columnNumbers);
-            return rowTransformer(new RemoveColumns(columnIndices));
-        }
-
-        public Pnyx removeColumns(params ColumnIndex[] columnIndices)
-        {            
-            return rowTransformer(new RemoveColumns(columnIndices));
-        }
-
-        public Pnyx insertColumnsWithPadding(String pad = "", params int[] columnNumbers)
-        {
-            ColumnIndex[] columnIndices = convertColumnNumbersToIndex(columnNumbers);
-            return rowTransformer(new InsertColumns(columnIndices) { pad = pad });
-        }
-
-        public Pnyx insertColumnsWithPadding(String pad = "", params ColumnIndex[] columnIndices)
-        {
-            return rowTransformer(new InsertColumns(columnIndices) { pad = pad });
-        }
-
-        public Pnyx insertColumns(params int[] columnNumbers)
-        {
-            ColumnIndex[] columnIndices = convertColumnNumbersToIndex(columnNumbers);
-            return rowTransformer(new InsertColumns(columnIndices));
-        }
-
-        public Pnyx insertColumns(params ColumnIndex[] columnIndices)
-        {
-            return rowTransformer(new InsertColumns(columnIndices));
-        }
-
-        public Pnyx duplicateColumns(params int[] columnNumbers)
-        {
-            ColumnIndex[] columnIndices = convertColumnNumbersToIndex(columnNumbers);
-            return rowTransformer(new DuplicateColumns(columnIndices));
-        }
-
-        public Pnyx duplicateColumns(params ColumnIndex[] columnIndices)
-        {
-            return rowTransformer(new DuplicateColumns(columnIndices));
-        }
-
-        public Pnyx headerNames(params Object[] columnNumbersAndNames)
-        {
-            if (columnNumbersAndNames == null)
-                throw new InvalidArgumentException("At least one name is required");
-            
-            int index = 0;
-            Dictionary<int, String> nameMap = new Dictionary<int, String>(columnNumbersAndNames.Length);
-            foreach (Object val in columnNumbersAndNames)
-            {
-                if (val is ColumnIndex)
-                {
-                    index = ((ColumnIndex)val).Index;
-                }
-                else if (val is int)
-                {
-                    index = (int) val - 1;
-                    if (index < 0)
-                        throw new InvalidArgumentException("Column number must be 1 or greater: {0}", val);
-                }
-                else if (val is String)
-                {
-                    nameMap.Add(index, (String)val);
-                    index++;
-                }
-                else if (val == null)
-                    throw new InvalidArgumentException("Null is not a valid parameter");
-                else
-                    throw new InvalidArgumentException("Value should be either an integer index or a header name, but found value '{0}' of type '{1}'", val, val.GetType().Name);
-            }
-            if (nameMap.Count == 0)
-                throw new InvalidArgumentException("At least one name is required");
-            
-            return rowTransformer(new HeaderNames(nameMap));
-        }
-
-        public Pnyx selectColumns(params int[] columnNumbers)
-        {
-            ColumnIndex[] columnIndices = convertColumnNumbersToIndex(columnNumbers);            
-            return rowTransformer(new SelectColumns { columnIndices = columnIndices });
-        }
+    public Pnyx selectColumns(params ColumnIndex[] columnIndices)
+    {
+        return rowTransformer(new SelectColumns(columnIndices));
+    }
         
-        public Pnyx selectColumns(params ColumnIndex[] columnIndices)
-        {
-            return rowTransformer(new SelectColumns { columnIndices = columnIndices });
-        }
-        
-        public Pnyx printColumn(int columnNumber)            // 1-based to be consistent with print and sed
-        {
-            requireStart(line: false, row: true);
+    public Pnyx printColumn(int columnNumber)            // 1-based to be consistent with print and sed
+    {
+        requireStart(line: false, row: true);
 
-            if (columnNumber <= 0)
-                throw new InvalidArgumentException("Invalid ColumnNumber {0}, ColumnNumbers start at 1", columnNumber);
+        if (columnNumber <= 0)
+            throw new InvalidArgumentException("Invalid ColumnNumber {0}, ColumnNumbers start at 1", columnNumber);
             
-            parts.Add(new ColumnToLine { index = columnNumber-1 });
-            state = FluentState.Line;
-            rowConverter = null;
+        parts.Add(new ColumnToLine(columnNumber-1));
+        state = FluentState.Line;
+        rowConverter = null;
 
-            return this;
-        }
+        return this;
+    }
         
-        public Pnyx printColumn(ColumnIndex columnIndex)
-        {
-            requireStart(line: false, row: true);
+    public Pnyx printColumn(ColumnIndex columnIndex)
+    {
+        requireStart(line: false, row: true);
             
-            parts.Add(new ColumnToLine { index = columnIndex.Index });
-            state = FluentState.Line;
-            rowConverter = null;
+        parts.Add(new ColumnToLine(columnIndex));
+        state = FluentState.Line;
+        rowConverter = null;
 
-            return this;
-        }
+        return this;
+    }
         
-        public Pnyx withColumns(Action<Pnyx> block, params ColumnIndex[] indices)
-        {
-            requireStart(line: false, row: true);
+    public Pnyx withColumns(Action<Pnyx> block, params ColumnIndex[] indices)
+    {
+        requireStart(line: false, row: true);
                
-            // Add modifier to parts
-            int partIndex = parts.Count;
-            parts.Add(new WithColumns { indexes = indices });
+        // Add modifier to parts
+        int partIndex = parts.Count;
+        parts.Add(new WithColumns(indices));
             
-            // Runs block
-            block(this);
+        // Runs block
+        block(this);
             
-            // Removes modifier from parts
-            parts.RemoveAt(partIndex);
+        // Removes modifier from parts
+        parts.RemoveAt(partIndex);
 
-            return this;
-        }
+        return this;
+    }
                 
-        public Pnyx withColumns(Action<Pnyx> block, params int[] columnNumbers)
-        {
-            requireStart(line: false, row: true);
+    public Pnyx withColumns(Action<Pnyx> block, params int[] columnNumbers)
+    {
+        requireStart(line: false, row: true);
                
-            // Add modifier to parts
-            int partIndex = parts.Count;
-            ColumnIndex[] indices = convertColumnNumbersToIndex(columnNumbers);
-            parts.Add(new WithColumns { indexes = indices });
+        // Add modifier to parts
+        int partIndex = parts.Count;
+        ColumnIndex[] indices = convertColumnNumbersToIndex(columnNumbers);
+        parts.Add(new WithColumns(indices));
             
-            // Runs block
-            block(this);
+        // Runs block
+        block(this);
             
-            // Removes modifier from parts
-            parts.RemoveAt(partIndex);
+        // Removes modifier from parts
+        parts.RemoveAt(partIndex);
 
-            return this;
-        }
+        return this;
+    }
 
-        private ColumnIndex[] convertColumnNumbersToIndex(params int[] columnNumbers)
-        {
-            if (columnNumbers.Length == 0)
-                throw new InvalidArgumentException("Must specify at least one ColumnNumber");
+    private ColumnIndex[] convertColumnNumbersToIndex(params int[] columnNumbers)
+    {
+        if (columnNumbers.Length == 0)
+            throw new InvalidArgumentException("Must specify at least one ColumnNumber");
 
-            return ColumnIndex.convertColumnNumbersToIndex(columnNumbers);
-        }
+        return ColumnIndex.convertColumnNumbersToIndex(columnNumbers);
+    }
                 
-        public Pnyx parseCsv(bool? strict = true, 
-            bool hasHeader = false, 
-            char? delimiter = null,
-            char? escapeChar = null,
-            TrimStyleEnum? trimStyle = null
-            )
-        {
-            requireStart(line: true, row: false);
-            CsvSettings csvSettings = settings.buildCsvSettings().setDefaults(strict, delimiter, escapeChar, trimStyle: trimStyle);
+    public Pnyx parseCsv
+    (
+        bool? strict = true, 
+        bool hasHeader = false, 
+        char? delimiter = null,
+        char? escapeChar = null,
+        TrimStyleEnum? trimStyle = null
+    )
+    {
+        requireStart(line: true, row: false);
+        CsvSettings csvSettings = settings.buildCsvSettings().setDefaults(strict, delimiter, escapeChar, trimStyle: trimStyle);
             
-            ILineSource lineSource = (parts.Count == 0 ? null : parts[parts.Count-1]) as ILineSource;
-            if (state == FluentState.Start && lineSource != null)
-            {
-                CsvStreamToRowProcessor csv = new CsvStreamToRowProcessor(csvSettings);
-                csv.hasHeader = hasHeader;
-                csv.setSource(streamInformation, lineSource.streamFactory);
-                rowConverter = csv.getRowConverter();
+        ILineSource? lineSource = (parts.Count == 0 ? null : parts[^1].optionalType<ILineSource>());
+        if (state == FluentState.Start && lineSource != null)
+        {
+            CsvStreamToRowProcessor csv = new CsvStreamToRowProcessor(csvSettings);
+            csv.hasHeader = hasHeader;
+            csv.setSource(streamInformation, lineSource.streamFactory);
+            rowConverter = csv.getRowConverter();
 
-                parts[parts.Count - 1] = csv;
-                state = FluentState.Row;                
-            }
-            else if (state == FluentState.Line)
-            {
-                CsvRowConverter rc = new CsvRowConverter(csvSettings);
-                lineToRow(rc, hasHeader);
-            }
-
-            return this;
+            parts[^1] = csv;
+            state = FluentState.Row;                
+        }
+        else if (state == FluentState.Line)
+        {
+            CsvRowConverter rc = new CsvRowConverter(csvSettings);
+            lineToRow(rc, hasHeader);
         }
 
-        public Pnyx parseDelimiter(String delimiter, bool hasHeader = false)
-        {
-            return lineToRow(new DelimiterRowConverter { delimiter = delimiter }, hasHeader);
-        }
+        return this;
+    }
 
-        public Pnyx parseTab(bool hasHeader = false)
-        {
-            return lineToRow(new DelimiterRowConverter { delimiter = "\t" }, hasHeader);
-        }
+    public Pnyx parseDelimiter(String delimiter, bool hasHeader = false)
+    {
+        return lineToRow(new DelimiterRowConverter(delimiter), hasHeader);
+    }
 
-        public Pnyx printDelimiter(String delimiter)
-        {
-            return rowToLine(new DelimiterRowConverter { delimiter = delimiter });
-        }
+    public Pnyx parseTab(bool hasHeader = false)
+    {
+        return lineToRow(new DelimiterRowConverter("\t"), hasHeader);
+    }
 
-        public Pnyx printTab()
-        {
-            return rowToLine(new DelimiterRowConverter { delimiter = "\t" });
-        }
+    public Pnyx printDelimiter(String delimiter)
+    {
+        return rowToLine(new DelimiterRowConverter(delimiter));
+    }
 
-        public Pnyx linePart(ILinePart linePart)
-        {
-            requireStart(line: true, row: false);
+    public Pnyx printTab()
+    {
+        return rowToLine(new DelimiterRowConverter("\t"));
+    }
+
+    public Pnyx linePart(ILinePart linePart)
+    {
+        requireStart(line: true, row: false);
             
-            parts.Add(linePart);
-            state = FluentState.Line;
-            return this;
-        }
+        parts.Add(linePart);
+        state = FluentState.Line;
+        return this;
+    }
 
-        public Pnyx lineFilter(ILineFilter filter)
-        {
-            // Process any modifier
-            ILineFilterModifier modifier = retrieveModifier<ILineFilterModifier>();
-            if (modifier != null)
-                filter = modifier.modifyLineFilter(filter);                        // wraps filter according to active modifier
+    public Pnyx lineFilter(ILineFilter filter)
+    {
+        // Process any modifier
+        ILineFilterModifier? modifier = retrieveModifier<ILineFilterModifier>();
+        if (modifier != null)
+            filter = modifier.modifyLineFilter(filter);                        // wraps filter according to active modifier
             
-            if (state == FluentState.Row)
-            {
-                IRowFilterShimModifier shimModifier = retrieveModifier<IRowFilterShimModifier>(); 
-                if (filter is IRowFilter)
-                    return rowFilter((IRowFilter) filter);
-                else if (shimModifier != null)
-                    return rowFilter(shimModifier.shimLineFilter(filter));                
-                else
-                    return rowFilter(new RowFilterShimOr { lineFilter = filter });                
-            }
-                
-            return linePart(new LineFilterProcessor { filter = filter });
-        }
-        
-        public Pnyx lineTransformer(ILineTransformer transform)
+        if (state == FluentState.Row)
         {
-            // Process any modifier
-            ILineTransformerModifier modifier = retrieveModifier<ILineTransformerModifier>();
-            if (modifier != null)
-                transform = modifier.modifyLineTransformer(transform);                        // wraps filter according to active modifier            
-            
-            if (state == FluentState.Row)
-            {
-                IRowTransformerShimModifier shimModifier = retrieveModifier<IRowTransformerShimModifier>();                
-                if (transform is IRowTransformer)
-                    return rowTransformer((IRowTransformer)transform);
-                else if (shimModifier != null)
-                    return rowTransformer(shimModifier.shimLineTransformer(transform));
-                else
-                    return rowTransformer(new RowTransformerShimOr { lineTransformer = transform });                
-            }
-
-            return linePart(new LineTransformerProcessor { transform = transform });
-        }                         
-        
-        public Pnyx lineBuffering(ILineBuffering buffering)
-        {
-            if (state == FluentState.Row)
-            {
-                if (buffering is IRowBuffering)
-                    return rowBuffering((IRowBuffering) buffering);
-                else                        
-                    throw new IllegalStateException("Convert to Line before using lineBuffering");                
-            }
-            
-            return linePart(new LineBufferingProcessor { buffering = buffering });
-        }             
-        
-        public Pnyx lineFilter(Func<String, bool> filter)
-        {
-            return lineFilter(new LineFilterFunc { lineFilterFunc = filter });
-        }
-        
-        public Pnyx lineTransformer(Func<String, String> transform)
-        {
-            return lineTransformer(new LineTransformerFunc { lineTransformerFunc = transform });
-        }
-
-        public Pnyx shimAnd(Action<Pnyx> block)
-        {
-            if (state != FluentState.Row)
-                throw new IllegalStateException("Shim is only needed in Row state: {0}", state.ToString());
-
-            int toRemove = parts.Count;
-            parts.Add(new AndShimModifier());
-
-            // Runs wrapped
-            block(this);
-            
-            if (state != FluentState.Row)
-                throw new IllegalStateException("Shim is only supports Row actions: {0}", state.ToString());
-
-            parts.RemoveAt(toRemove);
-            return this;
-        }
-        
-        public Pnyx rowPart(IRowPart rowPart)
-        {
-            requireStart(line: false, row: true);
-
-            parts.Add(rowPart);
-            state = FluentState.Row;
-            return this;
-        }
-
-        public Pnyx rowFilter(IRowFilter rowFilter)
-        {
-            // Process any modifier
-            IRowFilterModifier modifier = retrieveModifier<IRowFilterModifier>();
-            if (modifier != null)
-                rowFilter = modifier.modifyRowFilter(rowFilter);                        // wraps filter according to active modifier
-                        
-            return rowPart(new RowFilterProcessor { filter = rowFilter });
-        }       
-
-        public Pnyx rowTransformer(IRowTransformer transform)
-        {
-            // Process any modifier
-            IRowTransformerModifer modifier = retrieveModifier<IRowTransformerModifer>();
-            if (modifier != null)
-                transform = modifier.modifyRowTransformer(transform);                  // wraps filter according to active modifier
-            
-            return rowPart(new RowTransformerProcessor { transform = transform });
-        }
-        
-        public Pnyx rowFilter(Func<List<String>, bool> filter)
-        {
-            return rowFilter(new RowFilterFunc { rowFilterFunc = filter });
-        }
-        
-        public Pnyx rowTransformer(Func<List<String>, List<String>> transform, bool treatHeaderAsRow = false)
-        {
-            return rowTransformer(new RowTransformerFunc { rowTransformerFunc = transform, treatHeaderAsRow = treatHeaderAsRow });
-        }           
-        
-        public Pnyx rowBuffering(IRowBuffering buffering)
-        {
-            return rowPart(new RowBufferingProcessor { buffering = buffering });
-        }
-        
-        public Pnyx columnFilter(int columnNumber, ILineFilter lineFilter)
-        {
-            ColumnIndex[] indices = convertColumnNumbersToIndex(columnNumber);
-            return rowFilter(new RowFilterWithColumns(indices, new RowFilterShimOr { lineFilter = lineFilter }));
-        }
-        
-        public Pnyx columnFilter(int columnNumber, Func<String, bool> filter)
-        {
-            ColumnIndex[] indexes = convertColumnNumbersToIndex(columnNumber);
-            ILineFilter lineFilter = new LineFilterFunc { lineFilterFunc = filter };
-            return rowFilter(new RowFilterWithColumns(indexes, new RowFilterShimOr { lineFilter = lineFilter }));
-        }
-        
-        public Pnyx columnFilter(ColumnIndex columnIndex, ILineFilter lineFilter)
-        {
-            ColumnIndex[] indices = [columnIndex.Index];
-            return rowFilter(new RowFilterWithColumns(indices, new RowFilterShimOr { lineFilter = lineFilter }));
-        }
-        
-        public Pnyx columnFilter(ColumnIndex columnIndex, Func<String, bool> filter)
-        {
-            ColumnIndex[] indices = [columnIndex.Index];
-            ILineFilter lineFilter = new LineFilterFunc { lineFilterFunc = filter };
-            return rowFilter(new RowFilterWithColumns(indices, new RowFilterShimOr { lineFilter = lineFilter }));
-        }
-        
-        public Pnyx columnTransformer(int columnNumber, ILineTransformer lineTransformer)
-        {
-            ColumnIndex[] indices = convertColumnNumbersToIndex(columnNumber);
-            return rowTransformer(new RowTransformerWithColumns(indices, new RowTransformerShimOr { lineTransformer = lineTransformer }));
-        }
-        
-        public Pnyx columnTransformer(int columnNumber, Func<String, String> transform)
-        {
-            ColumnIndex[] indices = convertColumnNumbersToIndex(columnNumber);
-            ILineTransformer lineTransformer = new LineTransformerFunc { lineTransformerFunc = transform };
-            return rowTransformer(new RowTransformerWithColumns(indices, new RowTransformerShimOr { lineTransformer = lineTransformer }));
-        }
-        
-        public Pnyx columnTransformer(ColumnIndex columnIndex, ILineTransformer lineTransformer)
-        {
-            ColumnIndex[] indices = [columnIndex.Index];
-            return rowTransformer(new RowTransformerWithColumns(indices, new RowTransformerShimOr { lineTransformer = lineTransformer }));
-        }
-        
-        public Pnyx columnTransformer(ColumnIndex columnIndex, Func<String, String> transform)
-        {
-            ColumnIndex[] indices = [columnIndex.Index];
-            ILineTransformer lineTransformer = new LineTransformerFunc { lineTransformerFunc = transform };
-            return rowTransformer(new RowTransformerWithColumns(indices, new RowTransformerShimOr { lineTransformer = lineTransformer }));
-        }
-
-        public Pnyx nameValuePairPart(INameValuePairPart pairPart)
-        {
-            requireNameValuePair();
-            
-            parts.Add(pairPart);
-            state = FluentState.NameValuePair;
-            return this;
-        }
-        
-        public Pnyx nameValuePairFilter(INameValuePairFilter filter)
-        {
-            requireNameValuePair();
-            return nameValuePairPart(new NameValuePairFilterProcessor { filter = filter });
-        }
-
-        public Pnyx nameValuePairFilter(Func<IDictionary<string, object>, bool> filter)
-        {
-            requireNameValuePair();
-            return nameValuePairPart(new NameValuePairFilterProcessor { filter = new NameValuePairFilterFunc { pairFilterFunc = filter }});
-        }
-
-        public Pnyx nameValuePairTransform(INameValuePairTransformer transformer)
-        {
-            requireNameValuePair();
-            return nameValuePairPart(new NameValuePairTransformerProcessor { transformer = transformer });
-        }
-
-        public Pnyx nameValuePairTransform(Func<IDictionary<String, Object>, IDictionary<String, Object>> transformer)
-        {
-            requireNameValuePair();
-            return nameValuePairPart(new NameValuePairTransformerProcessor { transformer = new NameValuePairTransformerFunc { transformFunc = transformer }});
-        }
-        
-        public Pnyx objectPart(IObjectPart objectPart)
-        {
-            requireObject();
-            
-            parts.Add(objectPart);
-            state = FluentState.Object;
-            return this;
-        }
-        
-        public Pnyx objectFilter(IObjectFilter filter)
-        {
-            requireObject();
-            return objectPart(new ObjectFilterProcessor { filter = filter });
-        }
-
-        public Pnyx objectFilter(Func<object, bool> filter)
-        {
-            requireObject();
-            return objectPart(new ObjectFilterProcessor { filter = new ObjectFilterFunc { filterFunc = filter }});
-        }
-
-        public Pnyx objectFilter<T>(Func<T, bool> filter)
-        {
-            requireObject();
-            return objectPart(new ObjectFilterProcessor { filter = new ObjectFilterFunc<T> { filterFunc = filter }});
-        }
-
-        public Pnyx objectTransform(IObjectTransformer transformer)
-        {
-            requireObject();
-            return objectPart(new ObjectTransformerProcessor { transformer = transformer });
-        }
-
-        public Pnyx objectTransform(Func<object, object> transformer)
-        {
-            requireObject();
-            return objectPart(new ObjectTransformerProcessor { transformer = new ObjectTransformerFunc { transformFunc = transformer }});
-        }
-
-        public Pnyx objectTransform<TSource>(Func<TSource, object> transformer)
-        {
-            requireObject();
-            return objectPart(new ObjectTransformerProcessor { transformer = new ObjectTransformerFunc<TSource, object> { transformFunc = transformer }});
-        }
-
-        public Pnyx objectTransform<TSource, TDest>(Func<TSource, TDest> transformer)
-        {
-            requireObject();
-            return objectPart(new ObjectTransformerProcessor { transformer = new ObjectTransformerFunc<TSource, TDest> { transformFunc = transformer }});
-        }
-        
-        public Pnyx grep(String textToFind, bool caseSensitive = true)
-        {
-            return lineFilter(new Grep { textToFind = textToFind, caseSensitive = caseSensitive });
-        }
-
-        public Pnyx egrep(String expression, bool caseSensitive = true)
-        {
-            return lineFilter(new EGrep(expression, caseSensitive));
-        }
-
-        public Pnyx hasLine()
-        {
-            return lineFilter(new HasLine());
-        }
-
-        public Pnyx sed(String pattern, String replacement, String flags = null)
-        {
-            return lineTransformer(new SedReplace(pattern, replacement, flags));
-        }
-
-        public Pnyx sedLineNumber()
-        {
-            return lineBuffering(new SedLineNumber());
-        }
-
-        public Pnyx sedAppendRow(List<String> toAppend)
-        {
-            return rowBuffering(new SedAppendRow { text = toAppend });
-        }
-
-        public Pnyx sedAppendLine(String text)
-        {
-            return lineBuffering(new SedAppendLine { text = text });            
-        }
-
-        public Pnyx sedInsert(String text)
-        {
-            return lineBuffering(new SedInsert { text = text });
-        }
-
-        public Pnyx countLines(bool checkData = true)
-        {
-            CountLines part = new CountLines { checkData = checkData };
-            if (state == FluentState.Row)
-                return rowBuffering(part);
-
-            return lineBuffering(part);
-        }
-
-        public Pnyx countWords()
-        {
-            CountWords part = new CountWords();
-            if (state == FluentState.Row)
-                return rowBuffering(part);
-
-            return lineBuffering(part);
-        }
-
-        public Pnyx compile()
-        {
-            defaultOutput();
-            
-            if (state == FluentState.Compiled || state == FluentState.CompiledServile)
-                return this;
-                        
-            if (state != FluentState.End)
-                throw new IllegalStateException("Pnyx is not in End state: {0}", state.ToString());
-            
-            if (numberedInputOutput != null && !numberedInputOutput.verifyAllUsed())
-                throw new InvalidArgumentException("Not all inputs have been used.");
-            
-            foreach (Object part in parts)
-                if (part is IDisposable)
-                    resources.Add((IDisposable)part);
-            
-            Object last = parts[parts.Count - 1]; 
-            for (int i = parts.Count-2; i >= 0; i--)
-            {
-                Object part = parts[i];
-
-                if (part is IRowPart)
-                {
-                    IRowPart currentPart = (IRowPart)part;
-                    currentPart.setNextRowProcessor((IRowProcessor)last);
-                }
-                else if (part is ILinePart)
-                {
-                    ILinePart currentPart = (ILinePart)part;
-                    currentPart.setNextLineProcessor((ILineProcessor)last);
-                }
-                else if (part is INameValuePairPart)
-                {
-                    INameValuePairPart currentPart = (INameValuePairPart)part;
-                    currentPart.setNextNameValuePairProcessor((INameValuePairProcessor)last);
-                }
-                else if (part is IObjectPart)
-                {
-                    IObjectPart currentPart = (IObjectPart)part;
-                    currentPart.setNextObjectProcessor((IObjectProcessor)last);
-                }
-                else
-                    throw new IllegalStateException("Unknown part {0} should be consumed before compiling", part.GetType().Name);
-
-                last = part;                    
-            }
-
-            processor = parts[0] as IProcessor;
-
-            if (processor == null)
-                state = FluentState.CompiledServile;         // first part is dependent upon another source (like a Tee from another Pnyx)
+            IRowFilterShimModifier? shimModifier = retrieveModifier<IRowFilterShimModifier>(); 
+            if (filter is IRowFilter)
+                return rowFilter((IRowFilter) filter);
+            else if (shimModifier != null)
+                return rowFilter(shimModifier.shimLineFilter(filter));                
             else
-                state = FluentState.Compiled;
-            
-            return this;
-        }      
+                return rowFilter(new RowFilterShimOr(filter));                
+        }
+                
+        return linePart(new LineFilterProcessor(filter));
+    }
         
-        private Pnyx setEnd(Stream output, Object destination = null)
+    public Pnyx lineTransformer(ILineTransformer transform)
+    {
+        // Process any modifier
+        ILineTransformerModifier? modifier = retrieveModifier<ILineTransformerModifier>();
+        if (modifier != null)
+            transform = modifier.modifyLineTransformer(transform);                        // wraps filter according to active modifier            
+            
+        if (state == FluentState.Row)
         {
-            requireStart(line: true, row: true);
-
-            IRowConverter endRowConverter = destination as IRowConverter;
-            ILineProcessor lineDestination = destination as ILineProcessor;
+            IRowTransformerShimModifier? shimModifier = retrieveModifier<IRowTransformerShimModifier>();                
+            if (transform is IRowTransformer)
+                return rowTransformer((IRowTransformer)transform);
+            if (shimModifier != null)
+                return rowTransformer(shimModifier.shimLineTransformer(transform));
             
-            if ((state == FluentState.Start || state == FluentState.Line) && endRowConverter != null)
-                lineToRow(endRowConverter);                
+            return rowTransformer(new RowTransformerShimOr(transform));                
+        }
 
-            if (state == FluentState.Row && lineDestination != null)
-            {
-                //TODO insert a rowToLine conversion and then compile as LINE
-                throw new NotImplementedException("TODO");    
-            }
+        return linePart(new LineTransformerProcessor(transform));
+    }                         
+        
+    public Pnyx lineBuffering(ILineBuffering buffering)
+    {
+        if (state == FluentState.Row)
+        {
+            if (buffering is IRowBuffering)
+                return rowBuffering((IRowBuffering) buffering);
+            else                        
+                throw new IllegalStateException("Convert to Line before using lineBuffering");                
+        }
             
-            if (state == FluentState.Row)
-            {
-                endRowConverter = endRowConverter ?? rowConverter;
-                IRowProcessor rowDestination = endRowConverter.buildRowDestination(streamInformation, output);
+        return linePart(new LineBufferingProcessor(buffering));
+    }             
+        
+    public Pnyx lineFilter(Func<String, bool> filter)
+    {
+        return lineFilter(new LineFilterFunc(filter));
+    }
+        
+    public Pnyx lineTransformer(Func<String, String?> transform)
+    {
+        return lineTransformer(new LineTransformerFunc(transform));
+    }
 
-                if (rowDestination == null)
-                    rowToLine();                    // converts to line, then falls through to (state == line)
-                else
-                {
-                    parts.Add(rowDestination);
-                    state = FluentState.End;
-                }
+    public Pnyx shimAnd(Action<Pnyx> block)
+    {
+        if (state != FluentState.Row)
+            throw new IllegalStateException("Shim is only needed in Row state: {0}", state.ToString());
+
+        int toRemove = parts.Count;
+        parts.Add(new AndShimModifier());
+
+        // Runs wrapped
+        block(this);
+            
+        if (state != FluentState.Row)
+            throw new IllegalStateException("Shim is only supports Row actions: {0}", state.ToString());
+
+        parts.RemoveAt(toRemove);
+        return this;
+    }
+        
+    public Pnyx rowPart(IRowPart rowPart)
+    {
+        requireStart(line: false, row: true);
+
+        parts.Add(rowPart);
+        state = FluentState.Row;
+        return this;
+    }
+
+    public Pnyx rowFilter(IRowFilter rowFilter)
+    {
+        // Process any modifier
+        IRowFilterModifier? modifier = retrieveModifier<IRowFilterModifier>();
+        if (modifier != null)
+            rowFilter = modifier.modifyRowFilter(rowFilter);                        // wraps filter according to active modifier
+                        
+        return rowPart(new RowFilterProcessor(rowFilter));
+    }       
+
+    public Pnyx rowTransformer(IRowTransformer transform)
+    {
+        // Process any modifier
+        IRowTransformerModifer? modifier = retrieveModifier<IRowTransformerModifer>();
+        if (modifier != null)
+            transform = modifier.modifyRowTransformer(transform);                  // wraps filter according to active modifier
+            
+        return rowPart(new RowTransformerProcessor(transform));
+    }
+        
+    public Pnyx rowFilter(Func<List<String?>, bool> filter)
+    {
+        return rowFilter(new RowFilterFunc(filter));
+    }
+        
+    public Pnyx rowTransformer(Func<List<String?>, List<String?>?> transform, bool treatHeaderAsRow = false)
+    {
+        return rowTransformer(new RowTransformerFunc(transform, treatHeaderAsRow));
+    }           
+        
+    public Pnyx rowBuffering(IRowBuffering buffering)
+    {
+        return rowPart(new RowBufferingProcessor(buffering));
+    }
+        
+    public Pnyx columnFilter(int columnNumber, ILineFilter lineFilter)
+    {
+        ColumnIndex[] indices = convertColumnNumbersToIndex(columnNumber);
+        return rowFilter(new RowFilterWithColumns(indices, new RowFilterShimOr(lineFilter)));
+    }
+        
+    public Pnyx columnFilter(int columnNumber, Func<String, bool> filter)
+    {
+        ColumnIndex[] indexes = convertColumnNumbersToIndex(columnNumber);
+        ILineFilter lineFilter = new LineFilterFunc(filter);
+        return rowFilter(new RowFilterWithColumns(indexes, new RowFilterShimOr(lineFilter)));
+    }
+        
+    public Pnyx columnFilter(ColumnIndex columnIndex, ILineFilter lineFilter)
+    {
+        ColumnIndex[] indices = [columnIndex.Index];
+        return rowFilter(new RowFilterWithColumns(indices, new RowFilterShimOr(lineFilter)));
+    }
+        
+    public Pnyx columnFilter(ColumnIndex columnIndex, Func<String, bool> filter)
+    {
+        ColumnIndex[] indices = [columnIndex.Index];
+        ILineFilter lineFilter = new LineFilterFunc(filter);
+        return rowFilter(new RowFilterWithColumns(indices, new RowFilterShimOr(lineFilter)));
+    }
+        
+    public Pnyx columnTransformer(int columnNumber, ILineTransformer lineTransformer)
+    {
+        ColumnIndex[] indices = convertColumnNumbersToIndex(columnNumber);
+        return rowTransformer(new RowTransformerWithColumns(indices, new RowTransformerShimOr(lineTransformer)));
+    }
+        
+    public Pnyx columnTransformer(int columnNumber, Func<String, String> transform)
+    {
+        ColumnIndex[] indices = convertColumnNumbersToIndex(columnNumber);
+        ILineTransformer lineTransformer = new LineTransformerFunc(transform);
+        return rowTransformer(new RowTransformerWithColumns(indices, new RowTransformerShimOr(lineTransformer)));
+    }
+        
+    public Pnyx columnTransformer(ColumnIndex columnIndex, ILineTransformer lineTransformer)
+    {
+        ColumnIndex[] indices = [columnIndex.Index];
+        return rowTransformer(new RowTransformerWithColumns(indices, new RowTransformerShimOr(lineTransformer)));
+    }
+        
+    public Pnyx columnTransformer(ColumnIndex columnIndex, Func<String, String> transform)
+    {
+        ColumnIndex[] indices = [columnIndex.Index];
+        ILineTransformer lineTransformer = new LineTransformerFunc(transform);
+        return rowTransformer(new RowTransformerWithColumns(indices, new RowTransformerShimOr(lineTransformer)));
+    }
+
+    public Pnyx nameValuePairPart(INameValuePairPart pairPart)
+    {
+        requireNameValuePair();
+            
+        parts.Add(pairPart);
+        state = FluentState.NameValuePair;
+        return this;
+    }
+        
+    public Pnyx nameValuePairFilter(INameValuePairFilter filter)
+    {
+        requireNameValuePair();
+        return nameValuePairPart(new NameValuePairFilterProcessor(filter));
+    }
+
+    public Pnyx nameValuePairFilter(Func<IDictionary<string, object?>, bool> filter)
+    {
+        requireNameValuePair();
+        return nameValuePairPart(new NameValuePairFilterProcessor(new NameValuePairFilterFunc(filter)));
+    }
+
+    public Pnyx nameValuePairTransform(INameValuePairTransformer transformer)
+    {
+        requireNameValuePair();
+        return nameValuePairPart(new NameValuePairTransformerProcessor(transformer));
+    }
+
+    public Pnyx nameValuePairTransform(Func<IDictionary<String, Object?>, IDictionary<String, Object?>> transformer)
+    {
+        requireNameValuePair();
+        return nameValuePairPart(new NameValuePairTransformerProcessor(new NameValuePairTransformerFunc(transformer)));
+    }
+        
+    public Pnyx objectPart(IObjectPart objectPart)
+    {
+        requireObject();
+            
+        parts.Add(objectPart);
+        state = FluentState.Object;
+        return this;
+    }
+        
+    public Pnyx objectFilter(IObjectFilter filter)
+    {
+        requireObject();
+        return objectPart(new ObjectFilterProcessor(filter));
+    }
+
+    public Pnyx objectFilter(Func<object, bool> filter)
+    {
+        requireObject();
+        return objectPart(new ObjectFilterProcessor(new ObjectFilterFunc(filter)));
+    }
+
+    public Pnyx objectFilter<T>(Func<T, bool> filter)
+    {
+        requireObject();
+        return objectPart(new ObjectFilterProcessor(new ObjectFilterFunc<T>(filter)));
+    }
+
+    public Pnyx objectTransform(IObjectTransformer transformer)
+    {
+        requireObject();
+        return objectPart(new ObjectTransformerProcessor(transformer));
+    }
+
+    public Pnyx objectTransform(Func<object, object?> transformer)
+    {
+        requireObject();
+        return objectPart(new ObjectTransformerProcessor(new ObjectTransformerFunc(transformer)));
+    }
+
+    public Pnyx objectTransform<TSource>(Func<TSource, object?> transformer)
+    {
+        requireObject();
+        return objectPart(new ObjectTransformerProcessor(new ObjectTransformerFunc<TSource, object>(transformer)));
+    }
+
+    public Pnyx objectTransform<TSource, TDest>(Func<TSource, TDest> transformer)
+    {
+        requireObject();
+        return objectPart(new ObjectTransformerProcessor(new ObjectTransformerFunc<TSource, TDest>(transformer)));
+    }
+        
+    public Pnyx grep(String textToFind, bool caseSensitive = true)
+    {
+        return lineFilter(new Grep(textToFind, caseSensitive));
+    }
+
+    public Pnyx egrep(String expression, bool caseSensitive = true)
+    {
+        return lineFilter(new EGrep(expression, caseSensitive));
+    }
+
+    public Pnyx hasLine()
+    {
+        return lineFilter(new HasLine());
+    }
+
+    public Pnyx sed(String pattern, String replacement, String? flags = null)
+    {
+        return lineTransformer(new SedReplace(pattern, replacement, flags));
+    }
+
+    public Pnyx sedLineNumber()
+    {
+        return lineBuffering(new SedLineNumber());
+    }
+
+    public Pnyx sedAppendRow(List<String?> toAppend)
+    {
+        return rowBuffering(new SedAppendRow(toAppend));
+    }
+
+    public Pnyx sedAppendLine(String text)
+    {
+        return lineBuffering(new SedAppendLine { text = text });            
+    }
+
+    public Pnyx sedInsert(String text)
+    {
+        return lineBuffering(new SedInsert(text));
+    }
+
+    public Pnyx countLines(bool checkData = true)
+    {
+        CountLines part = new CountLines { checkData = checkData };
+        if (state == FluentState.Row)
+            return rowBuffering(part);
+
+        return lineBuffering(part);
+    }
+
+    public Pnyx countWords()
+    {
+        CountWords part = new CountWords();
+        if (state == FluentState.Row)
+            return rowBuffering(part);
+
+        return lineBuffering(part);
+    }
+
+    public Pnyx compile()
+    {
+        defaultOutput();
+            
+        if (state == FluentState.Compiled || state == FluentState.CompiledServile)
+            return this;
+                        
+        if (state != FluentState.End)
+            throw new IllegalStateException("Pnyx is not in End state: {0}", state.ToString());
+            
+        if (numberedInputOutput != null && !numberedInputOutput.verifyAllUsed())
+            throw new InvalidArgumentException("Not all inputs have been used.");
+            
+        foreach (IPart part in parts)
+            if (part is IAsyncDisposable)
+                resources.Add((IAsyncDisposable)part);
+            
+        IPart last = parts[^1]; 
+        for (int i = parts.Count-2; i >= 0; i--)
+        {
+            IPart part = parts[i];
+
+            if (part is IRowPart)
+            {
+                IRowPart currentPart = (IRowPart)part;
+                currentPart.setNextRowProcessor((IRowProcessor)last);
             }
-
-            if (state == FluentState.Line || state == FluentState.Start)
+            else if (part is ILinePart)
             {
-                lineDestination = lineDestination ?? new LineProcessorToStream(streamInformation, output);                
-                parts.Add(lineDestination);
+                ILinePart currentPart = (ILinePart)part;
+                currentPart.setNextLineProcessor((ILineProcessor)last);
+            }
+            else if (part is INameValuePairPart)
+            {
+                INameValuePairPart currentPart = (INameValuePairPart)part;
+                currentPart.setNextNameValuePairProcessor((INameValuePairProcessor)last);
+            }
+            else if (part is IObjectPart)
+            {
+                IObjectPart currentPart = (IObjectPart)part;
+                currentPart.setNextObjectProcessor((IObjectProcessor)last);
+            }
+            else
+                throw new IllegalStateException("Unknown part {0} should be consumed before compiling", part.GetType().Name);
+
+            last = part;                    
+        }
+
+        processor = parts[0] as IProcessor;
+
+        if (processor == null)
+            state = FluentState.CompiledServile;         // first part is dependent upon another source (like a Tee from another Pnyx)
+        else
+            state = FluentState.Compiled;
+            
+        return this;
+    }      
+        
+    private Pnyx setEnd(Stream? output, Object? destination = null)
+    {
+        requireStart(line: true, row: true);
+
+        IRowConverter? endRowConverter = destination as IRowConverter;
+        ILineProcessor? lineDestination = destination as ILineProcessor;
+            
+        if ((state == FluentState.Start || state == FluentState.Line) && endRowConverter != null)
+            lineToRow(endRowConverter);                
+
+        if (state == FluentState.Row && lineDestination != null)
+        {
+            //TODO insert a rowToLine conversion and then compile as LINE
+            throw new NotImplementedException("TODO");    
+        }
+            
+        if (state == FluentState.Row)
+        {
+            endRowConverter = endRowConverter ?? rowConverter;
+            if (endRowConverter == null)
+                throw new IllegalStateException("No row converter available");
+            
+            IRowProcessor? rowDestination = null;
+            if (output != null)
+                endRowConverter.buildRowDestination(streamInformation, output);
+            
+            if (rowDestination == null)
+                rowToLine();                    // converts to line, then falls through to (state == line)
+            else
+            {
+                parts.Add(rowDestination);
                 state = FluentState.End;
             }
+        }
+
+        if (state == FluentState.Line || state == FluentState.Start)
+        {
+            lineDestination = lineDestination ?? new LineProcessorToStream(streamInformation, output);                
+            parts.Add(lineDestination);
+            state = FluentState.End;
+        }
             
-            return this;
-        }
+        return this;
+    }
 
-        public Pnyx write(String path)
-        {
-            return setEnd(new FileStream(path, FileMode.Create, FileAccess.Write));
-        }
+    public Pnyx write(String path)
+    {
+        return setEnd(new FileStream(path, FileMode.Create, FileAccess.Write));
+    }
 
-        public Pnyx writeArg(int argNumber)
-        {
-            if (numberedInputOutput == null)
-                throw new IllegalStateException("writeArg is only valid when used via command line or INumberedInputOutput is provided");
+    public Pnyx writeArg(int argNumber)
+    {
+        if (numberedInputOutput == null)
+            throw new IllegalStateException("writeArg is only valid when used via command line or INumberedInputOutput is provided");
 
-            String fileName = numberedInputOutput.getFileName(argNumber);
-            return write(fileName);
-        }
+        String fileName = numberedInputOutput.getFileName(argNumber);
+        return write(fileName);
+    }
 
-        public Pnyx writeStream(Stream output)
-        {
-            return setEnd(output);
-        }
+    public Pnyx writeStream(Stream output)
+    {
+        return setEnd(output);
+    }
 
-        public Pnyx writeCsv(String path, bool strict = true, char? delimiter = null, char? escapeChar = null)
-        {
-            CsvSettings csvSettings = settings.buildCsvSettings().setDefaults(strict, delimiter, escapeChar);
-            CsvRowConverter converter = new CsvRowConverter(csvSettings);
+    public Pnyx writeCsv(String path, bool strict = true, char? delimiter = null, char? escapeChar = null)
+    {
+        CsvSettings csvSettings = settings.buildCsvSettings().setDefaults(strict, delimiter, escapeChar);
+        CsvRowConverter converter = new CsvRowConverter(csvSettings);
             
-            return setEnd(new FileStream(path, FileMode.Create, FileAccess.Write), converter);            
-        }
+        return setEnd(new FileStream(path, FileMode.Create, FileAccess.Write), converter);            
+    }
 
-        public Pnyx writeCsvStream(Stream stream, bool strict = true, char? delimiter = null, char? escapeChar = null)
-        {
-            CsvSettings csvSettings = settings.buildCsvSettings().setDefaults(strict, delimiter, escapeChar);
-            CsvRowConverter converter = new CsvRowConverter(csvSettings);
+    public Pnyx writeCsvStream(Stream stream, bool strict = true, char? delimiter = null, char? escapeChar = null)
+    {
+        CsvSettings csvSettings = settings.buildCsvSettings().setDefaults(strict, delimiter, escapeChar);
+        CsvRowConverter converter = new CsvRowConverter(csvSettings);
             
-            return setEnd(stream, converter);            
-        }
+        return setEnd(stream, converter);            
+    }
 
-        public Pnyx writeStdout()
-        {
-            setSettings(outputByteOrderMarks: false);        // turns off BOM to STD-OUT            
-            return setEnd(Console.OpenStandardOutput());
-        }
+    public Pnyx writeStdout()
+    {
+        setSettings(outputByteOrderMarks: false);        // turns off BOM to STD-OUT            
+        return setEnd(Console.OpenStandardOutput());
+    }
 
-        public Pnyx writeSplit(String fileNamePattern, int limit, String path = null)
-        {
-            if (!fileNamePattern.Contains("$0"))
-                throw new InvalidArgumentException("FileName pattern requires $0 substitution variable");
+    public Pnyx writeSplit(String fileNamePattern, int limit, String path = null)
+    {
+        if (!fileNamePattern.Contains("$0"))
+            throw new InvalidArgumentException("FileName pattern requires $0 substitution variable");
             
-            if (state == FluentState.Row)
-                rowToLine();
+        if (state == FluentState.Row)
+            rowToLine();
 
-            return setEnd(null, new LineProcessorSplit(streamInformation, fileNamePattern, limit, path));
-        }
+        return setEnd(null, new LineProcessorSplit(streamInformation, fileNamePattern, limit, path));
+    }
 
-        public Pnyx rewrite(bool? backupOriginal = null, bool? deleteBackup = null)
+    /// <summary>
+    /// Writes output to a temporary file. Once all processing is done, the temporary file is renamed
+    /// to the original source-input file. Since renaming may fail, the original file is backed up when `backupOriginal`
+    /// flag is true, via parameter or value from settings. Once the entire operation is complete and successful, the
+    /// `deleteBackup` is used to clean up the backup file. Note, this final clean up only rule if all other preceeding
+    /// steps success, which is the suggested default behavior.  
+    /// </summary>
+    public Pnyx rewrite(bool? backupOriginal = null, bool? deleteBackup = null)
+    {
+        bool backupOriginal_ = backupOriginal ?? settings.backupRewrite;
+        bool deleteBackup_ = deleteBackup ?? !settings.backupRewrite;
+            
+        if (sourceFiles.Count != 1)
+            throw new InvalidArgumentException("rewrite is only valid when source is a single file, but found source files of: {0}", sourceFiles.Count);
+            
+        String tempFile = Path.Combine(settings.tempDirectory, Guid.NewGuid() + ".tmp");
+
+        String sourcePath = sourceFiles[0];
+
+        String sourceFileName = Path.GetFileName(sourcePath);
+        String backupFile = Path.Combine(settings.tempDirectory, sourceFileName + Guid.NewGuid());
+
+        // Adds hook to move file after processing/dispose is complete
+        stateDisposeHandler += (sender, pnyx) =>
         {
-            bool backupOriginal_ = backupOriginal ?? settings.backupRewrite;
-            bool deleteBackup_ = deleteBackup ?? !settings.backupRewrite;
-            
-            if (sourceFiles.Count != 1)
-                throw new InvalidArgumentException("rewrite is only valid when source is a single file, but found source files of: {0}", sourceFiles.Count);
-            
-            String tempFile = Path.Combine(settings.tempDirectory, Guid.NewGuid() + ".tmp");
-
-            String sourcePath = sourceFiles[0];
-
-            String sourceFileName = Path.GetFileName(sourcePath);
-            String backupFile = Path.Combine(settings.tempDirectory, sourceFileName + Guid.NewGuid());
-
-            // Adds hook to move file after processing is complete
-            stateProcessedHandler += (sender, pnyx) =>
-            {
-                // Backs up original file
-                if (backupOriginal_)
-                    File.Move(sourcePath, backupFile);
-                else
-                    File.Delete(sourcePath);
+            // Backs up original file
+            if (backupOriginal_)
+                File.Move(sourcePath, backupFile);
+            else
+                File.Delete(sourcePath);
                                 
-                // Rewrites output to original source path
-                File.Move(tempFile, sourcePath);
+            // Rewrites output to original source path
+            File.Move(tempFile, sourcePath);
                 
-                // Deletes back up
-                if (backupOriginal_ && deleteBackup_)
-                    File.Delete(backupFile);
-            };            
+            // Deletes back up
+            if (backupOriginal_ && deleteBackup_)
+                File.Delete(backupFile);
+        };            
             
-            // Performs a standard write to a temporary file
-            write(tempFile);            
+        // Performs a standard write to a temporary file
+        write(tempFile);            
 
-            return this;
-        }
+        return this;
+    }
 
-        public Pnyx captureText(StringBuilder builder)
-        {
-            return setEnd(null, new CaptureText(streamInformation, builder));
-        }
+    public Pnyx captureText(StringBuilder builder)
+    {
+        return setEnd(null, new CaptureText(streamInformation, builder));
+    }
 
-        public Pnyx endRow(IRowProcessor rowProcessor)
-        {
-            requireStart(line: false, row: true);
-            parts.Add(rowProcessor);
-            state = FluentState.End;
-            return this;            
-        }
+    public Pnyx endRow(IRowProcessor rowProcessor)
+    {
+        requireStart(line: false, row: true);
+        parts.Add(rowProcessor);
+        state = FluentState.End;
+        return this;            
+    }
 
-        public Pnyx endLine(ILineProcessor lineProcessor)
-        {
-            requireStart(line: true, row: true);
-            if (state == FluentState.Row)
-                rowToLine();                    // converts to line
+    public Pnyx endLine(ILineProcessor lineProcessor)
+    {
+        requireStart(line: true, row: true);
+        if (state == FluentState.Row)
+            rowToLine();                    // converts to line
             
-            parts.Add(lineProcessor);
-            state = FluentState.End;
-            return this;            
-        }
+        parts.Add(lineProcessor);
+        state = FluentState.End;
+        return this;            
+    }
 
-        public Pnyx endNameValuePair(INameValuePairProcessor nvpProcessor)
-        {
-            requireNameValuePair();
-            parts.Add(nvpProcessor);
-            state = FluentState.End;
-            return this;
-        }
+    public Pnyx endNameValuePair(INameValuePairProcessor nvpProcessor)
+    {
+        requireNameValuePair();
+        parts.Add(nvpProcessor);
+        state = FluentState.End;
+        return this;
+    }
 
-        public Pnyx endObject(IObjectProcessor objProcessor)
-        {
-            requireObject();
+    public Pnyx endObject(IObjectProcessor objProcessor)
+    {
+        requireObject();
 
-            parts.Add(objProcessor);
-            state = FluentState.End;
-            return this;
-        }
+        parts.Add(objProcessor);
+        state = FluentState.End;
+        return this;
+    }
 
-        public Pnyx tee(Action<Pnyx> block)
-        {
-            requireStart(line: true, row: true);
+    public Pnyx tee(Action<Pnyx> block)
+    {
+        requireStart(line: true, row: true);
             
-            Pnyx teePnyx = new Pnyx(settings, streamInformation);
+        Pnyx teePnyx = new Pnyx(settings, streamInformation);
             
-            if (state == FluentState.Start || state == FluentState.Line)
-            {
-                LinePassProcessor teePass = new LinePassProcessor();
-                teePnyx.readLine(teePass);
-                linePart(new LineTeeProcessor(teePass));
-            }
-            else if (state == FluentState.Row)
-            {
-                RowPassProcessor teePass = new RowPassProcessor();
-                teePnyx.readRow(teePass, rowConverter);
-                rowPart(new RowTeeProcessor(teePass));
-            }
-
-            block(teePnyx);
-            teePnyx.compile();
-            resources.Add(teePnyx);
-            return this;
+        if (state == FluentState.Start || state == FluentState.Line)
+        {
+            LinePassProcessor teePass = new LinePassProcessor();
+            teePnyx.readLine(teePass);
+            linePart(new LineTeeProcessor(teePass));
         }
+        else if (state == FluentState.Row)
+        {
+            RowPassProcessor teePass = new RowPassProcessor();
+            if (rowConverter == null)
+                throw new IllegalStateException("No row converter available");
+            teePnyx.readRow(teePass, rowConverter);
+            rowPart(new RowTeeProcessor(teePass));
+        }
+
+        block(teePnyx);
+        teePnyx.compile();
+        resources.Add(teePnyx);
+        return this;
+    }
         
-        public String processToString(Action<Pnyx,Stream> writeAction = null)
-        {
-            using (MemoryStream stream = new MemoryStream())
-            {
-                if (writeAction != null)
-                    writeAction(this, stream);
-                else
-                    writeStream(stream);
+    public async Task<String> processToString(Action<Pnyx,Stream>? writeAction = null)
+    {
+        using MemoryStream stream = new MemoryStream();
+        if (writeAction != null)
+            writeAction(this, stream);
+        else
+            writeStream(stream);
                 
-                process();
+        await process();
 
-                return streamInformation.getOutputEncoding().GetString(stream.ToArray());
-            }
-        }
+        return streamInformation.getOutputEncoding().GetString(stream.ToArray());
+    }
 
-        private Pnyx defaultInput()
+    private Pnyx defaultInput()
+    {
+        if (numberedInputOutput != null)
         {
-            if (numberedInputOutput != null)
-            {
-                String inputFile = numberedInputOutput.getImpliedInputFileName();
-                if (inputFile != null)
-                    return read(inputFile);
-            }
-
-            if (settings.stdIoDefault)
-                return readStdin();
-            
-            return null;
+            String? inputFile = numberedInputOutput.getImpliedInputFileName();
+            if (inputFile != null)
+                return read(inputFile);
         }
 
-        private Pnyx defaultOutput()
+        if (settings.stdIoDefault)
+            return readStdin();
+            
+        return this;
+    }
+
+    private Pnyx defaultOutput()
+    {
+        if (state == FluentState.New)
+            defaultInput();
+
+        bool properState = state == FluentState.Line || state == FluentState.Row || state == FluentState.Start;
+        if (!properState)
+            return this;
+            
+        if (numberedInputOutput != null)
         {
-            if (state == FluentState.New)
-                defaultInput();
-
-            bool properState = state == FluentState.Line || state == FluentState.Row || state == FluentState.Start;
-            if (!properState)
-                return null;
-            
-            if (numberedInputOutput != null)
-            {
-                String outputFile = numberedInputOutput.getImpliedOutputFileName();
-                if (outputFile != null)
-                    return write(outputFile);
-            }
-
-            if (settings.stdIoDefault)
-                return writeStdout();
-            
-            return null;
+            String? outputFile = numberedInputOutput.getImpliedOutputFileName();
+            if (outputFile != null)
+                return write(outputFile);
         }
 
-        public Pnyx process()
+        if (settings.stdIoDefault)
+            return writeStdout();
+            
+        return this;
+    }
+
+    public async Task<Pnyx> process()
+    {
+        defaultOutput();
+            
+        if (state == FluentState.End)
+            compile();
+            
+        if (state == FluentState.CompiledServile)
+            throw new IllegalStateException("Pnyx is servile to another Pnyx");
+            
+        if (state != FluentState.Compiled)
+            throw new IllegalStateException("Pnyx must have an end point before processing");
+
+        if (processor == null)
+            throw new IllegalStateException("Pnyx processor is not set");
+        
+        try
+        {
+            await processor.process();
+        }
+        finally
+        {
+            state = FluentState.Processed;
+        }
+
+        return this;
+    }
+
+    public async Task<List<IDictionary<String, Object?>>> processCaptureNameValuePairs()
+    {
+        if (state != FluentState.NameValuePair)
+            throw new IllegalStateException("Pnyx must be in NameValuePair state");
+
+        CaptureNameValuePairProcessor capture = new();
+        endNameValuePair(capture);
+
+        await process();
+
+        return capture.records;
+    }
+
+    public async Task<List<T>> processCaptureObject<T>()
+    {
+        requireObject();
+
+        CaptureObjectProcessor<T> capture = new ();
+        endObject(capture);
+
+        await process();
+
+        return capture.records;
+    }
+
+    public async Task<List<string>> processCaptureLines()
+    {
+        CaptureLineProcessor capture = new();
+            
+        endLine(capture);
+        await process();
+            
+        return capture.records;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (settings.processOnDispose)
         {
             defaultOutput();
+            if (state == FluentState.End || state == FluentState.Compiled)
+                await process();
+        }
             
-            if (state == FluentState.End)
-                compile();
+        if (state == FluentState.Disposed)
+            return;
             
-            if (state == FluentState.CompiledServile)
-                throw new IllegalStateException("Pnyx is servile to another Pnyx");
+        foreach (IAsyncDisposable resource in resources)
+            await resource.DisposeAsync();                                    
+        resources.Clear();
+        
+        state = FluentState.Disposed;            
             
-            if (state != FluentState.Compiled)
-                throw new IllegalStateException("Pnyx must have an end point before processing");
+        // Notifies that pnyx is finished processing and has been disposed 
+        if (stateDisposeHandler != null)
+            stateDisposeHandler(this, this);
+        
+        stateDisposeHandler = null;
+    }
+    
+    private ModifierType? retrieveModifier<ModifierType>(bool stopAtFirstModifier = true, bool consume = false) where ModifierType : class, IModifier 
+    {
+        // finds first modifier, scanning from end of parts
+        for (int i = parts.Count - 1; i >= 0; i--)
+        {
+            IModifier? modifier = parts[i] as IModifier;
+            if (modifier == null)
+                continue;
 
-            try
+            ModifierType? result = modifier as ModifierType;
+            if (stopAtFirstModifier || result != null)
             {
-                processor.process();
-            }
-            finally
-            {
-                state = FluentState.Processed;
-            }
-            
-            // Updates events
-            if (stateProcessedHandler != null)
-                stateProcessedHandler(this, this);
-            stateProcessedHandler = null;
-
-            return this;
-        }
-
-        public List<IDictionary<String, Object>> processCaptureNameValuePairs()
-        {
-            if (state != FluentState.NameValuePair)
-                throw new IllegalStateException("Pnyx must be in NameValuePair state");
-
-            CaptureNameValuePairProcessor capture = new();
-            endNameValuePair(capture);
-
-            process();
-
-            return capture.records;
-        }
-
-        public List<T> processCaptureObject<T>()
-        {
-            requireObject();
-
-            CaptureObjectProcessor<T> capture = new ();
-            endObject(capture);
-
-            process();
-
-            return capture.records;
-        }
-
-        public List<string> processCaptureLines()
-        {
-            CaptureLineProcessor capture = new();
-            
-            endLine(capture);
-            process();
-            
-            return capture.records;
-        }
-
-        public void Dispose()
-        {
-            if (settings.processOnDispose)
-            {
-                defaultOutput();
-                if (state == FluentState.End || state == FluentState.Compiled)
-                    process();
-            }
-            
-            if (state == FluentState.Disposed)
-                return;
-            
-            foreach (IDisposable resource in resources)
-                resource.Dispose();                                    
-            resources.Clear();
-
-            stateProcessedHandler = null;
-            
-            state = FluentState.Disposed;            
-        }
-
-        private ModifierType retrieveModifier<ModifierType>(bool stopAtFirstModifier = true, bool consume = false) 
-            where ModifierType : class, IModifier 
-        {
-            // finds first modifier, scanning from end of parts
-            for (int i = parts.Count - 1; i >= 0; i--)
-            {
-                IModifier modifier = parts[i] as IModifier;
-                if (modifier == null)
-                    continue;
-
-                ModifierType result = modifier as ModifierType;
-                if (stopAtFirstModifier || result != null)
-                {
-                    if (consume && result != null)
-                        parts.RemoveAt(i);
+                if (consume && result != null)
+                    parts.RemoveAt(i);
                     
-                    return result;
-                }
+                return result;
+            }
+        }
+
+        return null;
+    }
+
+    // groups 0,1, or more filters.  Allows 0 and 1 so that any variable number of filters are treated as 1
+    private Pnyx groupFilters
+    (
+        Action<Pnyx> block,
+        Func<IEnumerable<ILineFilter>, ILineFilter> lineFilterFactory,
+        Func<IEnumerable<IRowFilter>, IRowFilter> rowFilterFactory            
+    )
+    {
+        requireStart(line: true, row: true);
+            
+        FluentState current = state;
+        int before = parts.Count;
+        block(this);
+            
+        if (current != FluentState.Start && current != state)
+            throw new IllegalStateException("State changed to {0} during groupFilters operation, which is not permitted", state.ToString());
+
+        if (state == FluentState.Row)
+        {
+            List<IRowFilter> filters = new List<IRowFilter>();
+            int i = before;
+            while (i < parts.Count)
+            {
+                RowFilterProcessor part = parts[i].requireType<RowFilterProcessor>();                
+                parts.RemoveAt(i);
+                filters.Add(part.filter);
+            }
+                
+            return rowFilter(rowFilterFactory(filters));                
+        }
+        else
+        {
+            List<ILineFilter> filters = new List<ILineFilter>();
+            int i = before;
+            while (i < parts.Count)
+            {
+                LineFilterProcessor part = parts[i].requireType<LineFilterProcessor>();                
+                parts.RemoveAt(i);
+                filters.Add(part.filter);
             }
 
-            return null;
-        }
+            return lineFilter(lineFilterFactory(filters));
+        }            
+    }
 
-        // groups 0,1, or more filters.  Allows 0 and 1 so that any variable number of filters are treated as 1
-        private Pnyx groupFilters(Action<Pnyx> block,
-            Func<IEnumerable<ILineFilter>, ILineFilter> lineFilterFactory,
-            Func<IEnumerable<IRowFilter>, IRowFilter> rowFilterFactory            
-            )
-        {
-            requireStart(line: true, row: true);
+    public Pnyx and(Action<Pnyx> block)
+    {
+        return groupFilters(block,
+            x => new AndLineFilter(x),
+            x => new AndRowFilter(x)
+        );
+    }
+
+    public Pnyx or(Action<Pnyx> block)
+    {
+        return groupFilters(block,
+            x => new OrLineFilter(x),
+            x => new OrRowFilter(x)
+        );
+    }
+
+    public Pnyx xor(Action<Pnyx> block)
+    {
+        return groupFilters(block,
+            x => new XorLineFilter(x),
+            x => new XorRowFilter(x)
+        );
+    }
+
+    public Pnyx not(Action<Pnyx> block)
+    {
+        return groupFilters(block,
+            x => new NotLineFilter(x),
+            x => new NotRowFilter(x)
+        );
+    }
+
+    public Pnyx beforeAfterFilter(int before, int after, Action<Pnyx> block)
+    {
+        if (before < 0)
+            throw new InvalidArgumentException("'before' count must be positive: {0}", before);
+        if (after < 0)
+            throw new InvalidArgumentException("'after' count must be positive: {0}", after);
             
-            FluentState current = state;
-            int before = parts.Count;
-            block(this);
+        and(block);
+
+        IPart partRaw = parts[^1];
+        parts.RemoveAt(parts.Count - 1);
             
-            if (current != FluentState.Start && current != state)
-                throw new IllegalStateException("State changed to {0} during groupFilters operation, which is not permitted", state.ToString());
-
-            if (state == FluentState.Row)
-            {
-                List<IRowFilter> filters = new List<IRowFilter>();
-                int i = before;
-                while (i < parts.Count)
-                {
-                    RowFilterProcessor part = parts[i] as RowFilterProcessor;                
-                    if (part == null)
-                        throw new IllegalStateException("groupFilters only supports filters, but found processor of {0}", parts[i].GetType().Name);
-                
-                    parts.RemoveAt(i);
-                    filters.Add(part.filter);
-                }
-                
-                return rowFilter(rowFilterFactory(filters));                
-            }
-            else
-            {
-                List<ILineFilter> filters = new List<ILineFilter>();
-                int i = before;
-                while (i < parts.Count)
-                {
-                    LineFilterProcessor part = parts[i] as LineFilterProcessor;                
-                    if (part == null)
-                        throw new IllegalStateException("groupFilters only supports filters, but found processor of {0}", parts[i].GetType().Name);
-                
-                    parts.RemoveAt(i);
-                    filters.Add(part.filter);
-                }
-
-                return lineFilter(lineFilterFactory(filters));
-            }            
-        }
-
-        public Pnyx and(Action<Pnyx> block)
+        if (state == FluentState.Row)
         {
-            return groupFilters(block,
-                x => new AndLineFilter(x),
-                x => new AndRowFilter(x)
-            );
+            RowFilterProcessor part = partRaw.requireType<RowFilterProcessor>();                
+            return rowBuffering(new BeforeAfterRowBuffering(before, after, part.filter));
         }
-
-        public Pnyx or(Action<Pnyx> block)
+        else
         {
-            return groupFilters(block,
-                x => new OrLineFilter(x),
-                x => new OrRowFilter(x)
-            );
-        }
+            LineFilterProcessor part = partRaw.requireType<LineFilterProcessor>();                
+            return lineBuffering(new BeforeAfterLineBuffering(before, after, part.filter));
+        }                       
+    }
 
-        public Pnyx xor(Action<Pnyx> block)
-        {
-            return groupFilters(block,
-                x => new XorLineFilter(x),
-                x => new XorRowFilter(x)
-            );
-        }
+    public Pnyx sort
+    (
+        bool descending = false, 
+        bool caseSensitive = false,
+        bool unique = false,
+        ColumnIndex[] columnIndices = null,
+        String tempDirectory = null,
+        int? buffer = null
+    )
+    {
+        requireStart(line: true, row: true);
 
-        public Pnyx not(Action<Pnyx> block)
-        {
-            return groupFilters(block,
-                x => new NotLineFilter(x),
-                x => new NotRowFilter(x)
-            );
-        }
+        if (state == FluentState.Row)
+            return sortRow(columnIndices, descending, caseSensitive, unique, tempDirectory, buffer);
+        else
+            return sortLine(descending, caseSensitive, unique, tempDirectory, buffer);
+    }
 
-        public Pnyx beforeAfterFilter(int before, int after, Action<Pnyx> block)
-        {
-            if (before < 0)
-                throw new InvalidArgumentException("'before' count must be positive: {0}", before);
-            if (after < 0)
-                throw new InvalidArgumentException("'after' count must be positive: {0}", after);
+    public Pnyx sortLine
+    (
+        bool descending = false,
+        bool caseSensitive = false,
+        bool unique = false,
+        String tempDirectory = null,
+        int? buffer = null
+    )
+    {
+        requireStart(line: true, row: false);
+        buffer = buffer ?? settings.bufferLines;
+        tempDirectory = tempDirectory ?? settings.tempDirectory;
             
-            and(block);
+        IComparer<String> comparer = new PnyxStringComparer(descending, caseSensitive);             
+        LineSortProcessor sortProcessor = new LineSortProcessor(comparer, unique, tempDirectory, buffer.Value);
+        return linePart(sortProcessor);
+    }
 
-            Object partRaw = parts[parts.Count - 1];
-            parts.RemoveAt(parts.Count - 1);
+    public Pnyx sortRow
+    (
+        ColumnIndex[]? columnIndices = null,
+        bool descending = false,
+        bool caseSensitive = false,
+        bool unique = false,
+        String? tempDirectory = null,
+        int? buffer = null
+    )
+    {
+        requireStart(line: false, row: true);
+        buffer = buffer ?? settings.bufferLines;
+        tempDirectory = tempDirectory ?? settings.tempDirectory;
             
-            if (state == FluentState.Row)
-            {
-                RowFilterProcessor part = partRaw as RowFilterProcessor;                
-                if (part == null)
-                    throw new IllegalStateException("groupFilters only supports filters, but found processor of {0}", partRaw.GetType().Name);
-
-                return rowBuffering(new BeforeAfterRowBuffering(before, after, part.filter));
-            }
-            else
-            {
-                LineFilterProcessor part = partRaw as LineFilterProcessor;                
-                if (part == null)
-                    throw new IllegalStateException("groupFilters only supports filters, but found processor of {0}", partRaw.GetType().Name);
-                
-                return lineBuffering(new BeforeAfterLineBuffering(before, after, part.filter));
-            }                       
-        }
-
-        public Pnyx sort
-        (
-            bool descending = false, 
-            bool caseSensitive = false,
-            bool unique = false,
-            ColumnIndex[] columnIndices = null,
-            String tempDirectory = null,
-            int? buffer = null
-        )
+        columnIndices = columnIndices ?? [RowConstants.A];            
+        List<RowComparer.ColumnDefinition> definitions = new List<RowComparer.ColumnDefinition>();
+        foreach (ColumnIndex columnIndex in columnIndices)
         {
-            requireStart(line: true, row: true);
-
-            if (state == FluentState.Row)
-                return sortRow(columnIndices, descending, caseSensitive, unique, tempDirectory, buffer);
-            else
-                return sortLine(descending, caseSensitive, unique, tempDirectory, buffer);
+            definitions.Add(new RowComparer.ColumnDefinition
+            (
+                columnIndex,
+                new PnyxStringComparer(descending, caseSensitive)
+            ));
         }
-
-        public Pnyx sortLine(
-            bool descending = false,
-            bool caseSensitive = false,
-            bool unique = false,
-            String tempDirectory = null,
-            int? buffer = null
-        )
-        {
-            requireStart(line: true, row: false);
-            buffer = buffer ?? settings.bufferLines;
-            tempDirectory = tempDirectory ?? settings.tempDirectory;
             
-            IComparer<String> comparer = new PnyxStringComparer(descending, caseSensitive);             
-            LineSortProcessor sortProcessor = new LineSortProcessor(unique, tempDirectory, comparer, buffer.Value);
-            return linePart(sortProcessor);
-        }
+        IComparer<List<String?>> comparer = new RowComparer(definitions);             
+        RowSortProcessor sortProcessor = new RowSortProcessor(comparer, unique, tempDirectory, buffer.Value);
+        return rowPart(sortProcessor);
+    }
 
-        public Pnyx sortRow(
-            ColumnIndex[] columnIndices = null,
-            bool descending = false,
-            bool caseSensitive = false,
-            bool unique = false,
-            String tempDirectory = null,
-            int? buffer = null
-            )
-        {
-            requireStart(line: false, row: true);
-            buffer = buffer ?? settings.bufferLines;
-            tempDirectory = tempDirectory ?? settings.tempDirectory;
-            
-            columnIndices = columnIndices ?? [RowConstants.A];            
-            List<RowComparer.ColumnDefinition> definitions = new List<RowComparer.ColumnDefinition>();
-            foreach (ColumnIndex columnIndex in columnIndices)
-            {
-                definitions.Add(new RowComparer.ColumnDefinition
-                {
-                    columnIndex = columnIndex,
-                    comparer = new PnyxStringComparer(descending, caseSensitive)
-                });
-            }
-            
-            IComparer<List<String>> comparer = new RowComparer(definitions);             
-            RowSortProcessor sortProcessor = new RowSortProcessor(unique, tempDirectory, comparer, buffer.Value);
-            return rowPart(sortProcessor);
-        }
+    public Pnyx skipFirst(int linesToSkip)
+    {
+        return lineFilter(new SkipFirstLinesFilter(linesToSkip));
+    }
 
-        public Pnyx skipFirst(int linesToSkip)
-        {
-            return lineFilter(new SkipFirstLinesFilter(linesToSkip));
-        }
+    public Pnyx skipLast(int linesToSkip)
+    {
+        if (state == FluentState.Row)
+            return rowBuffering(new SkipLastRowBuffering(linesToSkip));
 
-        public Pnyx skipLast(int linesToSkip)
-        {
-            if (state == FluentState.Row)
-                return rowBuffering(new SkipLastRowBuffering(linesToSkip));
+        return lineBuffering(new SkipLastLineBuffering(linesToSkip));
+    }
 
-            return lineBuffering(new SkipLastLineBuffering(linesToSkip));
-        }
+    public Pnyx skipSpecific(params int[] lineNumbersToSkip)
+    {
+        return lineFilter(new SkipSpecificFilter(lineNumbersToSkip));
+    }
 
-        public Pnyx skipSpecific(params int[] lineNumbersToSkip)
-        {
-            return lineFilter(new SkipSpecificFilter(lineNumbersToSkip));
-        }
+    public Pnyx keepSpecific(params int[] lineNumbersToKeep)
+    {
+        return lineFilter(new KeepSpecificFilter(lineNumbersToKeep));
+    }
 
-        public Pnyx keepSpecific(params int[] lineNumbersToKeep)
-        {
-            return lineFilter(new KeepSpecificFilter(lineNumbersToKeep));
-        }
-
-        public Pnyx trim()
-        {
-            return lineTransformer(TextUtil.trim);
-        }
+    public Pnyx trim()
+    {
+        return lineTransformer(TextUtil.trim);
     }
 }

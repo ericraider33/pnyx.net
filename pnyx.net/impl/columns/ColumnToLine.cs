@@ -1,34 +1,35 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using pnyx.net.processors;
 
 namespace pnyx.net.impl.columns;
 
 public class ColumnToLine : IRowProcessor, ILinePart
 {
-    public int index;                                        // zero based
-    public ILineProcessor processor;
+    public ColumnIndex index { get; }
+    public ILineProcessor? processor { get; set; }
 
-    public void rowHeader(List<String> header)
+    public ColumnToLine(ColumnIndex columnIndex)
+    {
+        this.index = columnIndex;
+    }
+
+    public async Task rowHeader(List<String> header)
     {
         String line = index < header.Count ? header[index] : "";
-        processor.processLine(line);
+        await processor!.processLine(line);
     }
 
-    public void processRow(List<String> row)
+    public async Task processRow(List<String?> row)
     {
-        String line = index < row.Count ? row[index] : "";
-        processor.processLine(line);
+        string line = index < row.Count ? (row[index] ?? "") : "";
+        await processor!.processLine(line);
     }
 
-    public void processLine(String line)
+    public async Task endOfFile()
     {
-        processor.processLine(line);
-    }
-
-    public void endOfFile()
-    {
-        processor.endOfFile();
+        await processor!.endOfFile();
     }
 
     public void setNextLineProcessor(ILineProcessor next)

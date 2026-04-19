@@ -1,7 +1,6 @@
-namespace pnyx.net.processors
-{
-    public interface ILinePart
-    {        
-        void setNextLineProcessor(ILineProcessor next);
-    }
+namespace pnyx.net.processors;
+
+public interface ILinePart : IPart
+{        
+    void setNextLineProcessor(ILineProcessor next);
 }

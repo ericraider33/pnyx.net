@@ -1,34 +1,40 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using pnyx.net.api;
 
-namespace pnyx.net.processors.sources
+namespace pnyx.net.processors.sources;
+
+public class GenericStreamFactory : IStreamFactory, IAsyncDisposable
 {
-    public class GenericStreamFactory : IStreamFactory, IDisposable
+    private Stream? stream;
+
+    public GenericStreamFactory(Stream stream)
     {
-        private Stream stream;
+        this.stream = stream;
+    }
 
-        public GenericStreamFactory(Stream stream)
-        {
-            this.stream = stream;
-        }
+    public Stream openStream()
+    {
+        if (stream == null)
+            throw new InvalidOperationException("Stream has been disposed");
+        
+        return stream;
+    }
 
-        public Stream openStream()
-        {
-            return stream;
-        }
+    public void closeStream()
+    {
+        if (stream == null)
+            return;
+        
+        stream.Close();            
+    }
 
-        public void closeStream()
-        {
-            stream.Close();            
-        }
+    public async ValueTask DisposeAsync()
+    {
+        if (stream != null)
+            await stream.DisposeAsync();
 
-        public void Dispose()
-        {
-            if (stream != null)
-                stream.Dispose();
-
-            stream = null;
-        }
+        stream = null;
     }
 }

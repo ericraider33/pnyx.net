@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using pnyx.net.api;
 using pnyx.net.fluent;
@@ -99,15 +100,15 @@ Odyssey,Homer,-1000
     }
     
     [Fact]
-    public void verify_basic_usage()
+    public async Task verify_basic_usage()
     {
         List<Book> actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             p.readString(csvInputA);
             p.parseCsv(hasHeader: true);
             p.rowToObject(new BookConverter());
-            actual = p.processCaptureObject<Book>();
+            actual = await p.processCaptureObject<Book>();
         }
 
         Assert.Equal(3, actual.Count);
@@ -119,32 +120,32 @@ Odyssey,Homer,-1000
     }
     
     [Fact]
-    public void object_to_from_row()
+    public async Task object_to_from_row()
     {
         String actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             p.readString(csvInputA);
             p.parseCsv(hasHeader: true);
             p.rowToObject(new BookConverter());
             p.objectToRow();
-            actual = p.processToString();
+            actual = await p.processToString();
         }
 
         Assert.Equal(csvInputA, actual);
     }
 
     [Fact]
-    public void nameValuePair_to_object()
+    public async Task nameValuePair_to_object()
     {
         List<Book> actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             p.readString(csvInputA);
             p.parseCsv(hasHeader: true);
             p.rowToNameValuePair();
             p.nameValuePairToObject(new BookConverter());
-            actual = p.processCaptureObject<Book>();
+            actual = await p.processCaptureObject<Book>();
         }
 
         Assert.Equal(3, actual.Count);
@@ -156,17 +157,17 @@ Odyssey,Homer,-1000
     }
     
     [Fact]
-    public void object_to_from_nameValuePair()
+    public async Task object_to_from_nameValuePair()
     {
         List<IDictionary<String, Object>> actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             p.readString(csvInputA);
             p.parseCsv(hasHeader: true);
             p.rowToNameValuePair();
             p.nameValuePairToObject(new BookConverter());
             p.objectToNameValuePair();
-            actual = p.processCaptureNameValuePairs();
+            actual = await p.processCaptureNameValuePairs();
         }
 
         Assert.Equal(3, actual.Count);
@@ -179,7 +180,7 @@ Odyssey,Homer,-1000
     }
 
     [Fact]
-    public void automapper_and_pnyx_kick_ass()
+    public async Task automapper_and_pnyx_kick_ass()
     {
         MapperConfiguration config = new MapperConfiguration(cfg =>
         {
@@ -193,13 +194,13 @@ Odyssey,Homer,-1000
         };
         
         List<Book> actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             p.readString(csvInputA);
             p.parseCsv(hasHeader: true);
             p.rowToNameValuePair();
             p.nameValuePairToObject(converter);
-            actual = p.processCaptureObject<Book>();
+            actual = await p.processCaptureObject<Book>();
         }
         
         Assert.Equal(3, actual.Count);
@@ -211,7 +212,7 @@ Odyssey,Homer,-1000
     }
     
     [Fact]
-    public void automapper_to_csv()
+    public async Task automapper_to_csv()
     {
         MapperConfiguration config = new MapperConfiguration(cfg =>
         {
@@ -223,14 +224,14 @@ Odyssey,Homer,-1000
         };
         
         List<IDictionary<String, Object>> actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             p.readString(csvInputA);
             p.parseCsv(hasHeader: true);
             p.rowToNameValuePair();
             p.nameValuePairToObject(converter);
             p.objectToNameValuePair();
-            actual = p.processCaptureNameValuePairs();
+            actual = await p.processCaptureNameValuePairs();
         }
 
         Assert.Equal(3, actual.Count);
@@ -243,15 +244,15 @@ Odyssey,Homer,-1000
     }
     
     [Fact]
-    public void automapper_object_to_csv()
+    public async Task automapper_object_to_csv()
     {
         List<Book> actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             p.readString(csvInputA);
             p.parseCsv(hasHeader: true);
             p.rowToObject(new BookConverter());
-            actual = p.processCaptureObject<Book>();
+            actual = await p.processCaptureObject<Book>();
         }
 
         Assert.Equal(3, actual.Count);
@@ -266,13 +267,13 @@ Odyssey,Homer,-1000
         };
 
         string csvOutputA = "";
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             p.readObject(() => actual);
             p.objectToNameValuePair(converter);
             p.nameValuePairToRow(header: new List<string>{"Title","Author","PublicationDate"});
             p.rowToLine();
-            csvOutputA = p.processToString();
+            csvOutputA = await p.processToString();
         }
 
         Assert.Equal(csvInputA, csvOutputA);
@@ -283,17 +284,17 @@ Odyssey,Homer,-1000
     [InlineData(1800, 2)]
     [InlineData(1845, 1)]
     [InlineData(1900, 0)]
-    public void filter(int year, int expected)
+    public async Task filter(int year, int expected)
     {
         List<Book> actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             p.readString(csvInputA);
             p.parseCsv(hasHeader: true);
             p.rowToNameValuePair();
             p.nameValuePairToObject(new BookConverter());
             p.objectFilter(x => ((Book)x).PublicationDate >= year);
-            actual = p.processCaptureObject<Book>();
+            actual = await p.processCaptureObject<Book>();
         }
 
         Assert.Equal(expected, actual.Count);
@@ -304,34 +305,34 @@ Odyssey,Homer,-1000
     [InlineData(1800, 2)]
     [InlineData(1845, 1)]
     [InlineData(1900, 0)]
-    public void filterGeneric(int year, int expected)
+    public async Task filterGeneric(int year, int expected)
     {
         List<Book> actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             p.readString(csvInputA);
             p.parseCsv(hasHeader: true);
             p.rowToNameValuePair();
             p.nameValuePairToObject(new BookConverter());
             p.objectFilter<Book>(x => x.PublicationDate >= year);
-            actual = p.processCaptureObject<Book>();
+            actual = await p.processCaptureObject<Book>();
         }
 
         Assert.Equal(expected, actual.Count);
     }  
     
     [Fact]
-    public void transform()
+    public async Task transform()
     {
         List<BookExtended> actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             p.readString(csvInputA);
             p.parseCsv(hasHeader: true);
             p.rowToNameValuePair();
             p.nameValuePairToObject(new BookConverter());
             p.objectTransform(x => BookExtended.from((Book)x));
-            actual = p.processCaptureObject<BookExtended>();
+            actual = await p.processCaptureObject<BookExtended>();
         }
 
         Assert.Equal(3, actual.Count);
@@ -343,17 +344,17 @@ Odyssey,Homer,-1000
     }
     
     [Fact]
-    public void transformGeneric()
+    public async Task transformGeneric()
     {
         List<BookExtended> actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {
             p.readString(csvInputA);
             p.parseCsv(hasHeader: true);
             p.rowToNameValuePair();
             p.nameValuePairToObject(new BookConverter());
             p.objectTransform<Book>(BookExtended.from);
-            actual = p.processCaptureObject<BookExtended>();
+            actual = await p.processCaptureObject<BookExtended>();
         }
 
         Assert.Equal(3, actual.Count);

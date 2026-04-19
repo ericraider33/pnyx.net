@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Scripting;
 using pncs.cmd;
 using pnyx.net.fluent;
@@ -6,9 +7,9 @@ using Xunit;
 
 namespace pnyx.net.test.cmd;
 
-public class CodeParserTest : IDisposable
+public class CodeParserTest : IAsyncDisposable
 {
-    private Pnyx p;
+    private Pnyx? p;
         
     public CodeParserTest()
     {
@@ -16,11 +17,11 @@ public class CodeParserTest : IDisposable
         p.setSettings(stdIoDefault: true, processOnDispose: false);
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         if (p != null)
         {
-            p.Dispose();
+            await p.DisposeAsync();
             p = null;
         }
     }
@@ -64,25 +65,25 @@ public class CodeParserTest : IDisposable
     }
 
     [Fact]
-    public void codeFunc()
+    public async Task codeFunc()
     {
         CodeParser parser = new CodeParser();
         parser.parseCode(p, "readString(\"test\").lineFilter(line => true)", compilePnyx: false);
-        String actual = p.processToString();
+        String actual = await p.processToString();
         Assert.Equal("test", actual);
     }        
         
     [Fact]
-    public void codeBlock()
+    public async Task codeBlock()
     {
         CodeParser parser = new CodeParser();
         parser.parseCode(p, "asCsv(p2 => p2.readString(\"a,b\")).print(\"$2\")", compilePnyx: false);
-        String actual = p.processToString();
+        String actual = await p.processToString();
         Assert.Equal("b", actual);                        
     }       
         
     [Fact]
-    public void nameUtil()
+    public async Task nameUtil()
     {
         const string code = @"
 asCsv(p2 => p2.readString(""Jock Lock Blank III""));
@@ -99,7 +100,7 @@ rowTransformer(row =>
             
         CodeParser parser = new CodeParser();
         parser.parseCode(p, code, compilePnyx: false);
-        String actual = p.processToString();
+        String actual = await p.processToString();
         Assert.Equal("Jock,Lock,Blank,Iii", actual);                        
     }
 }

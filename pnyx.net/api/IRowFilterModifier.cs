@@ -1,7 +1,6 @@
-namespace pnyx.net.api
+namespace pnyx.net.api;
+
+public interface IRowFilterModifier : IModifier
 {
-    public interface IRowFilterModifier : IModifier
-    {
-        IRowFilter modifyRowFilter(IRowFilter rowFilter);
-    }
+    IRowFilter modifyRowFilter(IRowFilter rowFilter);
 }

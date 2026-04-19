@@ -1,7 +1,6 @@
-namespace pnyx.net.fluent
+namespace pnyx.net.fluent;
+
+public interface ISettingsFactory
 {
-    public interface ISettingsFactory
-    {
-        Settings buildSettings();
-    }
+    Settings buildSettings();
 }

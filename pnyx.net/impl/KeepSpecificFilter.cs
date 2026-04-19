@@ -2,36 +2,35 @@ using System;
 using System.Collections.Generic;
 using pnyx.net.api;
 
-namespace pnyx.net.impl
-{
-    public class KeepSpecificFilter : ILineFilter, IRowFilter
-    {                
-        private readonly List<int> linesToKeep = new List<int>();
-        private int lineNumber;
+namespace pnyx.net.impl;
 
-        public KeepSpecificFilter(IEnumerable<int> lines)
-        {
-            linesToKeep.AddRange(lines);
-        }        
+public class KeepSpecificFilter : ILineFilter, IRowFilter
+{                
+    private readonly List<int> linesToKeep = new ();
+    private int lineNumber;
+
+    public KeepSpecificFilter(IEnumerable<int> lines)
+    {
+        linesToKeep.AddRange(lines);
+    }        
         
-        public bool shouldKeepLine(String line)
-        {
-            return shouldKeep();
-        }
+    public bool shouldKeepLine(String line)
+    {
+        return shouldKeep();
+    }
 
-        public bool shouldKeepRow(List<String> values)
-        {
-            return shouldKeep();
-        }
+    public bool shouldKeepRow(List<String?> values)
+    {
+        return shouldKeep();
+    }
         
-        private bool shouldKeep()
-        {
-            lineNumber++;
-            if (!linesToKeep.Contains(lineNumber))
-                return false;
+    private bool shouldKeep()
+    {
+        lineNumber++;
+        if (!linesToKeep.Contains(lineNumber))
+            return false;
 
-            linesToKeep.Remove(lineNumber);
-            return true;
-        }
+        linesToKeep.Remove(lineNumber);
+        return true;
     }
 }

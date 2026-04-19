@@ -2,199 +2,208 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using pnyx.net.impl.csv;
 using pnyx.net.util;
 
-namespace pnyx.net.processors.sort
+namespace pnyx.net.processors.sort;
+
+public class RowSortProcessor : IRowProcessor, IRowPart, IAsyncDisposable
 {
-    public class RowSortProcessor : IRowProcessor, IRowPart, IDisposable
+    public IRowProcessor? processor { get; private set; }       
+    public int bufferSize { get; }
+    public String tempDirectory { get; }
+    public IComparer<List<String?>> comparer { get; }
+    
+    private readonly PnyxSortedList<List<String?>> buffer;
+    private readonly String tempFileKey;
+    private int fileNumber;
+    private readonly List<String> sortFiles = new List<String>();
+    private readonly List<String> tempFiles = new List<String>();
+
+    public RowSortProcessor
+    (
+        IComparer<List<String?>> comparer, 
+        bool unique = false,
+        String? tempDirectory = null,
+        int bufferSize = 10000
+    )
     {
-        public IRowProcessor next { get; private set; }       
-        public int bufferSize { get; private set; }
-        public String tempDirectory { get; private set; }
-        public IComparer<List<String>> comparer;
-        private readonly PnyxSortedList<List<String>> buffer;
-        private readonly String tempFileKey;
-        private int fileNumber;
-        private readonly List<String> sortFiles = new List<String>();
-        private readonly List<String> tempFiles = new List<String>();
-
-        public RowSortProcessor(bool unique = false,
-            String tempDirectory = null,
-            IComparer<List<String>> comparer = null, 
-            int bufferSize = 10000
-            )
-        {
-            this.bufferSize = bufferSize;
-            this.tempDirectory = tempDirectory ?? Directory.GetCurrentDirectory();
-            this.comparer = comparer;
+        this.bufferSize = bufferSize;
+        this.tempDirectory = tempDirectory ?? Directory.GetCurrentDirectory();
+        this.comparer = comparer;
             
-            buffer = new PnyxSortedList<List<String>>(bufferSize, comparer, unique);            
-            tempFileKey = ParseExtensions.extractAlphaNumeric(Guid.NewGuid().ToString());
-        }
+        buffer = new PnyxSortedList<List<String?>>(bufferSize, comparer, unique);            
+        tempFileKey = ParseExtensions.extractAlphaNumeric(Guid.NewGuid().ToString());
+    }
 
-        public void rowHeader(List<String> header)
+    public async Task rowHeader(List<String> header)
+    {
+        await processor!.rowHeader(header);
+    }
+
+    public async Task processRow(List<String?> row)
+    {
+        buffer.add(row);
+
+        if (buffer.count >= bufferSize)
+            await emptyBuffer();
+    }
+
+    public async Task endOfFile()
+    {
+        if (buffer.count > 0)
+            await emptyBuffer();
+
+        await sort();                        
+
+        if (sortFiles.Count > 0)
         {
-            next.rowHeader(header);
-        }
+            await using FileStream stream = new FileStream(sortFiles[0], FileMode.Open, FileAccess.Read);
+            await using CsvReader reader = new CsvReader(stream, Encoding.UTF8);
 
-        public void processRow(List<String> row)
-        {
-            buffer.add(row);
-
-            if (buffer.count >= bufferSize)
-                emptyBuffer();
-        }
-
-        public void endOfFile()
-        {
-            if (buffer.count > 0)
-                emptyBuffer();
-
-            sort();                        
-
-            if (sortFiles.Count > 0)
-            {
-                using (FileStream stream = new FileStream(sortFiles[0], FileMode.Open, FileAccess.Read))
-                {
-                    using (CsvReader reader = new CsvReader(stream, Encoding.UTF8))
-                    {
-                        List<String> row;
-                        while ((row = reader.readRow()) != null)
-                            next.processRow(row);
-                    }
-                }
-            }                
+            List<String?>? row;
+            while ((row = await reader.readRow()) != null)
+                await processor!.processRow(row);
+        }                
             
-            next.endOfFile();
-        }
+        await processor!.endOfFile();
+    }
 
-        public void setNextRowProcessor(IRowProcessor next)
-        {
-            this.next = next;
-        }
+    public void setNextRowProcessor(IRowProcessor next)
+    {
+        processor = next;
+    }
 
-        public void Dispose()
+    private async Task emptyBuffer()
+    {
+        String fileName = $"row_sort_{tempFileKey}_{++fileNumber}.txt";
+        String filePath = Path.Combine(tempDirectory, fileName);
+        tempFiles.Add(filePath);            // master list of files to be cleaned up
+        sortFiles.Add(filePath);            // transient files used to output sorted 
+
+        await using (FileStream stream = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write))
         {
-            foreach (String filePath in tempFiles)
+            await using (CsvWriter writer = new CsvWriter(stream, Encoding.UTF8))
             {
-                FileInfo toRemove = new FileInfo(filePath);
-                if (toRemove.Exists)
-                    toRemove.Delete();                
+                await buffer.visit(writer.writeRow);
             }
-            
-            tempFiles.Clear();
         }
-
-        private void emptyBuffer()
-        {
-            String fileName = String.Format("row_sort_{0}_{1}.txt", tempFileKey, ++fileNumber);
-            String filePath = Path.Combine(tempDirectory, fileName);
-            tempFiles.Add(filePath);            // master list of files to be cleaned up
-            sortFiles.Add(filePath);            // transient files used to output sorted 
-
-            using (FileStream stream = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write))
-            {
-                using (CsvWriter writer = new CsvWriter(stream, Encoding.UTF8))
-                {
-                    buffer.visit(row => writer.writeRow(row));
-                }
-            }
             
-            buffer.clear();
-        }
+        buffer.clear();
+    }
 
-        private void sort()
+    /// <summary>
+    /// Uses sorted files to perform an infinitely scalable sort without requiring contents of files to be
+    /// held in memory.
+    ///
+    /// Data is chunked into batches, which are written to files via the 'emptyBuffer' method. For there, pairs of
+    /// the files are combined into a single sorted file. The process continues until only one sorted file remains.
+    /// </summary>
+    private async Task sort()
+    {
+        while (sortFiles.Count > 1)
         {
-            while (sortFiles.Count > 1)
+            for (int i = 0; i < sortFiles.Count-1; i++)
             {
-                for (int i = 0; i < sortFiles.Count-1; i++)
-                {
-                    String filePathA = sortFiles[i];
-                    String filePathB = sortFiles[i + 1];
+                String filePathA = sortFiles[i];
+                String filePathB = sortFiles[i + 1];
 
-                    // Combines files
-                    String filePathC = sortPair(filePathA, filePathB);
+                // Combines files
+                String filePathC = await sortPair(filePathA, filePathB);
                     
-                    // Replaces pair with resultant file
-                    sortFiles[i] = filePathC;
-                    sortFiles.RemoveAt(i+1);
-                }
+                // Replaces pair with resultant file
+                sortFiles[i] = filePathC;
+                sortFiles.RemoveAt(i+1);
             }
         }
+    }
 
-        private String sortPair(String filePathA, String filePathB)
+    private async Task<String> sortPair(String filePathA, String filePathB)
+    {
+        String fileNameC = $"row_sort_{tempFileKey}_{++fileNumber}.txt";
+        String filePathC = Path.Combine(tempDirectory, fileNameC);
+        tempFiles.Add(filePathC);            // master list of files to be cleaned up
+
+        FileStream? streamA = null, streamB = null, streamC = null;
+        CsvReader? readerA = null, readerB = null;
+        CsvWriter? writer = null;
+
+        try
         {
-            String fileNameC = String.Format("row_sort_{0}_{1}.txt", tempFileKey, ++fileNumber);
-            String filePathC = Path.Combine(tempDirectory, fileNameC);
-            tempFiles.Add(filePathC);            // master list of files to be cleaned up
+            streamA = new FileStream(filePathA, FileMode.Open, FileAccess.Read);
+            streamB = new FileStream(filePathB, FileMode.Open, FileAccess.Read);
+            streamC = new FileStream(filePathC, FileMode.CreateNew, FileAccess.Write);
 
-            FileStream streamA = null, streamB = null, streamC = null;
-            CsvReader readerA = null, readerB = null;
-            CsvWriter writer = null;
+            readerA = new CsvReader(streamA, Encoding.UTF8);
+            readerB = new CsvReader(streamB, Encoding.UTF8);
+            writer = new CsvWriter(streamC, Encoding.UTF8);
 
-            try
+            List<String?>? rowA = null;
+            List<String?>? rowB = null;
+            while (!readerA.endOfFile || !readerB.endOfFile)
             {
-                streamA = new FileStream(filePathA, FileMode.Open, FileAccess.Read);
-                streamB = new FileStream(filePathB, FileMode.Open, FileAccess.Read);
-                streamC = new FileStream(filePathC, FileMode.CreateNew, FileAccess.Write);
+                if (!readerA.endOfFile && rowA == null)
+                    rowA = await readerA.readRow();
 
-                readerA = new CsvReader(streamA, Encoding.UTF8);
-                readerB = new CsvReader(streamB, Encoding.UTF8);
-                writer = new CsvWriter(streamC, Encoding.UTF8);
-
-                List<String> rowA = null;
-                List<String> rowB = null;
-                while (!readerA.EndOfStream || !readerB.EndOfStream)
-                {
-                    if (!readerA.EndOfStream && rowA == null)
-                        rowA = readerA.readRow();
-                    if (!readerB.EndOfStream && rowB == null)
-                        rowB = readerB.readRow();
+                if (!readerB.endOfFile && rowB == null)
+                    rowB = await readerB.readRow();
                     
-                    if (rowA != null && rowB != null)
+                if (rowA != null && rowB != null)
+                {
+                    if (comparer.Compare(rowA, rowB) <= 0)
                     {
-                        if (comparer.Compare(rowA, rowB) <= 0)
-                        {
-                            writer.writeRow(rowA);
-                            rowA = null;
-                        }
-                        else
-                        {
-                            writer.writeRow(rowB);
-                            rowB = null;
-                        }
-                    }
-                    else if (rowA != null)
-                    {
-                        writer.writeRow(rowA);
+                        await writer.writeRow(rowA);
                         rowA = null;
                     }
-                    else if (rowB != null)
+                    else
                     {
-                        writer.writeRow(rowB);
+                        await writer.writeRow(rowB);
                         rowB = null;
                     }
                 }
-                
-                // Clears out any remaining lines
-                if (rowA != null)
-                    writer.writeRow(rowA);
-                if (rowB != null)
-                    writer.writeRow(rowB);                
+                else if (rowA != null)
+                {
+                    await writer.writeRow(rowA);
+                    rowA = null;
+                }
+                else if (rowB != null)
+                {
+                    await writer.writeRow(rowB);
+                    rowB = null;
+                }
             }
-            finally
-            {
-                if (readerA != null) readerA.Dispose();
-                if (readerB != null) readerB.Dispose();
-                if (writer != null) writer.Dispose();
                 
-                if (streamA != null) streamA.Dispose();
-                if (streamB != null) streamB.Dispose();
-                if (streamC != null) streamC.Dispose();
-            }
-
-            return filePathC;
+            // Clears out any remaining lines
+            if (rowA != null)
+                await writer.writeRow(rowA);
+            if (rowB != null)
+                await writer.writeRow(rowB);                
         }
+        finally
+        {
+            if (readerA != null) await readerA.DisposeAsync();
+            if (readerB != null) await readerB.DisposeAsync();
+            if (writer != null) await writer.DisposeAsync();
+                
+            if (streamA != null) await streamA.DisposeAsync();
+            if (streamB != null) await streamB.DisposeAsync();
+            if (streamC != null) await streamC.DisposeAsync();
+        }
+
+        return filePathC;
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        foreach (String filePath in tempFiles)
+        {
+            FileInfo toRemove = new FileInfo(filePath);
+            if (toRemove.Exists)
+                toRemove.Delete();                
+        }
+            
+        tempFiles.Clear();
+        return ValueTask.CompletedTask;
     }
 }

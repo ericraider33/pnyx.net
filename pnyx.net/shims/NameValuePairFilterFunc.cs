@@ -6,9 +6,14 @@ namespace pnyx.net.shims;
 
 public class NameValuePairFilterFunc : INameValuePairFilter
 {
-    public Func<IDictionary<string, object>, bool> pairFilterFunc;
-    
-    public bool shouldKeepPair(IDictionary<string, object> pairs)
+    public Func<IDictionary<string, object?>, bool> pairFilterFunc { get; }
+
+    public NameValuePairFilterFunc(Func<IDictionary<string, object?>, bool> pairFilterFunc)
+    {
+        this.pairFilterFunc = pairFilterFunc;
+    }
+
+    public bool shouldKeepPair(IDictionary<string, object?> pairs)
     {
         return pairFilterFunc(pairs);
     }

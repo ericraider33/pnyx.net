@@ -1,15 +1,14 @@
-using System;
 using System.Text;
 
 namespace pnyx.net.util;
 
 public class Address
 {
-    public String Street { get; set; }
-    public String Street2 { get; set; }
-    public String City { get; set; }
-    public String State { get; set; }
-    public String Zipcode { get; set; }
+    public string? Street { get; set; }
+    public string? Street2 { get; set; }
+    public string? City { get; set; }
+    public string? State { get; set; }
+    public string? Zipcode { get; set; }
 
     public override string ToString()
     {

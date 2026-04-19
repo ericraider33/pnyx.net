@@ -2,33 +2,32 @@ using System;
 using System.Collections.Generic;
 using pnyx.net.api;
 
-namespace pnyx.net.impl
+namespace pnyx.net.impl;
+
+public class SkipFirstLinesFilter : ILineFilter, IRowFilter
 {
-    public class SkipFirstLinesFilter : ILineFilter, IRowFilter
+    private int lineNumber;
+        
+    public int linesToSkip { get; }
+
+    public SkipFirstLinesFilter(int linesToSkip)
     {
-        private int lineNumber;
+        this.linesToSkip = linesToSkip;
+    }
         
-        public int linesToSkip;
+    public bool shouldKeepLine(String line)
+    {
+        return shouldKeep();
+    }
 
-        public SkipFirstLinesFilter(int linesToSkip)
-        {
-            this.linesToSkip = linesToSkip;
-        }
+    public bool shouldKeepRow(List<String?> values)
+    {
+        return shouldKeep();
+    }
         
-        public bool shouldKeepLine(String line)
-        {
-            return shouldKeep();
-        }
-
-        public bool shouldKeepRow(List<String> values)
-        {
-            return shouldKeep();
-        }
-        
-        private bool shouldKeep()
-        {
-            lineNumber++;
-            return lineNumber > linesToSkip;
-        }
+    private bool shouldKeep()
+    {
+        lineNumber++;
+        return lineNumber > linesToSkip;
     }
 }

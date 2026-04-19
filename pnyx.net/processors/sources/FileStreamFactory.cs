@@ -1,55 +1,59 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using pnyx.net.api;
+using pnyx.net.errors;
 
-namespace pnyx.net.processors.sources
+namespace pnyx.net.processors.sources;
+
+public class FileStreamFactory : IStreamFactory, IAsyncDisposable
 {
-    public class FileStreamFactory : IStreamFactory, IDisposable
+    public String path { get; }
+    public FileMode mode { get; }
+    public FileAccess access { get; }
+
+    private FileStream? fileStream;
+
+    public FileStreamFactory(string path, FileMode mode = FileMode.Open, FileAccess access = FileAccess.Read)
     {
-        public String path;
-        public FileMode mode = FileMode.Open;
-        public FileAccess access = FileAccess.Read;
+        this.mode = mode;
+        this.access = access;
+        this.path = path;
+    }
 
-        private FileStream fileStream;
-
-        public FileStreamFactory()
-        {            
-        }
-        
-        public FileStreamFactory(String path)
+    public Stream openStream()
+    {
+        if (fileStream != null)
         {
-            this.path = path;
+            resetStream();
+            return fileStream;
         }
-
-        public Stream openStream()
-        {
-            if (fileStream != null)
-            {
-                resetStream();
-                return fileStream;
-            }
             
-            fileStream = new FileStream(path, mode, access);
-            return fileStream;
-        }
+        fileStream = new FileStream(path, mode, access);
+        return fileStream;
+    }
 
-        public Stream resetStream()
-        {
-            fileStream.Seek(0, SeekOrigin.Begin);
-            return fileStream;
-        }
+    private void resetStream()
+    {
+        if (fileStream == null)
+            throw new IllegalStateException("You must open the stream before resetting it");
+        
+        fileStream.Seek(0, SeekOrigin.Begin);
+    }
 
-        public void closeStream()
-        {
-            fileStream.Close();
-        }
+    public void closeStream()
+    {
+        if (fileStream == null)
+            throw new IllegalStateException("You must open the stream before closing it");
+        
+        fileStream.Close();
+    }
 
-        public void Dispose()
-        {
-            if (fileStream != null)
-                fileStream.Dispose();
+    public async ValueTask DisposeAsync()
+    {
+        if (fileStream != null)
+            await fileStream.DisposeAsync();
 
-            fileStream = null;
-        }
+        fileStream = null;
     }
 }

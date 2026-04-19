@@ -7,8 +7,14 @@ namespace pnyx.net.impl.columns;
 
 public class WidthColumns : IRowTransformer
 {
-    public int columns;
-    public String pad = "";
+    public int columns { get; set; }
+    public String pad { get; set; }
+
+    public WidthColumns(int columns, string pad = "")
+    {
+        this.columns = columns;
+        this.pad = pad;
+    }
 
     public List<String> transformHeader(List<String> header)
     {

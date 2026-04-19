@@ -4,21 +4,22 @@ namespace pnyx.net.util;
 
 public static class AddressUtil
 {
-    public static Address parse(String text)
+    public static Address? parse(String text)
     {
         if (String.IsNullOrWhiteSpace(text))
             return null;
             
-        String[] parts = text.Split(new []{','}, StringSplitOptions.RemoveEmptyEntries);
+        String[] parts = text.Split([','], StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length < 3)
             return null;
 
-        String zipText = parts[parts.Length - 1].Trim();
+        String? zipText = parts[^1].Trim();
         if (!ZipCodeUtil.isZipCode(zipText))
             return null;
+        
         zipText = ZipCodeUtil.parseZipCode(zipText);
 
-        String stateText = parts[parts.Length - 2];
+        String? stateText = parts[^2];
         stateText = UsaStateUtil.parseState(stateText);
         if (stateText == null)
             return null;
@@ -26,7 +27,7 @@ public static class AddressUtil
         if (parts.Length == 3)
             return new Address { Street = parts[0].Trim(), State = stateText, Zipcode = zipText };
 
-        String cityText = parts[parts.Length - 3].Trim();
+        String cityText = parts[^3].Trim();
         if (parts.Length == 4)
             return new Address { Street = parts[0].Trim(), City = cityText, State = stateText, Zipcode = zipText };
 

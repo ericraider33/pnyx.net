@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Threading.Tasks;
 using pnyx.net.errors;
 using pnyx.net.util;
 
@@ -9,38 +10,39 @@ namespace pnyx.net.processors.converters;
 
 public class RowToNameValuePairProcessor : IRowProcessor, INameValuePairPart
 {
-    private List<string> header;
-    public INameValuePairProcessor processor;
+    private List<string>? header;
+    public INameValuePairProcessor? processor;
     
-    public void rowHeader(List<string> header)
+    public Task rowHeader(List<string> rowHeader)
     {
-        this.header = header.Select(cleanUpHeader).ToList();
+        header = rowHeader.Select(cleanUpHeader).ToList();
+        return Task.CompletedTask;
     }
 
-    private String cleanUpHeader(String header)
+    private String cleanUpHeader(String headerName)
     {
-        return ParseExtensions.extractAlphaNumericDash(header);
+        return ParseExtensions.extractAlphaNumericDash(headerName);
     }
 
-    public void processRow(List<string> row)
+    public async Task processRow(List<string?> row)
     {
         if (header == null)
             throw new IllegalStateException("Header is required before converting to objects");
         
-        IDictionary<string, Object> @object = new ExpandoObject();
+        IDictionary<string, Object?> @object = new ExpandoObject();
         for (int i = 0; i < header.Count; i++)
         {
             String name = header[i];
-            String value = i < row.Count ? row[i].trimEmptyAsNull() : null;
+            String? value = i < row.Count ? row[i].trimEmptyAsNull() : null;
             @object.Add(name, value);
         }
         
-        processor.processNameValuePair(@object);
+        await processor!.processNameValuePair(@object);
     }
 
-    public void endOfFile()
+    public async Task endOfFile()
     {
-        processor.endOfFile();
+        await processor!.endOfFile();
     }
 
     public void setNextNameValuePairProcessor(INameValuePairProcessor next)

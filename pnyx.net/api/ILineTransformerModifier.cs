@@ -1,7 +1,6 @@
-namespace pnyx.net.api
+namespace pnyx.net.api;
+
+public interface ILineTransformerModifier : IModifier
 {
-    public interface ILineTransformerModifier : IModifier
-    {
-        ILineTransformer modifyLineTransformer(ILineTransformer lineTransformer);
-    }
+    ILineTransformer modifyLineTransformer(ILineTransformer lineTransformer);
 }

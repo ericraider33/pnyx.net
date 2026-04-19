@@ -1,9 +1,8 @@
 using System;
 
-namespace pnyx.net.api
+namespace pnyx.net.api;
+
+public interface ILineTransformer
 {
-    public interface ILineTransformer
-    {
-        String transformLine(String line);
-    }
+    String? transformLine(String line);
 }

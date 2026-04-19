@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace pnyx.net.processors.sources;
 
 public class ObjectProcessorFunc : IObjectPart, IProcessor
 {
-    public Func<IEnumerable<object>> source { get; private set; }
-    public IObjectProcessor next { get; private set; }
+    public Func<IEnumerable<object>> source { get; }
+    public IObjectProcessor? processor { get; private set; }
     
     public ObjectProcessorFunc(Func<IEnumerable<object>> source)
     {
@@ -15,15 +16,15 @@ public class ObjectProcessorFunc : IObjectPart, IProcessor
     
     public void setNextObjectProcessor(IObjectProcessor next)
     {
-        this.next = next;
+        this.processor = next;
     }
 
-    public void process()
+    public async Task process()
     {
         IEnumerable<object> data = source();
         foreach (object obj in data)
-            next.processObject(obj);
+            await processor!.processObject(obj);
             
-        next.endOfFile();
+        await processor!.endOfFile();
     }
 }

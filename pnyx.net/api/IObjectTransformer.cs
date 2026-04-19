@@ -4,5 +4,5 @@ namespace pnyx.net.api;
 
 public interface IObjectTransformer
 {
-    Object transformObject(Object obj);
+    Object? transformObject(Object obj);
 }

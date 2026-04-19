@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace pnyx.net.processors.converters;
 
 public class NameValuePairToRowProcessor : INameValuePairProcessor, IRowPart
 {
-    public IRowProcessor next { get; private set; }
-    private List<string> header;
+    public IRowProcessor? processor { get; private set; }
+    private List<string>? header;
     private bool firstRow = true;
     
     public NameValuePairToRowProcessor()
@@ -14,26 +15,26 @@ public class NameValuePairToRowProcessor : INameValuePairProcessor, IRowPart
         header = null;
     }
 
-    public NameValuePairToRowProcessor(List<string> header)
+    public NameValuePairToRowProcessor(List<string>? header)
     {
         this.header = header;
     }
     
-    public void processNameValuePair(IDictionary<string, object> record)
+    public async Task processNameValuePair(IDictionary<string, object?> record)
     {
         if (firstRow)
         {
             if (header == null)
                 header = record.Keys.Order().ToList();
 
-            next.rowHeader(header);
+            await processor!.rowHeader(header);
             firstRow = false;
         }
         
-        List<string> row = new List<string>(header.Count);
+        List<string?> row = new List<string?>(header!.Count);
         foreach (string key in header)
         {
-            if (record.TryGetValue(key, out object value))
+            if (record.TryGetValue(key, out object? value))
             {
                 row.Add(value?.ToString());
             }
@@ -43,16 +44,16 @@ public class NameValuePairToRowProcessor : INameValuePairProcessor, IRowPart
             }
         }
         
-        next.processRow(row);
+        await processor!.processRow(row);
     }
 
-    public void endOfFile()
+    public async Task endOfFile()
     {
-        next.endOfFile();
+        await processor!.endOfFile();
     }
 
-    public void setNextRowProcessor(IRowProcessor next)
+    public void setNextRowProcessor(IRowProcessor processor)
     {
-        this.next = next;
+        this.processor = processor;
     }
 }

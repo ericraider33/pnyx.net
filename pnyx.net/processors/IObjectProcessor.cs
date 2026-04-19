@@ -1,9 +1,10 @@
 using System;
+using System.Threading.Tasks;
 
 namespace pnyx.net.processors;
 
-public interface IObjectProcessor
+public interface IObjectProcessor : IPart
 {
-    void processObject(Object obj);
-    void endOfFile();
+    Task processObject(Object obj);
+    Task endOfFile();
 }

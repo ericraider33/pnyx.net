@@ -7,37 +7,42 @@ using pnyx.net.api;
 using pnyx.net.processors;
 using pnyx.net.util;
 
-namespace pnyx.net.impl
+namespace pnyx.net.impl;
+
+public class DelimiterRowConverter : IRowConverter
 {
-    public class DelimiterRowConverter : IRowConverter
+    public String delimiter;
+    
+    private readonly StringBuilder builder = new ();
+
+    public DelimiterRowConverter(string delimiter)
     {
-        public String delimiter;
-        private readonly StringBuilder builder = new StringBuilder();
-        
-        public List<String> lineToRow(String line)
+        this.delimiter = delimiter;
+    }
+
+    public List<String?> lineToRow(String line)
+    {
+        return line.Split([delimiter], StringSplitOptions.None).Cast<String?>().ToList();
+    }
+
+    public String rowToLine(List<String?> row)
+    {
+        builder.Clear();
+        if (row.Count == 0)
+            return "";
+
+        builder.Append(row[0]);
+        for (int i = 1; i < row.Count; i++)
         {
-            return line.Split(new [] { delimiter }, StringSplitOptions.None).ToList();
+            builder.Append(delimiter);
+            builder.Append(row[i]);
         }
 
-        public String rowToLine(List<String> row)
-        {
-            builder.Clear();
-            if (row.Count == 0)
-                return "";
+        return builder.ToString();
+    }
 
-            builder.Append(row[0]);
-            for (int i = 1; i < row.Count; i++)
-            {
-                builder.Append(delimiter);
-                builder.Append(row[i]);
-            }
-
-            return builder.ToString();
-        }
-
-        public IRowProcessor buildRowDestination(StreamInformation streamInformation, Stream stream)
-        {
-            return null;
-        }
+    public IRowProcessor? buildRowDestination(StreamInformation streamInformation, Stream stream)
+    {
+        return null;
     }
 }

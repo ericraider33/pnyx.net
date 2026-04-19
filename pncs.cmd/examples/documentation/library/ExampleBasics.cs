@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using pnyx.net.api;
 using pnyx.net.fluent;
 using pnyx.net.impl;
@@ -9,52 +10,53 @@ using pnyx.net.processors.lines;
 using pnyx.net.processors.sources;
 using pnyx.net.util;
 
-namespace pncs.cmd.examples.documentation.library
+namespace pncs.cmd.examples.documentation.library;
+
+public class ExampleProcessorChain
 {
-    public class ExampleProcessorChain
+    // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleProcessorChain processorChain
+    public static async Task processorChain()
     {
-        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleProcessorChain processorChain
-        public static void processorChain()
-        {
-            StreamInformation streamInformation = new StreamInformation(new Settings());
+        StreamInformation streamInformation = new StreamInformation(new Settings());
                 
-            // Writes to STDOUT
-            ILineProcessor dest = new LineProcessorToStream(streamInformation, Console.OpenStandardOutput());
+        // Writes to STDOUT
+        ILineProcessor dest = new LineProcessorToStream(streamInformation, Console.OpenStandardOutput());
 
-            // Grep filter / processor pair
-            ILineFilter grepFilter = new Grep {textToFind = "world", caseSensitive = false};
-            ILineProcessor grepProcessor = new LineFilterProcessor { filter = grepFilter, processor = dest };
+        // Grep filter / processor pair
+        ILineFilter grepFilter = new Grep("world", caseSensitive: false);
+        LineFilterProcessor grepProcessor = new (grepFilter);
+        grepProcessor.setNextLineProcessor(dest);
             
-            // Sed transformer / processor pair
-            ILineTransformer sedTransformer = new SedReplace("World", "World, with love from Pnyx..", null);
-            ILineProcessor sedProcessor = new LineTransformerProcessor { transform = sedTransformer, processor = grepProcessor };
+        // Sed transformer / processor pair
+        ILineTransformer sedTransformer = new SedReplace("World", "World, with love from Pnyx..", null);
+        LineTransformerProcessor sedProcessor = new(sedTransformer);
+        sedProcessor.setNextLineProcessor(grepProcessor);
             
-            // Reads from source
-            using (StringStreamFactory streamFactory = new StringStreamFactory("Hello World."))
-            {
-                using (StreamToLineProcessor source = new StreamToLineProcessor(streamInformation, streamFactory))
-                {
-                    source.setNextLineProcessor(sedProcessor);            
-            
-                    // Runs 
-                    source.process();                // All I/O occurs on this step
-                }
-            }
-
-            // outputs: Hello World, with love from Pnyx...            
-        }
-
-        // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleProcessorChain sedShim
-        public static void sedShim()
+        // Reads from source
+        await using (StringStreamFactory streamFactory = new StringStreamFactory("Hello World."))
         {
-            using (Pnyx p = new Pnyx())
+            await using (StreamToLineProcessor source = new StreamToLineProcessor(streamInformation, streamFactory))
             {
-                p.readString("CSV,INPUT!,\"Go, Pnyx Go\"");
-                p.parseCsv();
-                p.sed("[,!]", "_", "g");
-                p.writeStdout();
-            }                        
-            // outputs: CSV,INPUT_,"Go_ Pnyx Go"            
+                source.setNextLineProcessor(sedProcessor);            
+            
+                // Runs 
+                await source.process();                // All I/O occurs on this step
+            }
         }
+
+        // outputs: Hello World, with love from Pnyx...            
+    }
+
+    // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleProcessorChain sedShim
+    public static async Task sedShim()
+    {
+        await using (Pnyx p = new Pnyx())
+        {
+            p.readString("CSV,INPUT!,\"Go, Pnyx Go\"");
+            p.parseCsv();
+            p.sed("[,!]", "_", "g");
+            p.writeStdout();
+        }                        
+        // outputs: CSV,INPUT_,"Go_ Pnyx Go"            
     }
 }

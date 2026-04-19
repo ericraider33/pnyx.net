@@ -1,60 +1,67 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using pnyx.net.errors;
 using pnyx.net.util;
 
-namespace pnyx.net.processors.sources
+namespace pnyx.net.processors.sources;
+
+public class LineProcessorSequence : ILinePart, IProcessor
 {
-    public class LineProcessorSequence : ILinePart, IProcessor
+    public readonly List<IProcessor> processors = new List<IProcessor>();
+    public ILineProcessor? processor { get; private set; }
+
+    private int index;
+    private readonly StreamInformation streamInformation;
+
+    public LineProcessorSequence(StreamInformation streamInformation)
     {
-        public readonly List<IProcessor> processors = new List<IProcessor>();
-        public ILineProcessor next { get; private set; }
+        this.streamInformation = streamInformation;
+    }
 
-        private int index;
-        private StreamInformation streamInformation;
+    public void setNextLineProcessor(ILineProcessor next)
+    {
+        this.processor = next;
+    }
 
-        public LineProcessorSequence(StreamInformation streamInformation)
+    public async Task process()
+    {
+        LineProcessorCollector collector = new LineProcessorCollector(processor!);
+        foreach (IProcessor part in processors)
         {
-            this.streamInformation = streamInformation;
+            if (!(part is ILinePart))
+                throw new IllegalStateException($"Processor {part.GetType().Name} is not a line part");
+            
+            ((ILinePart)part).setNextLineProcessor(collector);
         }
+            
+        while (index < processors.Count && streamInformation.active)
+        {
+            IProcessor current = processors[index];                
+            await current.process();                
+            index++;
+        }
+            
+        await processor!.endOfFile();
+    }
 
-        public void setNextLineProcessor(ILineProcessor next)
+    private class LineProcessorCollector : ILineProcessor
+    {
+        private readonly ILineProcessor next;
+
+        public LineProcessorCollector(ILineProcessor next)
         {
             this.next = next;
         }
 
-        public void process()
+        public async Task processLine(String line)
         {
-            LineProcessorCollector collector = new LineProcessorCollector(next);
-            foreach (ILinePart part in processors)
-                part.setNextLineProcessor(collector);
-            
-            while (index < processors.Count && streamInformation.active)
-            {
-                IProcessor current = processors[index];                
-                current.process();                
-                index++;
-            }
-            
-            next.endOfFile();
+            await next.processLine(line);
         }
 
-        private class LineProcessorCollector : ILineProcessor
+        public Task endOfFile()
         {
-            private readonly ILineProcessor next;
-
-            public LineProcessorCollector(ILineProcessor next)
-            {
-                this.next = next;
-            }
-
-            public void processLine(String line)
-            {
-                next.processLine(line);
-            }
-
-            public void endOfFile()
-            {
-            }
+            return Task.CompletedTask;
         }
     }
 }

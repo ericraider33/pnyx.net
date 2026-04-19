@@ -3,39 +3,38 @@ using System.Collections.Generic;
 using pnyx.net.api;
 using pnyx.net.util;
 
-namespace pnyx.net.processors.sources
+namespace pnyx.net.processors.sources;
+
+public class HeadFilter : ILineFilter, IRowFilter
 {
-    public class HeadFilter : ILineFilter, IRowFilter
+    public int limit { get; }
+
+    private readonly StreamInformation streamInformation;
+    private int lineNumber;
+
+    public HeadFilter(StreamInformation streamInformation, int limit = 10)
     {
-        public int limit;
-
-        private StreamInformation streamInformation;
-        private int lineNumber;
-
-        public HeadFilter(StreamInformation streamInformation, int limit)
-        {
-            this.streamInformation = streamInformation;
-            this.limit = limit;
-        }
+        this.streamInformation = streamInformation;
+        this.limit = limit;
+    }
         
-        public bool shouldKeepLine(String line)
-        {
-            lineNumber++;
-            if (!streamInformation.active)
-                return false;
+    public bool shouldKeepLine(String line)
+    {
+        lineNumber++;
+        if (!streamInformation.active)
+            return false;
 
-            streamInformation.active = lineNumber <= limit;
-            return streamInformation.active;
-        }
+        streamInformation.active = lineNumber <= limit;
+        return streamInformation.active;
+    }
 
-        public bool shouldKeepRow(List<String> row)
-        {
-            lineNumber++;
-            if (!streamInformation.active)
-                return false;
+    public bool shouldKeepRow(List<String?> row)
+    {
+        lineNumber++;
+        if (!streamInformation.active)
+            return false;
 
-            streamInformation.active = lineNumber <= limit;
-            return streamInformation.active;
-        }
+        streamInformation.active = lineNumber <= limit;
+        return streamInformation.active;
     }
 }

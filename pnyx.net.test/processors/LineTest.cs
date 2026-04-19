@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using pnyx.net.fluent;
 using Xunit;
 
@@ -18,12 +19,12 @@ TSLA
 """;
 
     [Fact]
-    public void processCaptureLines()
+    public async Task processCaptureLines()
     {
-        using Pnyx p = new();
+        await using Pnyx p = new();
         p.readString(lineInput);
         p.hasLine();
-        List<string> lines = p.processCaptureLines();
+        List<string> lines = await p.processCaptureLines();
         
         Assert.Equal(8, lines.Count);
         Assert.Equal("MSFT", lines[0]);

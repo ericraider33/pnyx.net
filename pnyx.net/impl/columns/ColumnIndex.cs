@@ -7,14 +7,18 @@ using pnyx.net.util;
 
 namespace pnyx.net.impl.columns;
 
+/// <summary>
+/// Class to describe the indexing using for access row data. When pulling from a spreadsheet, it is
+/// suggested to user RowConstants, which use letters, like A, B, C, etc. Otherwise, use zero-based integer index.
+/// </summary>
 public class ColumnIndex
 {
-    private int index_;
+    private readonly int index_;
         
     public int Index
     {
         get => index_;
-        set
+        private init
         {
             if (value < 0)
                 throw new ArgumentException($"Invalid negative index={value}");
@@ -51,9 +55,9 @@ public class ColumnIndex
         return index.Index;
     }
 
-    public static int textAsIndex(String index)
+    public static int textAsIndex(String? index)
     {
-        if (!TextUtil.isAllLetters(index))
+        if (index == null || !TextUtil.isAllLetters(index))
             throw new ArgumentException($"Invalid character index: [{index ?? "NULL"}]");
 
         index = index.ToLowerInvariant();
@@ -84,7 +88,7 @@ public class ColumnIndex
 
             val = val / 26;
         }
-        return base.ToString();
+        return buffer.ToString();
     }
     
     /// <summary>
@@ -111,12 +115,12 @@ public class ColumnIndex
         return columnIndices;
     }
 
-    protected bool Equals(ColumnIndex other)
+    private bool Equals(ColumnIndex other)
     {
         return index_ == other.index_;
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (obj is null) return false;
         if (ReferenceEquals(this, obj)) return true;

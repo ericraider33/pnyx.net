@@ -1,80 +1,89 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
+using pnyx.net.errors;
 using pnyx.net.processors;
 using pnyx.net.util;
 
-namespace pnyx.net.impl.csv
+namespace pnyx.net.impl.csv;
+
+public class RowToCsvStream : IRowProcessor, IAsyncDisposable
 {
-    public class RowToCsvStream : IRowProcessor, IDisposable
-    {
-        public Stream stream { get; private set; }
-        public TextWriter writer { get; private set; }
-        public StreamInformation streamInformation { get; }
-        public CsvSettings settings { get; }
+    public Stream? stream { get; private set; }
+    public TextWriter? writer { get; private set; }
+    public StreamInformation streamInformation { get; }
+    public CsvSettings settings { get; }
 
-        private List<String> previousRow;
+    private List<String?>? previousRow;
                 
-        public RowToCsvStream(
-            StreamInformation streamInformation, 
-            Stream stream,
-            CsvSettings settings
-            )
+    public RowToCsvStream
+    (
+        StreamInformation streamInformation, 
+        Stream stream,
+        CsvSettings settings
+    )
+    {
+        this.stream = stream;
+        this.streamInformation = streamInformation;
+        this.settings = settings;
+    }
+
+    public async Task rowHeader(List<String> header)
+    {
+        await processRow(header.toRow());
+    }
+
+    public async Task processRow(List<String?> row)
+    {
+        if (previousRow != null && writer != null)
         {
-            this.stream = stream;
-            this.streamInformation = streamInformation;
-            this.settings = settings;
+            await CsvUtil.writeRowAsync(writer, previousRow, settings.delimiter, settings.escapeChar, settings.charsNeedEscape);
+            await writer.WriteAsync(streamInformation.getOutputNewline());
+        }
+        else
+        {
+            if (stream == null)
+                throw new IllegalStateException($"Stream has already been disposed");
+            
+            writer = new StreamWriter(stream, streamInformation.getOutputEncoding());
         }
 
-        public void rowHeader(List<String> header)
+        previousRow = row;
+    }
+
+    public async Task endOfFile()
+    {
+        if (previousRow != null && writer != null)
+        {              
+            await CsvUtil.writeRowAsync(writer, previousRow, settings.delimiter, settings.escapeChar, settings.charsNeedEscape);
+            if (streamInformation.endsWithNewLine)
+                await writer.WriteAsync(streamInformation.getOutputNewline());
+        }
+        else
         {
-            processRow(header);
+            if (stream == null)
+                throw new IllegalStateException($"Stream has already been disposed");
+            
+            writer = new StreamWriter(stream, streamInformation.getOutputEncoding());                        
         }
 
-        public void processRow(List<String> row)
+        previousRow = null;
+        await writer.FlushAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (writer != null)
         {
-            if (previousRow != null)
-            {
-                CsvUtil.writeRow(writer, previousRow, settings.delimiter, settings.escapeChar, settings.charsNeedEscape);
-                writer.Write(streamInformation.getOutputNewline());
-            }
-            else
-            {
-                writer = new StreamWriter(stream, streamInformation.getOutputEncoding());
-            }
-
-            previousRow = row;
+            await writer.FlushAsync();
+            await writer.DisposeAsync();
         }
+        writer = null;
 
-        public void endOfFile()
-        {
-            if (previousRow != null)
-            {              
-                CsvUtil.writeRow(writer, previousRow, settings.delimiter, settings.escapeChar, settings.charsNeedEscape);
-                if (streamInformation.endsWithNewLine)
-                    writer.Write(streamInformation.getOutputNewline());
-            }
-            else
-            {
-                writer = new StreamWriter(stream, streamInformation.getOutputEncoding());                        
-            }
-
-            previousRow = null;
-            writer.Flush();
-        }
-
-        public void Dispose()
-        {
-            if (writer != null)
-            {
-                writer.Flush();
-                writer.Dispose();
-            }
-            writer = null;
-
-            if (stream != null)
-                stream.Dispose();
-            stream = null;
-        }
+        if (stream != null)
+            await stream.DisposeAsync();
+        stream = null;
+        previousRow = null;
     }
 }

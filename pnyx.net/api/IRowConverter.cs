@@ -8,8 +8,8 @@ namespace pnyx.net.api;
 
 public interface IRowConverter
 {
-    List<String> lineToRow(String line);
-    String rowToLine(List<String> row);       
+    List<String?> lineToRow(String line);
+    String rowToLine(List<String?> row);       
         
-    IRowProcessor buildRowDestination(StreamInformation streamInformation, Stream stream);
+    IRowProcessor? buildRowDestination(StreamInformation streamInformation, Stream stream);
 }

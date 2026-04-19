@@ -109,15 +109,15 @@ public class NameUtilTest
 
     private void verifyLastFirstMiddleName(string source, string firstName, string middleName, string lastName)
     {
-        Tuple<String, String, String> name = NameUtil.lastFirstMiddleName(source);
+        Name? name = NameUtil.lastFirstMiddleName(source);
         if (firstName == null)
         {
             Assert.Null(name);
             return;
         }
-        Assert.Equal(firstName, name.Item1);
-        Assert.Equal(middleName, name.Item2);
-        Assert.Equal(lastName, name.Item3);
+        Assert.Equal(firstName, name!.firstName);
+        Assert.Equal(middleName, name!.middleName);
+        Assert.Equal(lastName, name!.lastName);
     }
 
     [Fact]
@@ -149,15 +149,15 @@ public class NameUtilTest
 
     private void verifyLastMiddleFirstName(string source, string firstName, string middleName, string lastName)
     {
-        Tuple<String, String, String> name = NameUtil.lastMiddleFirstName(source);
+        Name? name = NameUtil.lastMiddleFirstName(source);
         if (firstName == null)
         {
             Assert.Null(name);
             return;
         }
-        Assert.Equal(firstName, name.Item1);
-        Assert.Equal(middleName, name.Item2);
-        Assert.Equal(lastName, name.Item3);
+        Assert.Equal(firstName, name!.firstName);
+        Assert.Equal(middleName, name!.middleName);
+        Assert.Equal(lastName, name!.lastName);
     }
 
     [Fact]

@@ -2,7 +2,7 @@ using System;
 
 namespace pnyx.net.util.dates;
 
-public readonly struct LocalTimestamp : IComparable<LocalTimestamp>, IFormattable, IUtcCapable
+public readonly struct LocalTimestamp : IComparable<LocalTimestamp>, IFormattable, IUtcCapable, IEquatable<LocalTimestamp>
 {
     public TimeZoneInfo timeZone { get; }
     public DateTime local { get; }
@@ -21,7 +21,7 @@ public readonly struct LocalTimestamp : IComparable<LocalTimestamp>, IFormattabl
         return new LocalTimestamp(timeZone, localTimestamp);
     }
 
-    public static LocalTimestamp? fromLocal(TimeZoneInfo timeZone, DateTime? localTimestamp)
+    public static LocalTimestamp? fromLocal(TimeZoneInfo? timeZone, DateTime? localTimestamp)
     {
         if (timeZone == null || localTimestamp == null)
             return null;
@@ -46,7 +46,7 @@ public readonly struct LocalTimestamp : IComparable<LocalTimestamp>, IFormattabl
         return new LocalTimestamp(timeZone, toLocal((UtcDate)utcTime, timeZone));
     }
     
-    public static LocalTimestamp? fromUtc(TimeZoneInfo timeZone, DateTime? utcTime)
+    public static LocalTimestamp? fromUtc(TimeZoneInfo? timeZone, DateTime? utcTime)
     {
         if (utcTime == null || timeZone == null)
             return null;
@@ -75,7 +75,7 @@ public readonly struct LocalTimestamp : IComparable<LocalTimestamp>, IFormattabl
         return utc.CompareTo(other.utc);
     }
 
-    public string ToString(string format, IFormatProvider formatProvider)
+    public string ToString(string? format, IFormatProvider? formatProvider)
     {
         return local.ToString(format, formatProvider);
     }
@@ -97,7 +97,7 @@ public readonly struct LocalTimestamp : IComparable<LocalTimestamp>, IFormattabl
             && local.Equals(other.local);
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         return obj is LocalTimestamp other && Equals(other);
     }
@@ -149,8 +149,8 @@ public readonly struct LocalTimestamp : IComparable<LocalTimestamp>, IFormattabl
     ///
     /// See https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings for definitions
     /// </summary>
-    /// <returns>LocalTimestamp as specified by passed timezone</returns>
-    public static LocalTimestamp parse(String text, TimeZoneInfo timeZone = null)
+    /// <returns>LocalTimestamp as specified by timezone</returns>
+    public static LocalTimestamp parse(String text, TimeZoneInfo? timeZone = null)
     {
         DateTime asDate = DateUtil.parseIso8601Timestamp(text);
         return fromUtc(timeZone ?? TimeZoneInfo.Local, asDate);

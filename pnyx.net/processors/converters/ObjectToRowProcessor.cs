@@ -1,33 +1,41 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using pnyx.net.api;
 
 namespace pnyx.net.processors.converters;
 
 public class ObjectToRowProcessor : IObjectProcessor, IRowPart
 {
-    public IObjectConverterFromRow converter;
-    public IRowProcessor processor;
+    public IObjectConverterFromRow converter { get; }
+    public IRowProcessor? processor { get; private set; }
     private int lineNumber;
-    
-    public void processObject(object obj)
+
+    public ObjectToRowProcessor(IObjectConverterFromRow converter)
+    {
+        this.converter = converter;
+    }
+
+    public async Task processObject(object obj)
     {
         lineNumber++;
 
         if (lineNumber == 1)
         {
-            List<String> header = converter.objectToHeader(obj);
+            List<String>? header = converter.objectToHeader(obj);
             if (header != null)
-                processor.rowHeader(header);
+                await processor!.rowHeader(header);
+
+            lineNumber++;
         }
         
-        List<String> row = converter.objectToRow(obj);
-        processor.processRow(row);
+        List<String?> row = converter.objectToRow(obj);
+        await processor!.processRow(row);
     }
 
-    public void endOfFile()
+    public async Task endOfFile()
     {
-        processor.endOfFile();
+        await processor!.endOfFile();
     }
 
     public void setNextRowProcessor(IRowProcessor next)

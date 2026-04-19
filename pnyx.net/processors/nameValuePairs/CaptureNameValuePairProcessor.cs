@@ -1,20 +1,23 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace pnyx.net.processors.nameValuePairs;
 
 public class CaptureNameValuePairProcessor : INameValuePairProcessor
 {
-    public List<IDictionary<String, Object>> records { get; } = new();
+    public List<IDictionary<String, Object?>> records { get; } = new();
     public bool eof { get; private set; }
 
-    public void processNameValuePair(IDictionary<string, Object> record)
+    public Task processNameValuePair(IDictionary<string, Object?> record)
     {
         records.Add(record);
+        return Task.CompletedTask;
     }
 
-    public void endOfFile()
+    public Task endOfFile()
     {
         eof = true;
+        return Task.CompletedTask;
     }
 }

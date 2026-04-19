@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace pnyx.net.processors;
 
-public interface INameValuePairProcessor
+public interface INameValuePairProcessor : IPart
 {
-    void processNameValuePair(IDictionary<string, Object> record);
-    void endOfFile();
+    Task processNameValuePair(IDictionary<string, Object?> record);
+    Task endOfFile();
 }

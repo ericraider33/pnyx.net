@@ -18,6 +18,8 @@ public class LocalRange
     /// <summary>
     /// Creates a range from passed type and the current day. If a custom type is passed, then start/end values may be required.
     /// </summary>
+    /// <param name="type">Range type</param>
+    /// <param name="today">Base day for which the range is anchored</param>
     /// <param name="startDate">StartDate is inclusive</param>
     /// <param name="endDate">EndDate is inclusive from UI, but resultant LocalRange uses an exclusive End value by adding a calendar day to the result</param>
     /// <exception cref="ArgumentException"></exception>

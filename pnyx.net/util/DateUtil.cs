@@ -12,6 +12,7 @@ public static class DateUtil
     public const String FORMAT_ISO_8601_DATE = "yyyy-MM-dd";
     public static readonly TimeSpan SPAN_1970;
     private static readonly DateTime UTCUnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);                 // UTC 1970-1-1 00:00:00
+    public static readonly DateTime MIN_1900 = new DateTime(1900, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc); 
     
     public static String toMDYYYY(this DateTime x)
     {
@@ -28,7 +29,7 @@ public static class DateUtil
         return date.AddDays(weeks * 7);
     }
     
-    public static DateTime? parseNullable(String format, String text)
+    public static DateTime? parseNullable(String format, String? text)
     {
         if (String.IsNullOrEmpty(text))
             return null;
@@ -43,32 +44,37 @@ public static class DateUtil
         }
     }
 
-    public static DateTime parseExact(String format, String text, DateTimeStyles style = DateTimeStyles.None, int? lineNumber = null)
+    public static DateTime parseExact(String format, String? text, DateTimeStyles style = DateTimeStyles.None, int? lineNumber = null)
     {
+        if (text == null)
+            throw new ArgumentException("Value cannot be null", nameof(text));
+        
         try
         {
             return DateTime.ParseExact(text, format, CultureInfo.CurrentCulture, style);
         }
         catch (Exception)
         {
-            throw new FormatException(String.Format("String '{0}' was not recognized as a valid DateTime format: {1}{2}", text, format, lineNumber == null ? "" : ", lineNumber="+lineNumber));
+            throw new FormatException($"String '{text}' was not recognized as a valid DateTime format: {format}{(lineNumber == null ? "" : ", lineNumber=" + lineNumber)}");
         }
     }
     
-    public static DateTime convert(String text, int? lineNumber = null)
+    public static DateTime convert(String? text, int? lineNumber = null)
     {
+        if (text == null)
+            throw new ArgumentException("Value cannot be null", nameof(text));
+        
         try
         {
             return Convert.ToDateTime(text);
         }
         catch (Exception)
         {
-            throw new FormatException(String.Format("String '{0}' was not recognized as a valid DateTime{1}", text, lineNumber == null ? "" : ", lineNumber="+lineNumber));
+            throw new FormatException($"String '{text}' was not recognized as a valid DateTime{(lineNumber == null ? "" : ", lineNumber=" + lineNumber)}");
         }
     }
-
-
-    public static DateTime? convertNullable(String text, int? lineNumber = null)
+    
+    public static DateTime? convertNullable(String? text, int? lineNumber = null)
     {
         if (String.IsNullOrEmpty(text))
             return null;
@@ -94,14 +100,14 @@ public static class DateUtil
         return parseExact(FORMAT_ISO_8601_DATE, source);
     }
 
-    public static DateTime? parseIso8601DateNullable(String source)
+    public static DateTime? parseIso8601DateNullable(String? source)
     {
         return parseNullable(FORMAT_ISO_8601_DATE, source);
     }
 
-    private static string getIso8601Format(String source)
+    private static string getIso8601Format(String? source)
     {
-        String format = null;
+        String? format = null;
         if (source != null)
         {
             (int, String)[] available = new[]
@@ -136,12 +142,12 @@ public static class DateUtil
         return parseExact(getIso8601Format(source), source, style: DateTimeStyles.AdjustToUniversal);
     }
 
-    public static DateTime? parseIso8601TimestampNullable(String source)
+    public static DateTime? parseIso8601TimestampNullable(String? source)
     {
         return parseNullable(getIso8601Format(source), source);
     }
 
-    public static String toIso8601Date(this DateTime? source)
+    public static String? toIso8601Date(this DateTime? source)
     {
         if (source == null)
             return null;
@@ -381,6 +387,11 @@ public static class DateUtil
             0, 
             0
             );
+    }
+
+    public static DateOnly toDateOnly(this DateTime value)
+    {
+        return DateOnly.FromDateTime(value);
     }
     
     public static DateTime limitToDay(this DateTime value, int? modulus = null)

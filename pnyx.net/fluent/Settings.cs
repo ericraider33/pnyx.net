@@ -21,11 +21,11 @@ public class Settings : ICloneable
     public String tempDirectory { get; set; }
     public int bufferLines { get; set; }
     public Encoding defaultEncoding { get; set; }
-    public Encoding outputEncoding { get; set; }
+    public Encoding? outputEncoding { get; set; }
     public bool detectEncodingFromByteOrderMarks { get; set; }
     public bool outputByteOrderMarks { get; set; }
     public String defaultNewline { get; set; }  
-    public String outputNewline { get; set; }  
+    public String? outputNewline { get; set; }  
     public bool backupRewrite { get; set; }
     public bool processOnDispose { get; set; }
     public bool stdIoDefault { get; set; }

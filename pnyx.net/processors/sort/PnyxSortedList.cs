@@ -1,51 +1,51 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace pnyx.net.processors.sort
+namespace pnyx.net.processors.sort;
+
+public class PnyxSortedList<T> where T : class
 {
-    public class PnyxSortedList<T> where T : class
-    {
-        public int count { get; private set; }
-        private readonly SortedList<T, int> buffer;
-        private readonly bool unique;
+    public int count { get; private set; }
+    private readonly SortedList<T, int> buffer;
+    private readonly bool unique;
         
-        public PnyxSortedList(int bufferSize, IComparer<T> comparer, bool unique)
+    public PnyxSortedList(int bufferSize, IComparer<T> comparer, bool unique)
+    {
+        buffer = new SortedList<T, int>(bufferSize, comparer);
+        this.unique = unique;
+    }
+
+    public void add(T toAdd)
+    {                        
+        if (buffer.ContainsKey(toAdd))
         {
-            buffer = new SortedList<T, int>(bufferSize, comparer);
-            this.unique = unique;
+            if (unique)
+                return;            // ignore duplicates
+
+            int nodeCount = buffer[toAdd];
+            buffer[toAdd] = nodeCount + 1;
+            count++;
         }
-
-        public void add(T toAdd)
-        {                        
-            if (buffer.ContainsKey(toAdd))
-            {
-                if (unique)
-                    return;            // ignore duplicates
-
-                int nodeCount = buffer[toAdd];
-                buffer[toAdd] = nodeCount + 1;
-                count++;
-            }
-            else
-            {
-                buffer.Add(toAdd, 1);
-                count++;
-            }
-        }
-
-        public void clear()
+        else
         {
-            count = 0;
-            buffer.Clear();
+            buffer.Add(toAdd, 1);
+            count++;
         }
+    }
 
-        public void visit(Action<T> vistor)
+    public void clear()
+    {
+        count = 0;
+        buffer.Clear();
+    }
+
+    public async Task visit(Func<T, Task> visitor)
+    {
+        foreach (KeyValuePair<T, int> node in buffer)
         {
-            foreach (KeyValuePair<T, int> node in buffer)
-            {
-                for (int i = 0; i < node.Value; i++)
-                    vistor(node.Key);
-            }
+            for (int i = 0; i < node.Value; i++)
+                await visitor(node.Key);
         }
     }
 }

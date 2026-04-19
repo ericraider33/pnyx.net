@@ -24,4 +24,5 @@ public class ListExtensionTest
         
         list.addSorted(comparison, 7);
         Assert.Equal("1,4,5,7", String.Join(",", list));
-    }}
+    }
+}

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using pnyx.net.fluent;
 using pnyx.net.impl;
 using pnyx.net.impl.columns;
@@ -15,7 +16,7 @@ public class RowSortProcessorTest
     [InlineData("us_census_surnames.csv", new[] {1}, true, false, false, false, "us_census_surnames_sorted.csv")]
     [InlineData("super_bowl_winners.csv", new[] {1,2}, false, false, false, false, "super_bowl_winners_sorted.csv")]
     [InlineData("super_bowl_winners.csv", new[] {1,2}, false, true, false, true, "super_bowl_winners_sorted_unique.csv")]        
-    public void sort(String source, int[] columnNumbers, bool hasHeader, bool unique, bool descending, bool caseSensitive, String expected)
+    public async Task sort(String source, int[] columnNumbers, bool hasHeader, bool unique, bool descending, bool caseSensitive, String expected)
     {  
         String inPath = Path.Combine(TestUtil.findTestFileLocation(), "csv", source);
         String outPath = Path.Combine(TestUtil.findTestOutputLocation(), "csv", "row_" + expected);
@@ -24,15 +25,15 @@ public class RowSortProcessorTest
         
         ColumnIndex[] columnIndices = ColumnIndex.convertColumnNumbersToIndex(columnNumbers);
         
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {                
             p.read(inPath);
-            p.parseCsv();   
             if (hasHeader)
                 p.lineFilter(new SkipSpecificFilter(1));                
+            p.parseCsv(hasHeader: false);   
             p.sort(descending: descending, caseSensitive: caseSensitive, unique: unique, columnIndices: columnIndices, tempDirectory: Path.Combine(TestUtil.findTestOutputLocation(), "csv"));
             p.write(outPath);
-            p.process();                                
+            await p.process();                                
         }
             
         String expectedPath = Path.Combine(TestUtil.findTestFileLocation(), "csv", expected);
@@ -40,7 +41,7 @@ public class RowSortProcessorTest
     }
 
     [Fact]
-    public void verifyColumnSorting()
+    public async Task verifyColumnSorting()
     {
         const String input =
             @"a,a,9
@@ -50,12 +51,12 @@ c,a,1
 a,d,8
 ";
         String actual;
-        using (Pnyx p = new Pnyx())
+        await using (Pnyx p = new Pnyx())
         {                
             p.readString(input);
             p.parseCsv();                
             p.sort(columnIndices: [RowConstants.A, RowConstants.C]);
-            actual = p.processToString();
+            actual = await p.processToString();
         }
             
         const String expect =

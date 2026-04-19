@@ -6,7 +6,12 @@ namespace pnyx.net.impl.columns;
 
 public class SelectColumns : IRowTransformer
 {
-    public ColumnIndex[] columnIndices;                                // zero-based
+    public ColumnIndex[] columnIndices { get; set; }
+
+    public SelectColumns(ColumnIndex[] columnIndices)
+    {
+        this.columnIndices = columnIndices;
+    }
 
     public List<String> transformHeader(List<String> header)
     {

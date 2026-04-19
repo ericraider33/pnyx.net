@@ -7,8 +7,8 @@ namespace pnyx.net.impl.columns;
 
 public class InsertColumns : IRowTransformer
 {
-    public String pad = "";
-    public readonly HashSet<ColumnIndex> columnIndices;
+    public String pad { get; set; } = "";
+    public HashSet<ColumnIndex> columnIndices { get; }
 
     public InsertColumns(IEnumerable<ColumnIndex> columns)
     {
@@ -17,11 +17,11 @@ public class InsertColumns : IRowTransformer
 
     public List<String> transformHeader(List<String> header)
     {
-        header = RowUtil.insertBlankColumns(header, columnIndices, "");
+        header = RowUtil.insertBlankColumnsHeader(header, columnIndices, "");
         return RowUtil.setDefaultHeaderNames(header);
     }
 
-    public List<String> transformRow(List<String> row)
+    public List<String?> transformRow(List<String?> row)
     {
         return RowUtil.insertBlankColumns(row, columnIndices, pad);
     }

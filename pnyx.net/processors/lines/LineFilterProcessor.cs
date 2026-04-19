@@ -1,22 +1,28 @@
 using System;
+using System.Threading.Tasks;
 using pnyx.net.api;
 
 namespace pnyx.net.processors.lines;
 
 public class LineFilterProcessor : ILinePart, ILineProcessor
 {
-    public ILineFilter filter;
-    public ILineProcessor processor;
+    public ILineFilter filter { get; }
+    public ILineProcessor? processor { get; private set; }
 
-    public void processLine(String line)
+    public LineFilterProcessor(ILineFilter filter)
     {
-        if (filter.shouldKeepLine(line))
-            processor.processLine(line);
+        this.filter = filter;
     }
 
-    public void endOfFile()
+    public async Task processLine(String line)
     {
-        processor.endOfFile();
+        if (filter.shouldKeepLine(line))
+            await processor!.processLine(line);
+    }
+
+    public async Task endOfFile()
+    {
+        await processor!.endOfFile();
     }
 
     public void setNextLineProcessor(ILineProcessor next)

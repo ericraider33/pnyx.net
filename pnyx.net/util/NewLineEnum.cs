@@ -1,7 +1,6 @@
-namespace pnyx.net.util
+namespace pnyx.net.util;
+
+public enum NewLineEnum
 {
-    public enum NewLineEnum
-    {
-        None, Unix, Windows, LineFeed, Native
-    }
+    None, Unix, Windows, LineFeed, Native
 }

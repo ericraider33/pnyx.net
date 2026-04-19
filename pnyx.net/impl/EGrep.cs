@@ -2,29 +2,29 @@ using System;
 using System.Text.RegularExpressions;
 using pnyx.net.api;
 
-namespace pnyx.net.impl
+namespace pnyx.net.impl;
+
+public class EGrep : ILineFilter
 {
-    public class EGrep : ILineFilter
+    public String expression { get; }
+    public bool caseSensitive { get;}
+    
+    private readonly Regex regex;
+
+    public EGrep(String expression, bool caseSensitive)
     {
-        public String expression { get; private set; }
-        public bool caseSensitive { get; private set; }
-        private Regex regex;
+        this.expression = expression;
+        this.caseSensitive = caseSensitive;
 
-        public EGrep(String expression, bool caseSensitive)
-        {
-            this.expression = expression;
-            this.caseSensitive = caseSensitive;
-
-            RegexOptions options = RegexOptions.None;
-            if (!caseSensitive)
-                options |= RegexOptions.IgnoreCase;
+        RegexOptions options = RegexOptions.None;
+        if (!caseSensitive)
+            options |= RegexOptions.IgnoreCase;
             
-            regex = new Regex(expression, options);
-        }
-
-        public bool shouldKeepLine(String line)
-        {
-            return regex.IsMatch(line);   
-        }        
+        regex = new Regex(expression, options);
     }
+
+    public bool shouldKeepLine(String line)
+    {
+        return regex.IsMatch(line);   
+    }        
 }

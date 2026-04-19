@@ -1,54 +1,57 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using pnyx.net.api;
 
-namespace pnyx.net.processors.sources
+namespace pnyx.net.processors.sources;
+
+public class StringStreamFactory : IStreamFactory, IAsyncDisposable
 {
-    public class StringStreamFactory : IStreamFactory, IDisposable
-    {
-        public readonly String source;
+    public String source { get; }
         
-        private MemoryStream stream;
+    private MemoryStream? stream;
 
-        public StringStreamFactory(String source)
+    public StringStreamFactory(String source)
+    {
+        this.source = source;
+    }
+
+    public Stream openStream()
+    {
+        if (stream != null)
         {
-            this.source = source;
-        }
-
-        public Stream openStream()
-        {
-            if (stream != null)
-            {
-                resetStream();
-                return stream;
-            }
-            
-            stream = new MemoryStream();
-            StreamWriter writer = new StreamWriter(stream);
-
-            writer.Write(source);
-            writer.Flush();
-            
-            stream.Position = 0;
+            resetStream();
             return stream;
         }
+            
+        stream = new MemoryStream();
+        StreamWriter writer = new StreamWriter(stream);
 
-        public void resetStream()
-        {
-            stream.Position = 0;                        
-        }
+        writer.Write(source);
+        writer.Flush();
+            
+        stream.Position = 0;
+        return stream;
+    }
+
+    public void resetStream()
+    {
+        if (stream == null)
+            return;
         
-        public void closeStream()
-        {
-            // no-op
-        }
+        stream.Position = 0;                        
+    }
+        
+    public void closeStream()
+    {
+        // no-op
+    }
 
-        public void Dispose()
-        {
-            if (stream != null)
-                stream.Dispose();
+    public async ValueTask DisposeAsync()
+    {
+        if (stream != null)
+            await stream.DisposeAsync();
 
-            stream = null;
-        }
+        stream = null;
     }
 }

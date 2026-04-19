@@ -5,5 +5,5 @@ namespace pnyx.net.api;
 
 public interface INameValuePairFilter
 {
-    bool shouldKeepPair(IDictionary<String,Object> pairs);
+    bool shouldKeepPair(IDictionary<String,Object?> pairs);
 }

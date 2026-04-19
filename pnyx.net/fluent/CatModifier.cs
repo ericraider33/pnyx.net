@@ -1,8 +1,7 @@
 using pnyx.net.api;
 
-namespace pnyx.net.fluent
+namespace pnyx.net.fluent;
+
+public class CatModifier : IModifier
 {
-    public class CatModifier : IModifier
-    {
-    }
 }

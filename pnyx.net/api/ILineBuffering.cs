@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 
-namespace pnyx.net.api
+namespace pnyx.net.api;
+
+public interface ILineBuffering
 {
-    public interface ILineBuffering
-    {
-        List<String> bufferingLine(String line);
-        List<String> endOfFile();
-    }
+    List<String>? bufferingLine(String line);
+    List<String>? endOfFile();
 }
