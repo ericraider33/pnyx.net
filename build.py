@@ -9,6 +9,7 @@
 #       - Update pnyx.net Assembly version
 #       - Update pncs.cmd Assembly version
 #       - Update pnyx.cmd Assembly version
+#       - Update pnyx.automapper Assembly version
 # - build.py nuget
 # - Using web, upload result on page: https://www.nuget.org/packages/manage/upload
 #
@@ -121,7 +122,7 @@ def buildNuget():
     subprocess.run(['dotnet','pack','--output','.out/lib','pnyx.net/pnyx.net.csproj'], check=True)
     
     # Prints nuget URL
-    print("\nUpload 'nupkg' file to URL: https://www.nuget.org/packages/manage/upload")
+    print("\nUpload 'nupkg' file from '.out/lib/pnyx.net.x.x.x.nupkg' to URL: https://www.nuget.org/packages/manage/upload")
 
 
 def findCmdPackage():
