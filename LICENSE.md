@@ -1,16 +1,16 @@
-Pnyx.net Software Lincense 
+﻿Pnyx.net Software License 
 Version 1, January 28 2019
-Copyright (c) 2018-2025 BuckTheOdds, LLC. <http://www.bucktheodds.com>
+Copyright (c) 2018-2026 BuckTheOdds, LLC. <http://www.bucktheodds.com>
 
   0. Definitions.
 
   As used herein, "this License" refers to version 1 of the Pnyx.net Software 
-  Lincense.
+  License.
 
   "The Library" refers to a covered work governed by this License,
 other than an Application or a Combined Work as defined below.
 
-  "Derivative Libary" refers to modifications to The Libary
+  "Derivative Library" refers to modifications to The Library
 other than an Application or a Combined Work as defined below.
 
   An "Application" is any work that makes use of an interface provided
@@ -37,7 +37,7 @@ Application, but excluding the System Libraries of the Combined Work.
   1. Public Distribution of The Library
   
   Public distributions of The Library, either as source code or binary code,
-are stictly forbidden. Only BuckTheOdds, LLC. and its associated business 
+are strictly forbidden. Only BuckTheOdds, LLC. and its associated business 
 partners may distribute The Library.
 
   2. Fee For Usage
@@ -46,27 +46,27 @@ partners may distribute The Library.
 any usage of the software, both as Library or as Combined Work. Specific fee 
 schedules are not part of the scope of this document. However, fees are based
 upon 3 different types of usage: 1) fee per machine, 2) fee per project and/or
-3) fee per developer. In each case, BuckTheOdds LLC. has the right to waive fees
-either temporarily or permently. Fee schedules are detailed in addendums to this
-license agreement.
+3) fee per developer. In each case, BuckTheOdds, LLC. has the right to waive fees
+either temporarily or permanently. Fee schedules are detailed in addendum(s)
+to this license agreement.
 
-  3. Derivative Libary
+  3. Derivative Library
   
-  Changes to The Libary software are permitted. Source code for the project can
-be used and modified. Derivative Libaries may be privately distributed and privately
-included within other projects. Derivative Libary and distribution thereof is covered
-by Fees for Usage. All of terms of this agreement apply to Derivative Libaries unless
-specifically noted otherwise. All Derivative Libaries must also do each of
-the following:
+  Changes to The Library software are permitted. Source code for the project can
+be used and modified. Derivative Libraries may be privately distributed and
+privately included within other projects. Derivative Library and distribution 
+thereof is covered by Fees for Usage. All of terms of this agreement apply to 
+Derivative Libraries unless specifically noted otherwise. All Derivative 
+Libraries must also do each of the following:
 
-   a) Give prominent notice with each copy of the Derivative Libary that
-   the Library is basis of the resultant libary and that the Library and 
+   a) Give prominent notice with each copy of the Derivative Library that
+   the Library is basis of the resultant library and that the Library and 
    its use are covered by this License.
 
-   b) Accompany the Derivative Libary with a copy of this license
+   b) Accompany the Derivative Library with a copy of this license
    document.
 
-   c) Pay Fee for Usage on behalf of usage of the Derivative Libary.
+   c) Pay Fee for Usage on behalf of usage of the Derivative Library.
   
   4. Conveying Modified Versions.
 
@@ -74,7 +74,7 @@ the following:
 facility refers to a function or data to be supplied by an Application
 that uses the facility (other than as an argument passed when the
 facility is invoked), then you must convey a copy of the modified
-version to BuckTheOdds LLC. Source code of the modifications must be 
+version to BuckTheOdds, LLC. Source code of the modifications must be 
 submitting via email (or other means mutually agreed upon) to 
 support@bucktheodds.com.
   
@@ -98,22 +98,22 @@ the following:
 
   6. Revised Versions of The License.
 
-  BuckTheOdds LLC. may publish revised and/or new versions
+  BuckTheOdds, LLC. may publish revised and/or new versions
 of the License from time to time. Such new versions will be similar 
 in spirit to the present version, but may differ in detail to 
 address new problems or concerns.
 
   Each version is given a distinguishing version number. When revisions
 are published, all previous versions become obsolete and the latest version 
-will be legally binding for all usage of The Libary that occur after the
-publish date. All registered customers using The Libary will be notified of
+will be legally binding for all usage of The Library that occur after the
+publish date. All registered customers using The Library will be notified of
 changes published versions at least 30 days prior to publication date.
   
   7. Disclaimer
   
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
