@@ -6,6 +6,7 @@
     <File Path="LICENSE.md" />
   </Folder>
   <Project Path="pncs.cmd/pncs.cmd.csproj" />
+  <Project Path="pnyx.automapper/pnyx.automapper.csproj" />
   <Project Path="pnyx.cmd.shared/pnyx.cmd.shared.csproj" />
   <Project Path="pnyx.cmd/pnyx.cmd.csproj" />
   <Project Path="pnyx.net.test/pnyx.net.test.csproj" />

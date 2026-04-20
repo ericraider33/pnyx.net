@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
 using AutoMapper;
 using pnyx.net.api;
 
-namespace pnyx.net.test.processors;
+namespace pnyx.automapper.converters;
 
 public class AutoMapperObjectConverter<TEntity> : IObjectConverterFromNameValuePair
 {

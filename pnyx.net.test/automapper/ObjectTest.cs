@@ -3,14 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.Extensions.Logging.Abstractions;
+using pnyx.automapper.converters;
 using pnyx.net.api;
 using pnyx.net.fluent;
 using Xunit;
 
-namespace pnyx.net.test.processors;
+namespace pnyx.net.test.automapper;
 
 public class ObjectTest
 {
+    
+    
     const String csvInputA = """
 Title,Author,PublicationDate
 "Tale of Two Cities","Charles Dickens",1859
@@ -185,7 +189,7 @@ Odyssey,Homer,-1000
         MapperConfiguration config = new MapperConfiguration(_ =>
         {
 //            cfg.CreateMap<IDictionary<String, Object>, Book>();
-        });
+        }, NullLoggerFactory.Instance);
 //        config.AssertConfigurationIsValid();
 
         IObjectConverterFromNameValuePair converter = new AutoMapperObjectConverter<Book>(config.CreateMapper());
@@ -211,9 +215,7 @@ Odyssey,Homer,-1000
     [Fact]
     public async Task automapper_to_csv()
     {
-        MapperConfiguration config = new MapperConfiguration(_ =>
-        {
-        });
+        MapperConfiguration config = new MapperConfiguration(_ => {}, NullLoggerFactory.Instance);
 
         IObjectConverterFromNameValuePair converter = new AutoMapperObjectConverter<Book>(config.CreateMapper());
         
@@ -251,9 +253,7 @@ Odyssey,Homer,-1000
 
         Assert.Equal(3, actual.Count);
         
-        MapperConfiguration config = new MapperConfiguration(_ =>
-        {
-        });
+        MapperConfiguration config = new MapperConfiguration(_ => { }, NullLoggerFactory.Instance);
 
         IObjectConverterFromNameValuePair converter = new AutoMapperObjectConverter<Book>(config.CreateMapper());
 
