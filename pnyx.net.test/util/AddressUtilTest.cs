@@ -16,8 +16,8 @@ public class AddressHelperTest
     [InlineData("xxx, 139 River Valley Trl, Apartment #2, Kathleen, Georgia USA, 31047", null)]
     public void testParse(String input, String expected)
     {
-        Address address = AddressUtil.parse(input);
-        String actual = address?.ToString();
+        Address? address = AddressUtil.parse(input);
+        String? actual = address?.ToString();
         Assert.Equal(expected, actual);
     }
         

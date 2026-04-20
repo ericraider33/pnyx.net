@@ -16,7 +16,7 @@ public class NotRowFilter : RowFilterGroup
         filters.AddRange(source);
     }
         
-    public override bool shouldKeepRow(List<String> row)
+    public override bool shouldKeepRow(List<String?> row)
     {
         return !base.shouldKeepRow(row);
     }        

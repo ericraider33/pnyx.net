@@ -73,7 +73,7 @@ Line two,LOSER
         {
             p.readString(input);
             p.parseCsv();
-            p.rowTransformer(x => new List<string> {NameUtil.toTitleCase(x[1])});
+            p.rowTransformer(x => new List<string?> {x[1].toTitleCase()});
             p.writeStdout();
         }                        
         // outputs:            

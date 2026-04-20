@@ -7,7 +7,7 @@ namespace pnyx.net.util;
 
 public static class RowUtil
 {
-    public static List<String?> replaceColumn(List<String?> row, ColumnIndex columnIndex, params String[] replacement)
+    public static List<String?> replaceColumn(List<String?> row, ColumnIndex columnIndex, params String?[] replacement)
     {
         if (columnIndex > row.Count)
             return row;
@@ -21,7 +21,7 @@ public static class RowUtil
         return row;
     }
         
-    public static List<String?> insertColumns(List<String?> row, ColumnIndex columnIndex, params String[] replacement)
+    public static List<String?> insertColumns(List<String?> row, ColumnIndex columnIndex, params String?[] replacement)
     {
         if (columnIndex > row.Count)
             return row;
@@ -86,9 +86,19 @@ public static class RowUtil
         return result;
     }
 
+    public static List<String> removeColumnsHeader(List<String> row, ISet<ColumnIndex> columnIndices)
+    {
+        return removeColumns_(row, columnIndices);
+    }
+
     public static List<String?> removeColumns(List<String?> row, ISet<ColumnIndex> columnIndices)
     {
-        List<String?> result = new List<String?>(row.Count);
+        return removeColumns_(row, columnIndices);
+    }
+
+    private static List<T> removeColumns_<T>(List<T> row, ISet<ColumnIndex> columnIndices)
+    {
+        List<T> result = new List<T>(row.Count);
         for (int i = 0; i < row.Count; i++)
         {
             if (columnIndices.Contains(new ColumnIndex(i)))
@@ -99,10 +109,20 @@ public static class RowUtil
 
         return result;
     }
+    
+    public static List<String> fixWidthHeader(List<String> row, int columns, String pad = "")
+    {
+        return fixWidth_(row, columns, pad);
+    }
 
     public static List<String?> fixWidth(List<String?> row, int columns, String pad = "")
     {
-        List<String?> result = new List<String?>(columns);
+        return fixWidth_(row, columns, pad);
+    }
+    
+    private static List<T> fixWidth_<T>(List<T> row, int columns, T pad)
+    {
+        List<T> result = new List<T>(columns);
 
         for (int i = 0; i < columns; i++)
         {
@@ -136,12 +156,12 @@ public static class RowUtil
         return header;
     }
 
-    public static List<String>? asRow(this String[]? source)
+    public static List<String?>? asRow(this String?[]? source)
     {
         if (source == null)
             return null;
 
-        return new List<String>(source);
+        return new List<String?>(source);
     }
     
     public static List<String?> toRow(this List<String> source)

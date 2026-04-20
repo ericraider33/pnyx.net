@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using pnyx.net.impl.columns;
 using pnyx.net.util;
 using Xunit;
@@ -21,13 +20,13 @@ public class RowUtilTest
     [InlineData(4, "6", "1,2,3,4")]
     public void insertBlankColumns(int original, String columnNumbersText, String expectedText)
     {
-        List<String> source = new List<String>(original);
+        List<String?> source = new List<String?>(original);
         for (int i = 0; i < original; i++)
             source.Add((i + 1).ToString());
 
         HashSet<int> columnNumbers = new HashSet<int>(columnNumbersText.parseInts());
         HashSet<ColumnIndex> columnIndices = ColumnIndex.convertColumnNumbersToIndex(columnNumbers);
-        List<String> actual = RowUtil.insertBlankColumns(source, columnIndices, pad: "_");
+        List<String?> actual = RowUtil.insertBlankColumns(source, columnIndices, pad: "_");
 
         String actualText = String.Join(",", actual);
         Assert.Equal(expectedText, actualText);
@@ -44,13 +43,13 @@ public class RowUtilTest
     [InlineData(4, "5", "1,2,3,4")]
     public void duplicateColumns(int original, String columnNumbersText, String expectedText)
     {
-        List<String> source = new List<String>(original);
+        List<String?> source = new List<String?>(original);
         for (int i = 0; i < original; i++)
             source.Add((i + 1).ToString());
 
         HashSet<int> columnNumbers = new HashSet<int>(columnNumbersText.parseInts());
         HashSet<ColumnIndex> columnIndices = ColumnIndex.convertColumnNumbersToIndex(columnNumbers);
-        List<String> actual = RowUtil.duplicateColumns(source, columnIndices);
+        List<String?> actual = RowUtil.duplicateColumns(source, columnIndices);
 
         String actualText = String.Join(",", actual);
         Assert.Equal(expectedText, actualText);
@@ -72,13 +71,13 @@ public class RowUtilTest
     [InlineData(4, "1,3,5", "2,4")]
     public void removeColumns(int original, String columnNumbersText, String expectedText)
     {
-        List<String> source = new List<String>(original);
+        List<String?> source = new List<String?>(original);
         for (int i = 0; i < original; i++)
             source.Add((i + 1).ToString());
 
         HashSet<int> columnNumbers = new HashSet<int>(columnNumbersText.parseInts());
         HashSet<ColumnIndex> columnIndices = ColumnIndex.convertColumnNumbersToIndex(columnNumbers);
-        List<String> actual = RowUtil.removeColumns(source, columnIndices);
+        List<String?> actual = RowUtil.removeColumns(source, columnIndices);
 
         String actualText = String.Join(",", actual);
         Assert.Equal(expectedText, actualText);
@@ -94,7 +93,7 @@ public class RowUtilTest
     [InlineData(3, -1, "x,y", null)]
     public void replaceColumns(int original, int columnNumber, String replacementText, String expectedText)
     {
-        List<String> source = new List<String>(original);
+        List<String?> source = new List<String?>(original);
         for (int i = 0; i < original; i++)
             source.Add((i + 1).ToString());
 
@@ -103,7 +102,7 @@ public class RowUtilTest
         try
         {
             ColumnIndex index = new ColumnIndex(columnNumber-1);
-            List<String> actual = RowUtil.replaceColumn(source, index, replacements);
+            List<String?> actual = RowUtil.replaceColumn(source, index, replacements);
 
             String actualText = String.Join(",", actual);
             Assert.Equal(expectedText, actualText);

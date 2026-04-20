@@ -67,7 +67,7 @@ public class BeforeAfterBufferingTest
         KeepSpecificFilter filter = new KeepSpecificFilter(lines);
         BeforeAfterLineBuffering buf = new BeforeAfterLineBuffering(before, after, filter);
 
-        List<String> bufOut;
+        List<String>? bufOut;
         List<String> output = new List<String>();
         foreach (String x in input)
         {

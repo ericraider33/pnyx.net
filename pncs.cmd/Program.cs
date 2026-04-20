@@ -158,9 +158,16 @@ public class Program
 
         // Finds type
         Assembly cmdAssembly = typeof(Program).Assembly;
+#pragma warning disable IL2026
         Type? type = cmdAssembly.GetType(typeName);
+#pragma warning restore IL2026
+
+        if (type == null)
+            throw new InvalidArgumentException("Type '{0}' could not be found in assembly: {1}", typeName, cmdAssembly.FullName ?? "CMD Assembly");
             
-        MethodInfo? method = type?.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static);
+#pragma warning disable IL2075
+        MethodInfo? method = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static);
+#pragma warning restore IL2075
         if (method == null)
             throw new InvalidArgumentException("Static method '{0}' could not be found on type: {1}", methodName, typeName);
             

@@ -114,8 +114,8 @@ public class Examine
             }
                 
             // Flushes final part
-            if (tokenPart.Length > 0 || dataPart.Length > 0)
-                part.addPart(dataPart.ToString(), tokenPart.ToString());
+            if (part != null && tokenPart.Length > 0 || dataPart.Length > 0)
+                part!.addPart(dataPart.ToString(), tokenPart.ToString());
                 
             dataPart.Length = 0;
             tokenPart.Length = 0;

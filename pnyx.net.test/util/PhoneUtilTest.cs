@@ -24,7 +24,7 @@ public class PhoneUtilTest
     [InlineData("15551234", "999", null)]
     public void parsePhone(String phone, String defaultAreaCode, String expected)
     {
-        String actual = PhoneUtil.parsePhone(phone, defaultAreaCode);
+        String? actual = PhoneUtil.parsePhone(phone, defaultAreaCode);
         Assert.Equal(expected, actual);
     }
         

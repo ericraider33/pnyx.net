@@ -19,7 +19,7 @@ public class HasColumns : IRowFilter
         maxColumnNumber = columnNumbers.Max(x => x);
     }
 
-    public bool shouldKeepRow(List<String> row)
+    public bool shouldKeepRow(List<String?> row)
     {
         if (row.Count < maxColumnNumber)
             return false;
@@ -29,7 +29,7 @@ public class HasColumns : IRowFilter
 
         foreach (int columnNumber in columnNumbers)
         {
-            String column = row[columnNumber - 1];
+            String? column = row[columnNumber - 1];
             if (String.IsNullOrEmpty(column))
                 return false;
         }

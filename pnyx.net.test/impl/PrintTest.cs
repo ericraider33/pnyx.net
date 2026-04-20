@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using pnyx.net.fluent;
 using pnyx.net.impl;
 using pnyx.net.impl.csv;
@@ -30,9 +31,9 @@ public class PrintTest
     [InlineData("\\anythingelse", "\\anythingelse")]
     public void printRow(String format, String expected)
     {
-        List<String> row = new List<String> { "AA", "BB", "CC", "DD", "EE", "FF", "GG", "HH", "II", "JJ", "KK", "LL", "MM" };
+        List<String?> row = new List<String?> { "AA", "BB", "CC", "DD", "EE", "FF", "GG", "HH", "II", "JJ", "KK", "LL", "MM" };
         Print p = new Print([format], new CsvRowConverter());
-        String actual = p.print(format, null, row);
+        String? actual = p.print(format, null, row);
         Assert.Equal(expected, actual);
     }
 
@@ -45,31 +46,31 @@ public class PrintTest
     {
         String line = "Adam Smith";
         Print p = new Print([format]);
-        String actual = p.print(format, line, new List<String>());
+        String? actual = p.print(format, line, new List<String?>());
         Assert.Equal(expected, actual);
     }
         
     [Fact]
-    public void printMultiLine()
+    public async Task printMultiLine()
     {
         CaptureText capture = new CaptureText(new StreamInformation(new Settings()));
             
         Print p = new Print(new [] { "1 $0", "2 $0" });
         p.setNextLineProcessor(capture);
-        p.processLine("Adam Smith");
+        await p.processLine("Adam Smith");
             
         Assert.Equal($"1 Adam Smith{Environment.NewLine}2 Adam Smith{Environment.NewLine}", capture.capture.ToString());
     }
         
     [Fact]
-    public void printMultiRow()
+    public async Task printMultiRow()
     {
-        List<String> row = new List<String> { "AA", "BB" };
+        List<String?> row = new List<String?> { "AA", "BB" };
         CaptureText capture = new CaptureText(new StreamInformation(new Settings()));
             
         Print p = new Print(new [] { "1 $1", "2 $2" });
         p.setNextLineProcessor(capture);
-        p.processRow(row);
+        await p.processRow(row);
 
         Assert.Equal($"1 AA{Environment.NewLine}2 BB{Environment.NewLine}", capture.capture.ToString());
     }

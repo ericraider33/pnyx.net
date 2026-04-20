@@ -68,18 +68,18 @@ public class NameUtilTest
     // Suffix parsing, skipped when firstname matches suffix
     [InlineData("JR Rankin", "Jr", null, "Rankin", null)]
     [InlineData("JD MOLOY", "Jd", null, "Moloy", null)]
-    public void parseFullName(string source, string firstName, string middleName, string lastName, String suffix)
+    public void parseFullName(string source, string? firstName, string? middleName, string? lastName, String? suffix)
     {
-        Name name = NameUtil.parseFullName(source);
+        Name? name = NameUtil.parseFullName(source);
         if (firstName == null)
         {
             Assert.Null(name);
             return;
         }
-        Assert.Equal(firstName, name.firstName);
-        Assert.Equal(middleName, name.middleName);
-        Assert.Equal(lastName, name.lastName);
-        Assert.Equal(suffix, name.suffix);
+        Assert.Equal(firstName, name?.firstName);
+        Assert.Equal(middleName, name?.middleName);
+        Assert.Equal(lastName, name?.lastName);
+        Assert.Equal(suffix, name?.suffix);
     }
 
     [Fact]
@@ -107,7 +107,7 @@ public class NameUtilTest
         verifyLastFirstMiddleName("MOLOY, JD", "Jd", null, "Moloy");            
     }
 
-    private void verifyLastFirstMiddleName(string source, string firstName, string middleName, string lastName)
+    private void verifyLastFirstMiddleName(string source, string? firstName, string? middleName, string? lastName)
     {
         Name? name = NameUtil.lastFirstMiddleName(source);
         if (firstName == null)
@@ -115,9 +115,9 @@ public class NameUtilTest
             Assert.Null(name);
             return;
         }
-        Assert.Equal(firstName, name!.firstName);
-        Assert.Equal(middleName, name!.middleName);
-        Assert.Equal(lastName, name!.lastName);
+        Assert.Equal(firstName, name?.firstName);
+        Assert.Equal(middleName, name?.middleName);
+        Assert.Equal(lastName, name?.lastName);
     }
 
     [Fact]
@@ -147,7 +147,7 @@ public class NameUtilTest
         verifyLastMiddleFirstName("MOLOY, JD", "Jd", null, "Moloy");
     }
 
-    private void verifyLastMiddleFirstName(string source, string firstName, string middleName, string lastName)
+    private void verifyLastMiddleFirstName(string source, string? firstName, string? middleName, string? lastName)
     {
         Name? name = NameUtil.lastMiddleFirstName(source);
         if (firstName == null)
@@ -155,9 +155,9 @@ public class NameUtilTest
             Assert.Null(name);
             return;
         }
-        Assert.Equal(firstName, name!.firstName);
-        Assert.Equal(middleName, name!.middleName);
-        Assert.Equal(lastName, name!.lastName);
+        Assert.Equal(firstName, name?.firstName);
+        Assert.Equal(middleName, name?.middleName);
+        Assert.Equal(lastName, name?.lastName);
     }
 
     [Fact]

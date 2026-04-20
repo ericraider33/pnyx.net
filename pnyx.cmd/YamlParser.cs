@@ -25,7 +25,7 @@ public class YamlParser
         methods = typeof(Pnyx).GetMethods(BindingFlags.Instance | BindingFlags.Public);            
     }            
         
-    public List<Pnyx> parseYaml(TextReader source, ArgsInputOutput argsIo = null)
+    public List<Pnyx> parseYaml(TextReader source, ArgsInputOutput? argsIo = null)
     {
         YamlStream yaml = new YamlStream();
         yaml.Load(source);
@@ -40,7 +40,7 @@ public class YamlParser
         return result;
     }
 
-    protected Pnyx parseDocument(YamlDocument document, ArgsInputOutput argsIo)
+    protected Pnyx parseDocument(YamlDocument document, ArgsInputOutput? argsIo)
     {
         Pnyx p = new Pnyx();
         p.setSettings(stdIoDefault: true);              // forces STD-IN/OUT as defaults
@@ -96,10 +96,13 @@ public class YamlParser
         executeMethod(p, name.Value, parameterNodes);
     }
 
-    protected void executeMethod(Pnyx p, String methodName, List<YamlScalarNode> parameterNodes)
+    protected void executeMethod(Pnyx p, String? methodName, List<YamlScalarNode> parameterNodes)
     {
+        if (String.IsNullOrEmpty(methodName))
+            throw new InvalidArgumentException("Pnyx method name cannot be empty/null");
+        
         List<MethodInfo> methodMatches = methods.Where(m => m.Name == methodName).ToList();            
-        MethodInfo method = methodMatches.FirstOrDefault(m => m.GetParameters().Length == parameterNodes.Count);
+        MethodInfo? method = methodMatches.FirstOrDefault(m => m.GetParameters().Length == parameterNodes.Count);
         if (method == null)
             method = methodMatches.OrderByDescending(m => m.GetParameters().Length).FirstOrDefault();           // finds longest number of paramets
 
@@ -107,7 +110,7 @@ public class YamlParser
             throw new InvalidArgumentException("Pnyx method can not be found: {0}", methodName);
 
         ParameterInfo[] methodParameters = method.GetParameters();
-        ParameterInfo multiParameter = findParameterArray(methodParameters);                        
+        ParameterInfo? multiParameter = findParameterArray(methodParameters);                        
         if (parameterNodes.Count > methodParameters.Length && multiParameter == null)
             throw new InvalidArgumentException("Too many parameters {0} specified for Pnyx method '{1}', which only has {2} parameters", parameterNodes.Count, methodName, methodParameters.Length);
 
@@ -117,7 +120,7 @@ public class YamlParser
             throw new InvalidArgumentException("Too few parameters {0} specified for Pnyx method '{1}', which only has {2} required parameters", parameterNodes.Count, methodName, requiredParameters);
             
         // Builds parameter list with defaults
-        Object[] parameters = new Object[methodParameters.Length];
+        Object?[] parameters = new Object[methodParameters.Length];
         for (int i = 0; i < parameters.Length; i++)
         {
             ParameterInfo current = methodParameters[i];
@@ -137,19 +140,27 @@ public class YamlParser
         }
         catch (TargetInvocationException err)
         {
-            throw err.InnerException;
+            if (err.InnerException != null)
+                throw err.InnerException;
+            
+            throw;
         }
     }
 
     protected void parseMappingNode(Pnyx p, YamlScalarNode name, YamlMappingNode values)
     {
-        String methodName = name.Value;
+        String? methodName = name.Value;
+        if (String.IsNullOrEmpty(methodName))
+            throw new InvalidArgumentException("Pnyx method name cannot be empty/null");           
             
         // Converts to dictionary
         Dictionary<String, YamlNode> parameterNodes = new Dictionary<String, YamlNode>();            
         foreach (var pairs in values.Children)
         {
-            String parameterName = ((YamlScalarNode) pairs.Key).Value;
+            String? parameterName = ((YamlScalarNode) pairs.Key).Value;
+            if (String.IsNullOrEmpty(parameterName))
+                throw new InvalidArgumentException("Parameter name cannot be empty/null");
+            
             if (parameterNodes.ContainsKey(parameterName))
                 throw new InvalidArgumentException("Parameters can only have 1 value: {0}", parameterName);
                 
@@ -158,7 +169,7 @@ public class YamlParser
                                      
         // Finds matching method 
         List<MethodInfo> methodMatches = methods.Where(m => m.Name == methodName).ToList();            
-        MethodInfo method = methodMatches.FirstOrDefault(m => m.GetParameters().Length == parameterNodes.Count);
+        MethodInfo? method = methodMatches.FirstOrDefault(m => m.GetParameters().Length == parameterNodes.Count);
         if (method == null)
         {
             method = methodMatches.OrderByDescending(m => m.GetParameters().Length).FirstOrDefault();
@@ -168,10 +179,13 @@ public class YamlParser
 
         // Builds parameter list with defaults
         ParameterInfo[] methodParameters = method.GetParameters();            
-        Object[] parameters = new Object[methodParameters.Length];
+        Object?[] parameters = new Object[methodParameters.Length];
         for (int i = 0; i < parameters.Length; i++)
         {
             ParameterInfo pi = methodParameters[i];
+            if (pi.Name == null)
+                throw new InvalidArgumentException("Parameter name is null");
+            
             if (!parameterNodes.ContainsKey(pi.Name) && !pi.HasDefaultValue)
                 throw new InvalidArgumentException("Pnyx method '{0}' is missing required parameter '{1}'", methodName, pi.Name);
 
@@ -229,13 +243,19 @@ public class YamlParser
         }
         catch (TargetInvocationException err)
         {
-            throw err.InnerException;
+            if (err.InnerException != null)               
+                throw err.InnerException;
+            
+            throw;
         }
     }
 
     private Object processScalarParameter(ParameterInfo parameterInfo, YamlScalarNode scalarNode)
     {
-        String scalarValue = scalarNode.Value;
+        String? scalarValue = scalarNode.Value;
+        if (scalarValue == null)
+            throw new InvalidArgumentException("Parameter value cannot be null");
+        
         switch (parameterInfo.ParameterType.Name)
         {
             case "Int32": return Int32.Parse(scalarValue);
@@ -243,16 +263,16 @@ public class YamlParser
             case "String": return scalarValue;
             case "Encoding": return EncodingTypeConverter.parseText(scalarValue);
             default:
-                throw new InvalidArgumentException("Type conversion hasn't been built yet for: {0}", parameterInfo.ParameterType.FullName);            
+                throw new InvalidArgumentException("Type conversion hasn't been built yet for: {0}", parameterInfo.ParameterType.FullName ?? parameterInfo.ParameterType.Name);            
         }
     }
 
-    private ParameterInfo findParameterArray(ParameterInfo[] methodParameters)
+    private ParameterInfo? findParameterArray(ParameterInfo[] methodParameters)
     {
         if (methodParameters.Length == 0)
             return null;
 
-        ParameterInfo last = methodParameters[methodParameters.Length - 1];
+        ParameterInfo last = methodParameters[^1];
         if (Attribute.IsDefined(last, typeof(ParamArrayAttribute)))
             return last;
 
@@ -263,7 +283,7 @@ public class YamlParser
     {                
         switch (multiParameter.ParameterType.Name)
         {
-            case "Int32[]": return values.Select(ysn => Int32.Parse(ysn.Value)).ToArray();
+            case "Int32[]": return values.Select(ysn => Int32.Parse(ysn.Value ?? "")).ToArray();
             case "Boolean[]": return values.Select(ysn => ysn.Value.parseBool()).ToArray();
             case "String[]": return values.Select(ysn => ysn.Value).ToArray();
             case "Object[]":
@@ -272,15 +292,15 @@ public class YamlParser
                 foreach (YamlScalarNode scalarNode in values)
                 {
                     if (scalarNode.Style == ScalarStyle.DoubleQuoted || scalarNode.Style == ScalarStyle.SingleQuoted)
-                        result.Add(scalarNode.Value);
+                        result.Add(scalarNode.Value ?? "");
                     else
-                        result.Add(convertToObject(scalarNode.Value));
+                        result.Add(convertToObject(scalarNode.Value ?? ""));
                 }
 
                 return result.ToArray();
             }
             default:
-                throw new InvalidArgumentException("No multi-param conversion exists for: {0}", multiParameter.ParameterType.FullName);            
+                throw new InvalidArgumentException("No multi-param conversion exists for: {0}", multiParameter.ParameterType.FullName ?? multiParameter.ParameterType.Name);            
         }
     }
 

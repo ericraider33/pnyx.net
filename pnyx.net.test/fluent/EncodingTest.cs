@@ -6,7 +6,7 @@ using pnyx.net.test.util;
 using pnyx.net.util;
 using Xunit;
 
-namespace pnyx.net.test;
+namespace pnyx.net.test.fluent;
 
 public class EncodingTest
 {        
@@ -48,7 +48,7 @@ public class EncodingTest
             p.write(outPath);
             await p.process();
                 
-            String actualEncoding = String.Format("{0}-{1}", p.streamInformation.streamEncoding.WebName, p.streamInformation.retrieveStreamNewLineEnum().ToString());
+            String actualEncoding = $"{p.streamInformation.streamEncoding?.WebName}-{p.streamInformation.retrieveStreamNewLineEnum().ToString()}";
             Assert.Equal(expectedEncoding, actualEncoding);
         }
             

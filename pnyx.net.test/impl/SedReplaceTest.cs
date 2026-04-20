@@ -15,7 +15,7 @@ public class SedReplaceTest
         Assert.Equal("my XXX XXX XXX", replace.transformLine("my eoe eoe eoe"));
         Assert.Equal("XXXXXXXXX", replace.transformLine("eoeeoeeoe"));
             
-        replace = new SedReplace("eoe", "XXX", null);            // same as "1"
+        replace = new SedReplace("eoe", "XXX");            // same as "1"
         Assert.Equal("my text XXX is here", replace.transformLine("my text eoe is here"));
         Assert.Equal("my XXX eoe eoe", replace.transformLine("my eoe eoe eoe"));
         Assert.Equal("XXXeoeeoe", replace.transformLine("eoeeoeeoe"));
@@ -56,7 +56,7 @@ public class SedReplaceTest
         verify("John", "XXXX", "gi", "john JOHN John", "XXXX XXXX XXXX");
     }
 
-    private void verify(String pattern, String replacement, String flags, String source, String expected)
+    private void verify(String pattern, String replacement, String? flags, String source, String expected)
     {
         SedReplace replace = new SedReplace(pattern, replacement, flags);
         Assert.Equal(expected, replace.transformLine(source));
@@ -90,7 +90,7 @@ public class SedReplaceTest
         constructionException("eoe", "XXX", "-1");
     }
         
-    private void constructionException(String pattern, String replacement, String flags)
+    private void constructionException(String pattern, String replacement, String? flags)
     {
         Assert.Throws<InvalidArgumentException>(() => new SedReplace(pattern, replacement, flags));
     }

@@ -27,7 +27,7 @@ public class UsaStateUtilTest
     [InlineData("'New  York'", "NY")]
     public void parseState(String input, String expected)
     {
-        String actual = UsaStateUtil.parseState(input);
+        String? actual = UsaStateUtil.parseState(input);
         Assert.Equal(expected, actual);
     }
         
@@ -45,7 +45,7 @@ public class UsaStateUtilTest
     [InlineData(" usa", null)]
     public void testUsa(String input, String expected)
     {
-        String actual = UsaStateUtil.parseState(input);
+        String? actual = UsaStateUtil.parseState(input);
         Assert.Equal(expected, actual);
     }
 }

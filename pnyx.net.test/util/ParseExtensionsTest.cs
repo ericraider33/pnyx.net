@@ -71,18 +71,18 @@ public class ParseExtensionsTest
     [Fact]
     public void SplitSpace()
     {
-        verifySplitSpace(null, new string[0]);
-        verifySplitSpace("", new string[0]);
-        verifySplitSpace(" ", new string[0]);
-        verifySplitSpace("a", new string[] { "a" });
-        verifySplitSpace(" a", new string[] { "a" });
-        verifySplitSpace("a ", new string[] { "a" });
-        verifySplitSpace("a b", new string[] { "a", "b" });
-        verifySplitSpace("a b ", new string[] { "a", "b" });
-        verifySplitSpace(" a b", new string[] { "a", "b" });
+        verifySplitSpace(null, []);
+        verifySplitSpace("", []);
+        verifySplitSpace(" ", []);
+        verifySplitSpace("a", ["a"]);
+        verifySplitSpace(" a", ["a"]);
+        verifySplitSpace("a ", ["a"]);
+        verifySplitSpace("a b", ["a", "b"]);
+        verifySplitSpace("a b ", ["a", "b"]);
+        verifySplitSpace(" a b", ["a", "b"]);
     }
 
-    private void verifySplitSpace(string input, string[] tokens)
+    private void verifySplitSpace(string? input, string[] tokens)
     {
         string[] actual = input.splitSpace();
         

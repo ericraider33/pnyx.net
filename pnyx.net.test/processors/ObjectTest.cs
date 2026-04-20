@@ -20,15 +20,15 @@ Odyssey,Homer,-1000
 
     public class Book
     {
-        public String Title { get; set; }
-        public String Author { get; set; }
+        public String? Title { get; set; }
+        public String? Author { get; set; }
         public int PublicationDate { get; set; }
     }
 
     public class BookExtended
     {
-        public String Title { get; set; }
-        public String Author { get; set; }
+        public String? Title { get; set; }
+        public String? Author { get; set; }
         public int PublicationDate { get; set; }
         public DateTime Timestamp = DateTime.Now;
 
@@ -45,20 +45,20 @@ Odyssey,Homer,-1000
 
     public class BookConverter : IObjectConverterFromRow, IObjectConverterFromNameValuePair
     {
-        public object rowToObject(List<string> row, List<string> header = null)
+        public object rowToObject(List<string?> row, List<string>? header = null)
         {
             return new Book
             {
                 Title = row[0],
                 Author = row[1],
-                PublicationDate = int.Parse(row[2])
+                PublicationDate = int.Parse(row[2]!)
             };
         }
 
-        public List<string> objectToRow(object obj)
+        public List<string?> objectToRow(object obj)
         {
             Book book = (Book)obj;
-            return new List<string>
+            return new List<string?>
             {
                 book.Title,
                 book.Author,
@@ -77,20 +77,20 @@ Odyssey,Homer,-1000
         }
 
 
-        public object nameValuePairToObject(IDictionary<string, object> row)
+        public object nameValuePairToObject(IDictionary<string, object?> row)
         {
             return new Book
             {
                 Title = row["Title"] as String,
                 Author = row["Author"] as String,
-                PublicationDate = int.Parse(row["PublicationDate"].ToString())
+                PublicationDate = int.Parse(row["PublicationDate"]?.ToString() ?? "")
             };
         }
 
-        public IDictionary<string, object> objectToNameValuePair(object obj)
+        public IDictionary<string, object?> objectToNameValuePair(object obj)
         {
             Book book = (Book)obj;
-            return new Dictionary<string, object>
+            return new Dictionary<string, object?>
             {
                 { "Title", book.Title },
                 { "Author", book.Author },
@@ -159,7 +159,7 @@ Odyssey,Homer,-1000
     [Fact]
     public async Task object_to_from_nameValuePair()
     {
-        List<IDictionary<String, Object>> actual;
+        List<IDictionary<String, Object?>> actual;
         await using (Pnyx p = new Pnyx())
         {
             p.readString(csvInputA);
@@ -172,7 +172,7 @@ Odyssey,Homer,-1000
 
         Assert.Equal(3, actual.Count);
 
-        IDictionary<String, Object> first = actual[0];
+        IDictionary<String, Object?> first = actual[0];
         Assert.Equal("Author,PublicationDate,Title", String.Join(",", first.Keys.Order()));
         Assert.Equal("Tale of Two Cities", first["Title"]);
         Assert.Equal("Charles Dickens", first["Author"]);
@@ -182,16 +182,13 @@ Odyssey,Homer,-1000
     [Fact]
     public async Task automapper_and_pnyx_kick_ass()
     {
-        MapperConfiguration config = new MapperConfiguration(cfg =>
+        MapperConfiguration config = new MapperConfiguration(_ =>
         {
 //            cfg.CreateMap<IDictionary<String, Object>, Book>();
         });
 //        config.AssertConfigurationIsValid();
 
-        IObjectConverterFromNameValuePair converter = new AutoMapperObjectConverter<Book>
-        {
-            mapper = config.CreateMapper() 
-        };
+        IObjectConverterFromNameValuePair converter = new AutoMapperObjectConverter<Book>(config.CreateMapper());
         
         List<Book> actual;
         await using (Pnyx p = new Pnyx())
@@ -214,16 +211,13 @@ Odyssey,Homer,-1000
     [Fact]
     public async Task automapper_to_csv()
     {
-        MapperConfiguration config = new MapperConfiguration(cfg =>
+        MapperConfiguration config = new MapperConfiguration(_ =>
         {
         });
 
-        IObjectConverterFromNameValuePair converter = new AutoMapperObjectConverter<Book>
-        {
-            mapper = config.CreateMapper() 
-        };
+        IObjectConverterFromNameValuePair converter = new AutoMapperObjectConverter<Book>(config.CreateMapper());
         
-        List<IDictionary<String, Object>> actual;
+        List<IDictionary<String, Object?>> actual;
         await using (Pnyx p = new Pnyx())
         {
             p.readString(csvInputA);
@@ -236,7 +230,7 @@ Odyssey,Homer,-1000
 
         Assert.Equal(3, actual.Count);
 
-        IDictionary<String, Object> first = actual[0];
+        IDictionary<String, Object?> first = actual[0];
         Assert.Equal("Author,PublicationDate,Title", String.Join(",", first.Keys.Order()));
         Assert.Equal("Tale of Two Cities", first["Title"]);
         Assert.Equal("Charles Dickens", first["Author"]);
@@ -257,16 +251,13 @@ Odyssey,Homer,-1000
 
         Assert.Equal(3, actual.Count);
         
-        MapperConfiguration config = new MapperConfiguration(cfg =>
+        MapperConfiguration config = new MapperConfiguration(_ =>
         {
         });
 
-        IObjectConverterFromNameValuePair converter = new AutoMapperObjectConverter<Book>
-        {
-            mapper = config.CreateMapper() 
-        };
+        IObjectConverterFromNameValuePair converter = new AutoMapperObjectConverter<Book>(config.CreateMapper());
 
-        string csvOutputA = "";
+        string csvOutputA;
         await using (Pnyx p = new Pnyx())
         {
             p.readObject(() => actual);

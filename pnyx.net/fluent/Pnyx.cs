@@ -86,7 +86,7 @@ public class Pnyx : IAsyncDisposable
         return this;
     }
 
-    public Pnyx setNumberedInputOutput(INumberedInputOutput toSet)
+    public Pnyx setNumberedInputOutput(INumberedInputOutput? toSet)
     {
         this.numberedInputOutput = toSet;
         return this;
@@ -541,7 +541,7 @@ public class Pnyx : IAsyncDisposable
         return rowFilter(new HasColumnIndexes(columnIndexes, verifyColumnHasText));
     }
 
-    public Pnyx hasColumns(Func<string, bool> checkContent, params ColumnIndex[] columnIndexes)
+    public Pnyx hasColumns(Func<string?, bool> checkContent, params ColumnIndex[] columnIndexes)
     {
         if (columnIndexes.Length == 0)
             throw new InvalidArgumentException("At least one columnIndex is required");
@@ -731,7 +731,7 @@ public class Pnyx : IAsyncDisposable
         {
             CsvStreamToRowProcessor csv = new CsvStreamToRowProcessor(csvSettings);
             csv.hasHeader = hasHeader;
-            csv.setSource(streamInformation, lineSource.streamFactory);
+            csv.setSource(streamInformation, lineSource.getStreamFactory());
             rowConverter = csv.getRowConverter();
 
             parts[^1] = csv;
@@ -806,8 +806,8 @@ public class Pnyx : IAsyncDisposable
         if (state == FluentState.Row)
         {
             IRowTransformerShimModifier? shimModifier = retrieveModifier<IRowTransformerShimModifier>();                
-            if (transform is IRowTransformer)
-                return rowTransformer((IRowTransformer)transform);
+            if (transform is IRowTransformer transformer)
+                return rowTransformer(transformer);
             if (shimModifier != null)
                 return rowTransformer(shimModifier.shimLineTransformer(transform));
             
@@ -1191,7 +1191,13 @@ public class Pnyx : IAsyncDisposable
 
         if (state == FluentState.Line || state == FluentState.Start)
         {
-            lineDestination = lineDestination ?? new LineProcessorToStream(streamInformation, output);                
+            if (lineDestination == null)
+            {
+                if (output == null)
+                    throw new PnyxException("No output is specified. Either specify an output stream or a line destination");
+
+                lineDestination = new LineProcessorToStream(streamInformation, output);                
+            }
             parts.Add(lineDestination);
             state = FluentState.End;
         }
@@ -1240,7 +1246,7 @@ public class Pnyx : IAsyncDisposable
         return setEnd(Console.OpenStandardOutput());
     }
 
-    public Pnyx writeSplit(String fileNamePattern, int limit, String path = null)
+    public Pnyx writeSplit(String fileNamePattern, int limit, String? path = null)
     {
         if (!fileNamePattern.Contains("$0"))
             throw new InvalidArgumentException("FileName pattern requires $0 substitution variable");
@@ -1274,7 +1280,7 @@ public class Pnyx : IAsyncDisposable
         String backupFile = Path.Combine(settings.tempDirectory, sourceFileName + Guid.NewGuid());
 
         // Adds hook to move file after processing/dispose is complete
-        stateDisposeHandler += (sender, pnyx) =>
+        stateDisposeHandler += (_, _) =>
         {
             // Backs up original file
             if (backupOriginal_)
@@ -1285,7 +1291,7 @@ public class Pnyx : IAsyncDisposable
             // Rewrites output to original source path
             File.Move(tempFile, sourcePath);
                 
-            // Deletes back up
+            // Deletes back-up
             if (backupOriginal_ && deleteBackup_)
                 File.Delete(backupFile);
         };            
@@ -1377,41 +1383,45 @@ public class Pnyx : IAsyncDisposable
         return streamInformation.getOutputEncoding().GetString(stream.ToArray());
     }
 
-    private Pnyx defaultInput()
+    private void defaultInput()
     {
         if (numberedInputOutput != null)
         {
             String? inputFile = numberedInputOutput.getImpliedInputFileName();
             if (inputFile != null)
-                return read(inputFile);
+            {
+                read(inputFile);
+                return;
+            }
         }
 
         if (settings.stdIoDefault)
-            return readStdin();
-            
-        return this;
+        {
+            readStdin();
+        }
     }
 
-    private Pnyx defaultOutput()
+    private void defaultOutput()
     {
         if (state == FluentState.New)
             defaultInput();
 
         bool properState = state == FluentState.Line || state == FluentState.Row || state == FluentState.Start;
         if (!properState)
-            return this;
+            return;
             
         if (numberedInputOutput != null)
         {
             String? outputFile = numberedInputOutput.getImpliedOutputFileName();
             if (outputFile != null)
-                return write(outputFile);
+            {
+                write(outputFile);
+                return;
+            }
         }
 
         if (settings.stdIoDefault)
-            return writeStdout();
-            
-        return this;
+            writeStdout();
     }
 
     public async Task<Pnyx> process()
@@ -1630,8 +1640,8 @@ public class Pnyx : IAsyncDisposable
         bool descending = false, 
         bool caseSensitive = false,
         bool unique = false,
-        ColumnIndex[] columnIndices = null,
-        String tempDirectory = null,
+        ColumnIndex[]? columnIndices = null,
+        String? tempDirectory = null,
         int? buffer = null
     )
     {
@@ -1648,7 +1658,7 @@ public class Pnyx : IAsyncDisposable
         bool descending = false,
         bool caseSensitive = false,
         bool unique = false,
-        String tempDirectory = null,
+        String? tempDirectory = null,
         int? buffer = null
     )
     {

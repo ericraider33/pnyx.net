@@ -9,22 +9,28 @@ namespace pnyx.net.test.cmd;
 
 public class CodeParserTest : IAsyncDisposable
 {
-    private Pnyx? p;
+    private Pnyx? pnyx;
         
     public CodeParserTest()
     {
-        p = new Pnyx();
-        p.setSettings(stdIoDefault: true, processOnDispose: false);
+        pnyx = new Pnyx();
+        pnyx.setSettings(stdIoDefault: true, processOnDispose: false);
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (p != null)
+        if (pnyx != null)
         {
-            await p.DisposeAsync();
-            p = null;
+            await pnyx.DisposeAsync();
+            pnyx = null;
         }
     }
+
+    public Pnyx p
+    {
+        get { return pnyx ?? throw new Exception("Pnyx is null, like due to being disposed"); }
+    }
+    
         
     [Fact]
     public void helloWorld()

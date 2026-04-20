@@ -7,10 +7,10 @@ namespace pnyx.cmd.shared;
 
 public class ArgsInputOutput : INumberedInputOutput
 {
-    private String[] args;
+    private readonly String[] args;
     private readonly bool[] used;
-    private String input;
-    private String output;
+    private String? input;
+    private String? output;
 
     public ArgsInputOutput(string[] args)
     {
@@ -18,7 +18,7 @@ public class ArgsInputOutput : INumberedInputOutput
         used = new bool[args.Length];
     }
 
-    public string getImpliedInputFileName()
+    public string? getImpliedInputFileName()
     {
         if (input != null)
             return input;               // makes method reentrant
@@ -34,7 +34,7 @@ public class ArgsInputOutput : INumberedInputOutput
         return input;
     }
 
-    public string getImpliedOutputFileName()
+    public string? getImpliedOutputFileName()
     {
         if (output != null)
             return output;               // makes method reentrant
@@ -69,6 +69,6 @@ public class ArgsInputOutput : INumberedInputOutput
         if (used.Length == 0)
             return true;
 
-        return used.All(x => x == true);
+        return used.All(x => x);
     }
 }

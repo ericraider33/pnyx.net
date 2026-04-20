@@ -40,7 +40,7 @@ public class TestEndRow : IRowProcessor
         return Task.CompletedTask;
     }
 
-    public Task processRow(List<string> row)
+    public Task processRow(List<string?> row)
     {
         builder.Append(String.Join("|", row)).Append("\n");            
         return Task.CompletedTask;

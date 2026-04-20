@@ -39,20 +39,20 @@ public class ColumnDefinitionExample
             });
             p.rowTransformer(row =>
             {
-                String firstName = row[1];
-                String lastName = row[2];
+                String firstName = row[1] ?? "";
+                String lastName = row[2] ?? "";
 
                 firstName = firstName.Replace(",", " ");
                 lastName = lastName.Replace(",", " ");
 
                 String wholeName = firstName + " " + lastName;
-                Name name = NameUtil.parseFullName(wholeName);
+                Name? name = NameUtil.parseFullName(wholeName);
 
-                row[1] = name.firstName;
-                row[2] = name.lastName;
+                row[1] = name?.firstName;
+                row[2] = name?.lastName;
 
-                row = RowUtil.insertColumns(row, 4, name.suffix);
-                row = RowUtil.insertColumns(row, 3, name.middleName);
+                row = RowUtil.insertColumns(row, 4, name?.suffix);
+                row = RowUtil.insertColumns(row, 3, name?.middleName);
                     
                 return row;
             });

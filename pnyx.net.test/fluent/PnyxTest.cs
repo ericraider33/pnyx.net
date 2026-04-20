@@ -9,19 +9,11 @@ using pnyx.net.impl;
 using pnyx.net.impl.sed;
 using pnyx.net.util;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace pnyx.net.test.fluent;
 
 public class PnyxTest
 {
-    private readonly ITestOutputHelper testOutputHelper;
-
-    public PnyxTest(ITestOutputHelper testOutputHelper)
-    {
-        this.testOutputHelper = testOutputHelper;
-    }
-
     private const String MAGNA_CARTA =
         @"KNOW THAT BEFORE GOD, for the health of our soul and those of our ancestors and heirs, 
 to the honour of God, the exaltation of the holy Church, and the better ordering of our
@@ -249,7 +241,7 @@ valueX1,valueX1
             p.setSettings(defaultNewline: StreamInformation.newlineString(NewLineEnum.Windows));
             p.readString(EARTH);
             p.parseCsv();
-            p.sedAppendRow(new List<String> {"The Lord","is", "my shepherd"});
+            p.sedAppendRow(["The Lord", "is", "my shepherd"]);
             actual = await p.processToString();
         }
 
@@ -575,7 +567,7 @@ Uranus,Uranus,""Father of the TitaXs""
         await using (Pnyx p = new Pnyx())
         {
             p.readString(EARTH);
-            p.and(pn => { });
+            p.and(_ => { });
             actual = await p.processToString();
         }
 
@@ -849,7 +841,7 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
         String actualA;
 
         Pnyx p = new Pnyx();
-        Pnyx teeP = null;
+        Pnyx? teeP = null;
         await using (p)
         {
             p.readString(PLANETS_GODS_TITANS);
@@ -865,7 +857,7 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
         Assert.Equal(actualA, PLANETS_GODS_TITANS);
         Assert.Equal(actualB, PLANETS_GODS_TITANS);
         Assert.Equal(FluentState.Disposed, p.state);
-        Assert.Equal(FluentState.Disposed, teeP.state);
+        Assert.Equal(FluentState.Disposed, teeP?.state);
     }
 
     [Fact]
@@ -875,7 +867,7 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
         String actualA;
 
         Pnyx p = new Pnyx();
-        Pnyx teeP = null;
+        Pnyx? teeP = null;
         await using (p)
         {
             p.readString(PLANETS_GODS_FORMAT_ISSUES);
@@ -892,7 +884,7 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
         Assert.Equal(actualA, PLANETS_GODS);
         Assert.Equal(actualB, PLANETS_GODS);
         Assert.Equal(FluentState.Disposed, p.state);
-        Assert.Equal(FluentState.Disposed, teeP.state);
+        Assert.Equal(FluentState.Disposed, teeP?.state);
     }
 
     [Fact]
@@ -900,7 +892,7 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
     {
         MemoryStream capture = new MemoryStream();
 
-        Pnyx teeP = null;            
+        Pnyx? teeP = null;            
         Pnyx p = new Pnyx();
         p.readString(PLANETS_GODS_TITANS);
         p.tee(pn =>
@@ -909,8 +901,8 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
             pn.writeStream(capture);
         });
             
-        Assert.Equal(FluentState.CompiledServile, teeP.state);
-        await Assert.ThrowsAsync<IllegalStateException>(() => teeP.process());            
+        Assert.Equal(FluentState.CompiledServile, teeP?.state);
+        await Assert.ThrowsAsync<IllegalStateException>(() => teeP?.process());            
     }
         
     [Fact]
@@ -1016,11 +1008,11 @@ Zeus,Jupiter,""Sky god, supreme ruler of the Olympians""
     [Fact]
     public async Task readRowFunc()
     {
-        Func<IEnumerable<List<String>>> source = () => new[]
+        Func<IEnumerable<List<String?>>> source = () => new[]
         {
-            new List<String> {"a", "1"},
-            new List<String> {"b", "2"},
-            new List<String> {"c", "3"}
+            new List<String?> {"a", "1"},
+            new List<String?> {"b", "2"},
+            new List<String?> {"c", "3"}
         };
             
         String actual;

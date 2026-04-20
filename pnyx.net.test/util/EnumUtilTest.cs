@@ -64,9 +64,9 @@ public class EnumUtilTest
     {
         Dictionary<string, ToDictionaryTestEnum> expected = new Dictionary<string, ToDictionaryTestEnum>
         {
-            {Enum.GetName(typeof(ToDictionaryTestEnum), ToDictionaryTestEnum.Foo), ToDictionaryTestEnum.Foo},
-            {Enum.GetName(typeof(ToDictionaryTestEnum), ToDictionaryTestEnum.Bar), ToDictionaryTestEnum.Bar},
-            {Enum.GetName(typeof(ToDictionaryTestEnum), ToDictionaryTestEnum.Baz), ToDictionaryTestEnum.Baz}
+            {Enum.GetName(typeof(ToDictionaryTestEnum), ToDictionaryTestEnum.Foo) ?? "", ToDictionaryTestEnum.Foo},
+            {Enum.GetName(typeof(ToDictionaryTestEnum), ToDictionaryTestEnum.Bar) ?? "", ToDictionaryTestEnum.Bar},
+            {Enum.GetName(typeof(ToDictionaryTestEnum), ToDictionaryTestEnum.Baz) ?? "", ToDictionaryTestEnum.Baz}
         };
 
         Dictionary<string, ToDictionaryTestEnum> actual = EnumUtil.toDictionary<ToDictionaryTestEnum>();

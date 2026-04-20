@@ -6,7 +6,7 @@ using pnyx.net.test.util;
 using pnyx.net.util;
 using Xunit;
 
-namespace pnyx.net.test;
+namespace pnyx.net.test.fluent;
 
 public class RewriteTest
 {
@@ -21,7 +21,7 @@ public class RewriteTest
             await p.read(inPath).grep("schenbach", caseSensitive: false).write(outPath).process();                
 
         String expectedPath = Path.Combine(TestUtil.findTestFileLocation(), "csv", "us_census_schenbach.csv");
-        String diff = TestUtil.binaryDiff(expectedPath, outPath);
+        String? diff = TestUtil.binaryDiff(expectedPath, outPath);
         Assert.Null(diff);
 
         await using (Pnyx p = new Pnyx())

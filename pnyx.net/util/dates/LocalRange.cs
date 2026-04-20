@@ -143,7 +143,7 @@ public class LocalRange
             case LocalRangeEnum.CustomMonth: return $"{start:M/yyyy}";
             case LocalRangeEnum.CustomYear: return $"{start:yyyy}";
             default:
-                return type.getLabel();
+                return type.getLabel() ?? "";
         }
     }
         

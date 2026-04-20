@@ -19,8 +19,8 @@ public class DataDescriptor
     public bool isFormatted { get; private set; }
     public bool isEnumerated { get; private set; }
 
-    public List<String> enumValues { get; private set; }
-    public String mask { get; private set; }
+    public List<String>? enumValues { get; private set; }
+    public String? mask { get; private set; }
 
     public override string ToString()
     {
@@ -28,7 +28,7 @@ public class DataDescriptor
         {
             default:
             case DataType.Blank:            return "Blank";
-            case DataType.Enumerated:       return $"Enumerated({enumValues.Count})";
+            case DataType.Enumerated:       return $"Enumerated({enumValues?.Count ?? 0})";
             case DataType.Formatted:        return $"FormattedData({mask})";
             case DataType.Other:            return "Other";
             case DataType.Unique:           return "Unique";
@@ -41,17 +41,17 @@ public class DataDescriptor
             type = theType;
     }
 
-    public DataDescriptor setEnum(List<String> enumValues)
+    public DataDescriptor setEnum(List<String> enumValues_)
     {
-        this.enumValues = enumValues;
+        enumValues = enumValues_;
         setType(DataType.Enumerated);
         isEnumerated = true;
         return this;
     }
 
-    public DataDescriptor setFormatted(String mask)
+    public DataDescriptor setFormatted(String mask_)
     {
-        this.mask = mask;
+        mask = mask_;
         setType(DataType.Formatted);
         isFormatted = true;
         return this;

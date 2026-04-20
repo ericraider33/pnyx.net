@@ -12,22 +12,24 @@ public static class TestUtil
         
     public static String findTestFileLocation()
     {
-        String path = Environment.GetEnvironmentVariable(ENV_TEST_FILES);
+        String? path = Environment.GetEnvironmentVariable(ENV_TEST_FILES);
         if (path == null)
         {
-            string assemblyName = typeof(TestUtil).Assembly.GetName().Name;
+            string? assemblyName = typeof(TestUtil).Assembly.GetName().Name;
+            if (assemblyName == null)
+                throw new NullReferenceException("Could not obtain a `Name` for TestUtil assembly");
                 
             path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            while (!path.EndsWith(assemblyName))
+            while (path != null && !path.EndsWith(assemblyName))
             {
-                DirectoryInfo parent = Directory.GetParent(path);
+                DirectoryInfo? parent = Directory.GetParent(path);
                 if (parent == null)
-                    throw new IOException(String.Format("Could not find location to pnyx.net.test. Set '{0}' EVN to fix", ENV_TEST_FILES));
+                    throw new IOException($"Could not find location to pnyx.net.test. Set '{ENV_TEST_FILES}' EVN to fix");
                     
                 path = parent.FullName;
             }
 
-            path = Path.Combine(path, "files");
+            path = Path.Combine(path!, "files");
         }
 
         if (!Directory.Exists(path))
@@ -38,22 +40,24 @@ public static class TestUtil
         
     public static String findTestOutputLocation()
     {
-        String path = Environment.GetEnvironmentVariable(ENV_TEST_OUTPUT);
+        String? path = Environment.GetEnvironmentVariable(ENV_TEST_OUTPUT);
         if (path == null)
         {
-            string assemblyName = typeof(TestUtil).Assembly.GetName().Name;
+            string? assemblyName = typeof(TestUtil).Assembly.GetName().Name;
+            if (assemblyName == null)
+                throw new NullReferenceException("Could not obtain a `Name` for TestUtil assembly");
                 
             path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            while (!path.EndsWith(assemblyName))
+            while (path != null && !path.EndsWith(assemblyName))
             {
-                DirectoryInfo parent = Directory.GetParent(path);
+                DirectoryInfo? parent = Directory.GetParent(path);
                 if (parent == null)
-                    throw new IOException(String.Format("Could not find location to pnyx.net.test. Set '{0}' EVN to fix", ENV_TEST_OUTPUT));
+                    throw new IOException($"Could not find location to pnyx.net.test. Set '{ENV_TEST_OUTPUT}' EVN to fix");
                     
                 path = parent.FullName;
             }
 
-            path = Path.Combine(path, "out");
+            path = Path.Combine(path!, "out");
 
             DirectoryInfo info = new DirectoryInfo(path);
             if (!info.Exists)
@@ -66,9 +70,9 @@ public static class TestUtil
         return path;
     }
 
-    public static String binaryDiff(String source, String dest)
+    public static String? binaryDiff(String source, String dest)
     {
-        FileStream sourceStream = null, destStream = null;
+        FileStream? sourceStream = null, destStream = null;
 
         try
         {

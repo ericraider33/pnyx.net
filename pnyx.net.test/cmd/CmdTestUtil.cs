@@ -10,7 +10,7 @@ namespace pnyx.net.test.cmd;
 
 public static class CmdTestUtil
 {
-    public static async Task verifyYaml(String sourceYaml, String expectedStdout = null)
+    public static async Task verifyYaml(String sourceYaml, String? expectedStdout = null)
     {
         StringReader test = new StringReader(sourceYaml);
             

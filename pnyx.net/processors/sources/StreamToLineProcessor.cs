@@ -10,7 +10,7 @@ namespace pnyx.net.processors.sources;
 
 public class StreamToLineProcessor : IProcessor, ILinePart, ILineSource, IAsyncDisposable
 {
-    public IStreamFactory? streamFactory { get; private set; }        
+    public IStreamFactory? streamFactory { get; private set; }
     public StreamReader? reader { get; protected set; }
     public StreamInformation streamInformation { get; }
     public ILineProcessor? processor { get; protected set; }
@@ -177,5 +177,10 @@ public class StreamToLineProcessor : IProcessor, ILinePart, ILineSource, IAsyncD
         buffer = null;
         bufferIndex = null;
         bufferCount = null;
+    }
+
+    public IStreamFactory getStreamFactory()
+    {
+        return streamFactory ?? throw new IllegalStateException("StreamFactory has been disposed");
     }
 }

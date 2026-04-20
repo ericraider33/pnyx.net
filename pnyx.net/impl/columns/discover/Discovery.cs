@@ -11,8 +11,8 @@ public class Discovery : IRowBuffering
     public int validatePass { get; set; } = 10000;
     public readonly Examine examine = new ();
 
-    private readonly List<List<string>> buffer = new ();
-    private int columns = 0;
+    private readonly List<List<string?>> buffer = new ();
+    private int columns;
     private readonly List<DataDescriptor> descriptors = new ();
         
     public List<string> rowHeader(List<string> header)
@@ -20,7 +20,7 @@ public class Discovery : IRowBuffering
         return header;
     }
 
-    public List<List<string>>? bufferingRow(List<string> row)
+    public List<List<string?>>? bufferingRow(List<string?> row)
     {
         buffer.Add(row);
         columns = Math.Max(columns, row.Count);
@@ -31,13 +31,13 @@ public class Discovery : IRowBuffering
         return null;
     }
 
-    public List<List<string>> endOfFile()
+    public List<List<string?>> endOfFile()
     {
         if (buffer.Count < firstPass)
             examineData();
 
-        List<String> row = descriptors.Select(desc => desc.ToString()).ToList();
-        return new List<List<string>> { row };
+        List<String?> row = descriptors.Select(desc => desc.ToString()).Cast<string?>().ToList();
+        return new List<List<string?>> { row };
     }
 
     private void examineData()
@@ -50,11 +50,11 @@ public class Discovery : IRowBuffering
 
             for (int rowIndex = 0; rowIndex < buffer.Count && rowIndex < firstPass; rowIndex++)
             {
-                List<String> row = buffer[rowIndex];
+                List<String?> row = buffer[rowIndex];
                 if (colIndex >= row.Count)
                     continue;
 
-                String value = row[colIndex];
+                String? value = row[colIndex];
                 if (String.IsNullOrEmpty(value))
                     continue;
                     

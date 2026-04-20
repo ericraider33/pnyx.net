@@ -105,7 +105,7 @@ public class ColumnDefinition : IRowBuffering
         List<List<String?>> result = new ();
 
         if (flag.HasFlag(Flags.Header))
-            result.Add(buildOutput("Header", list => list.Select(ci => ci.header)));
+            result.Add(buildOutput("Header", list => list.Select(ci => ci.header ?? "")));
 
         if (flag.HasFlag(Flags.MinWidth))
             result.Add(buildOutput("MinWidth", list => list.Select(ci => ci.minWidth.ToString())));

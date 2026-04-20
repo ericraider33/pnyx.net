@@ -6,7 +6,7 @@ namespace pnyx.net.impl.columns;
 
 public class SelectColumns : IRowTransformer
 {
-    public ColumnIndex[] columnIndices { get; set; }
+    public ColumnIndex[] columnIndices { get; }
 
     public SelectColumns(ColumnIndex[] columnIndices)
     {
@@ -15,15 +15,20 @@ public class SelectColumns : IRowTransformer
 
     public List<String> transformHeader(List<String> header)
     {
-        return transformRow(header);
+        return doTransform(header, "");
     }
 
-    public List<String> transformRow(List<String> row)
+    public List<String?> transformRow(List<String?> row)
     {
-        List<String> result = new List<String>(columnIndices.Length);
+        return doTransform(row, "");
+    }
+
+    private List<T> doTransform<T>(List<T> row, T pad)
+    {
+        List<T> result = new List<T>(columnIndices.Length);
         foreach (int columnIndex in columnIndices)
         {
-            String column = columnIndex < row.Count ? row[columnIndex] : "";
+            T column = columnIndex < row.Count ? row[columnIndex] : pad;
             result.Add(column);
         }
 

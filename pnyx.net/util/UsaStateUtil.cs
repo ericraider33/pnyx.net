@@ -79,10 +79,10 @@ public static class UsaStateUtil
             return null;
 
         if (input.endsWithIgnoreCase(" USA"))
-            input = input.trunc(input.Length - 4);
+            input = input.trunc(input.Length - 4) ?? "";
 
         if (input.endsWithIgnoreCase(" US"))
-            input = input.trunc(input.Length - 3);
+            input = input.trunc(input.Length - 3) ?? "";
 
         input = ParseExtensions.extractAlphaNumeric(input);
 

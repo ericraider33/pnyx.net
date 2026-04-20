@@ -10,27 +10,27 @@ using pnyx.net.processors.sources;
 using pnyx.net.util;
 using Xunit;
 
-namespace pnyx.net.test.impl;
+namespace pnyx.net.test.impl.csv;
 
 public class CsvStreamToRowProcessorTest
 {
     [Theory]
     [InlineData("", null, null)]
-    [InlineData("a", new String[] { "a" }, null)]
-    [InlineData(" ", new String[] { " " }, null)]
-    [InlineData(" , ,,", new String[] { " ", " ", "", "" }, null)]
-    [InlineData("a,b", new String[] { "a", "b" }, null)]
-    [InlineData("a,b\n", new String[] { "a", "b" }, null)]
-    [InlineData("a,b\nc", new String[] { "a", "b" }, new String[] { "c" })]
-    [InlineData("a,b\nc\n", new String[] { "a", "b" }, new String[] { "c" })]
-    [InlineData("\"a\"", new String[] { "a" }, null)]
-    [InlineData("\"a\",\"b\"", new String[] { "a", "b" }, null)]
-    [InlineData("\"a\",\"b\"\n", new String[] { "a", "b" }, null)]
-    [InlineData("\"a\",\"b\"\n\"c\"", new String[] { "a", "b" }, new String[] { "c" })]
-    [InlineData("\"a\",\"b\"\n\"c\"\n", new String[] { "a", "b" }, new String[] { "c" })]
+    [InlineData("a", new[] { "a" }, null)]
+    [InlineData(" ", new[] { " " }, null)]
+    [InlineData(" , ,,", new[] { " ", " ", "", "" }, null)]
+    [InlineData("a,b", new[] { "a", "b" }, null)]
+    [InlineData("a,b\n", new[] { "a", "b" }, null)]
+    [InlineData("a,b\nc", new[] { "a", "b" }, new [] { "c" })]
+    [InlineData("a,b\nc\n", new[] { "a", "b" }, new [] { "c" })]
+    [InlineData("\"a\"", new[] { "a" }, null)]
+    [InlineData("\"a\",\"b\"", new[] { "a", "b" }, null)]
+    [InlineData("\"a\",\"b\"\n", new[] { "a", "b" }, null)]
+    [InlineData("\"a\",\"b\"\n\"c\"", new[] { "a", "b" }, new [] { "c" })]
+    [InlineData("\"a\",\"b\"\n\"c\"\n", new[] { "a", "b" }, new [] { "c" })]
     [InlineData("\n", new String[0], null)]
     [InlineData("\n\n", new String[0], new String[0])]        
-    public async Task line(String source, String[] rowA, String[] rowB)
+    public async Task line(String source, String[]? rowA, String[]? rowB)
     {
         await verifyRows(source, rowA, rowB);
     }
@@ -46,31 +46,31 @@ public class CsvStreamToRowProcessorTest
     }
         
     [Theory]
-    [InlineData("a\"b", new String[] { "a\"b" })]
-    [InlineData("\"a\"b", new String[] { "ab" })]
-    [InlineData("\"ab", new String[] { "ab" })]
+    [InlineData("a\"b", new [] { "a\"b" })]
+    [InlineData("\"a\"b", new [] { "ab" })]
+    [InlineData("\"ab", new [] { "ab" })]
     public async Task settings(String source, String[] rowA)
     {
         await verifyRows(source, rowA, null, x => { x.settings.setDefaults(strict: false); });
     }
         
     [Theory]
-    [InlineData(TrimStyleEnum.None,"""a, b ,,d """, new String[] { "a", " b ", "", "d " })]
-    [InlineData(TrimStyleEnum.Trim,"""a, b ,,d """, new String[] { "a", "b", "", "d" })]
-    [InlineData(TrimStyleEnum.TrimToNull,"""a, b ,,d """, new String[] { "a", "b", null, "d" })]
-    [InlineData(TrimStyleEnum.None,"""a," b ",,d """, new String[] { "a", " b ", "", "d " })]
-    [InlineData(TrimStyleEnum.Trim,"""a," b ",,d """, new String[] { "a", "b", "", "d" })]
-    [InlineData(TrimStyleEnum.TrimToNull,"""a," b ",,d """, new String[] { "a", "b", null, "d" })]
-    public async Task trim(TrimStyleEnum style, String source, String[] rowA)
+    [InlineData(TrimStyleEnum.None,"""a, b ,,d """, new [] { "a", " b ", "", "d " })]
+    [InlineData(TrimStyleEnum.Trim,"""a, b ,,d """, new [] { "a", "b", "", "d" })]
+    [InlineData(TrimStyleEnum.TrimToNull,"""a, b ,,d """, new [] { "a", "b", null, "d" })]
+    [InlineData(TrimStyleEnum.None,"""a," b ",,d """, new [] { "a", " b ", "", "d " })]
+    [InlineData(TrimStyleEnum.Trim,"""a," b ",,d """, new [] { "a", "b", "", "d" })]
+    [InlineData(TrimStyleEnum.TrimToNull,"""a," b ",,d """, new [] { "a", "b", null, "d" })]
+    public async Task trim(TrimStyleEnum style, String source, String?[] rowA)
     {
         await verifyRows(source, rowA, null, x => { x.settings.setDefaults(trimStyle: style); });
     }
         
-    private async Task verifyRows(String source, String[] rowA, String[] rowB, Action<CsvStreamToRowProcessor> callback = null)
+    private async Task verifyRows(String source, String?[]? rowA, String?[]? rowB, Action<CsvStreamToRowProcessor>? callback = null)
     {
-        List<String> actualA = null, actualB = null;
+        List<String?>? actualA = null, actualB = null;
             
-        List<List<String>> rows = await parseRows(source, callback);
+        List<List<String?>> rows = await parseRows(source, callback);
         if (rows.Count > 0) actualA = rows[0];
         if (rows.Count > 1) actualB = rows[1];
             
@@ -78,7 +78,7 @@ public class CsvStreamToRowProcessorTest
         Assert.True(RowUtil.isEqual(actualB, rowB.asRow()));
     }
 
-    private async Task<List<List<String>>> parseRows(String source, Action<CsvStreamToRowProcessor> callback = null)
+    private async Task<List<List<String?>>> parseRows(String source, Action<CsvStreamToRowProcessor>? callback = null)
     {
         StreamInformation si = new StreamInformation(new Settings());
         CsvStreamToRowProcessor csvProcess = new CsvStreamToRowProcessor();
@@ -99,8 +99,23 @@ public class CsvStreamToRowProcessorTest
         }
         finally
         {
-            try { await wrapper.DisposeAsync(); } catch (Exception) { }
-            try { await csvProcess.DisposeAsync(); } catch (Exception) { }
+            try
+            {
+                await wrapper.DisposeAsync();
+            } 
+            catch (Exception) 
+            {
+                // ignored
+            }
+
+            try
+            {
+                await csvProcess.DisposeAsync();
+            } 
+            catch (Exception) 
+            {
+                // ignored
+            }
         }
     }
         

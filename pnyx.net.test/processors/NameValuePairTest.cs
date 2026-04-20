@@ -20,7 +20,7 @@ Odyssey,Homer,-1000
     [Fact]
     public async Task verify_basic_usage()
     {
-        List<IDictionary<String, Object>> actual;
+        List<IDictionary<String, Object?>> actual;
         await using (Pnyx p = new Pnyx())
         {
             p.readString(csvInputA);
@@ -31,7 +31,7 @@ Odyssey,Homer,-1000
 
         Assert.Equal(3, actual.Count);
 
-        IDictionary<String, Object> first = actual[0];
+        IDictionary<String, Object?> first = actual[0];
         Assert.Equal("Author,PublicationDate,Title", String.Join(",", first.Keys.Order()));
         Assert.Equal("Tale of Two Cities", first["Title"]);
         Assert.Equal("Charles Dickens", first["Author"]);
@@ -56,7 +56,7 @@ Odyssey,Homer,-1000
     [InlineData("  trim  ", "trim")]
     public async Task header_clean_up(String header, String expected)
     {
-        List<IDictionary<String, Object>> actual;
+        List<IDictionary<String, Object?>> actual;
         await using (Pnyx p = new Pnyx())
         {
             String source = $"{header}\nrecord";
@@ -68,7 +68,7 @@ Odyssey,Homer,-1000
 
         Assert.Single(actual);
 
-        IDictionary<String, Object> first = actual[0];
+        IDictionary<String, Object?> first = actual[0];
         String propertyName = String.Join(",", first.Keys);
         Assert.Equal(expected, propertyName);
     }
@@ -80,13 +80,13 @@ Odyssey,Homer,-1000
     [InlineData(1900, 0)]
     public async Task filter(int year, int expected)
     {
-        List<IDictionary<String, Object>> actual;
+        List<IDictionary<String, Object?>> actual;
         await using (Pnyx p = new Pnyx())
         {
             p.readString(csvInputA);
             p.parseCsv(hasHeader: true);
             p.rowToNameValuePair();
-            p.nameValuePairFilter(x => int.Parse((String)x["PublicationDate"]) >= year);
+            p.nameValuePairFilter(x => int.Parse(x["PublicationDate"]?.ToString() ?? "") >= year);
             actual = await p.processCaptureNameValuePairs();
         }
 
@@ -96,7 +96,7 @@ Odyssey,Homer,-1000
     [Fact]
     public async Task transform()
     {
-        List<IDictionary<String, Object>> actual;
+        List<IDictionary<String, Object?>> actual;
         await using (Pnyx p = new Pnyx())
         {
             p.readString(csvInputA);
@@ -112,7 +112,7 @@ Odyssey,Homer,-1000
 
         Assert.Equal(3, actual.Count);
 
-        IDictionary<String, Object> first = actual[0];
+        IDictionary<String, Object?> first = actual[0];
         Assert.Equal("Author,Title", String.Join(",", first.Keys.Order()));
         Assert.Equal("Tale of Two Cities", first["Title"]);
         Assert.Equal("Charles Dickens", first["Author"]);

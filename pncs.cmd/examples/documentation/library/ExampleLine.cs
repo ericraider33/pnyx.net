@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using pnyx.net.api;
 using pnyx.net.fluent;
 using pnyx.net.processors;
-using pnyx.net.processors.dest;
 using pnyx.net.util;
 
 namespace pncs.cmd.examples.documentation.library;
@@ -114,13 +113,16 @@ Oliver Twist
     {
         public List<string?> lineToRow(string line)
         {
-            Tuple<String,String> pair = line.splitAt(":=");
-            return new List<String?> { pair.Item1.Trim(), pair.Item2.Trim() };
+            Tuple<String,String>? pair = line.splitAt(":=");
+            if (pair == null)
+                return new List<String?>();
+            
+            return [pair.Item1.Trim(), pair.Item2.Trim()];
         }
 
         public string rowToLine(List<string?> row)
         {
-            return String.Format("{0} := {1}", row[0], String.Concat(row.Skip(1)));
+            return $"{row[0]} := {String.Concat(row.Skip(1))}";
         }
 
         public IRowProcessor? buildRowDestination(StreamInformation streamInformation, Stream stream)
@@ -165,12 +167,11 @@ Oliver Twist
     public static async Task embeddedNewlineAsCsv()
     {
         const String input = "a,\"Long\nText\n\"";
-        await using (Pnyx p = new Pnyx())
-        {
-            p.asCsv(p2 => p.readString(input)); // CsvStreamToRowProcessor 
-            p.selectColumns(2,1);
-            p.writeStdout();     
-        }                        
+        await using Pnyx p = new Pnyx();
+        p.asCsv(p2 => p2.readString(input)); // CsvStreamToRowProcessor 
+        p.selectColumns(2,1);
+        p.writeStdout();
+        
         // outputs: 
         // "Long\nText\n",a
     }     

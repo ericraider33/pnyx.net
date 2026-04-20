@@ -16,7 +16,7 @@ public class SettingsYaml
     public const String SETTINGS_FILE_NAME = "pnyx_settings.yaml";
     public const String LIB_DIRECTORY = "lib";
         
-    public static bool parseSetting(String path = null, bool verboseSettings = false)
+    public static bool parseSetting(String? path = null, bool verboseSettings = false)
     {
         if (path == null)
             path = findSettings(verboseSettings);
@@ -37,7 +37,7 @@ public class SettingsYaml
             using (StreamReader reader = new StreamReader(new FileStream(path, FileMode.Open, FileAccess.Read)))
             {
                 SettingsYaml sy = new SettingsYaml();
-                Settings settings = sy.deserializeSettings(reader);
+                Settings? settings = sy.deserializeSettings(reader);
 
                 if (settings == null)
                 {
@@ -79,10 +79,13 @@ public class SettingsYaml
         if (File.Exists(path))
             return path;
             
-        DirectoryInfo di = new DirectoryInfo(directory);
+        DirectoryInfo? di = new DirectoryInfo(directory);
         if (TextUtil.isEqualsIgnoreCase(di.Name, LIB_DIRECTORY))
         {
             di = di.Parent;
+            if (di == null)
+                throw new Exception("Could not find parent directory of application");   
+            
             path = Path.Combine(di.FullName, SETTINGS_FILE_NAME);
                 
             if (verboseSettings)
@@ -93,14 +96,14 @@ public class SettingsYaml
     }
         
     // NOTE: If source file is completely commented out, then result is NULL
-    public Settings deserializeSettings(TextReader source)
+    public Settings? deserializeSettings(TextReader source)
     {
         IDeserializer deserializer = new DeserializerBuilder()
             .WithNamingConvention(CamelCaseNamingConvention.Instance)
             .WithTypeConverter(new EncodingTypeConverter())
             .Build();
 
-        Settings result = deserializer.Deserialize<Settings>(source);
+        Settings? result = deserializer.Deserialize<Settings?>(source);
         if (result == null)
             return null;
             
@@ -137,7 +140,7 @@ public class SettingsYaml
         {
             NewLineEnum newlineType = named[newline];
             if (newlineType != NewLineEnum.None)
-                return StreamInformation.newlineString(newlineType);
+                return StreamInformation.newlineString(newlineType) ?? Environment.NewLine;
         }
             
         throw new InvalidArgumentException("Unrecognized newline '{0}'", newline);

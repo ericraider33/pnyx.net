@@ -23,8 +23,14 @@ backupRewrite: false
 ";
             
         SettingsYaml parser = new SettingsYaml();
-        Settings settings = parser.deserializeSettings(new StringReader(source));
-            
+        Settings? settings = parser.deserializeSettings(new StringReader(source));
+
+        if (settings == null)
+        {
+            Assert.NotNull(settings);
+            return;
+        }
+        
         Assert.Equal(".", settings.tempDirectory);
         Assert.Equal(100, settings.bufferLines);
         Assert.Equal("\r\n", settings.defaultNewline);
@@ -39,9 +45,9 @@ backupRewrite: false
     [InlineData("junk", null)]
     [InlineData("windows", "\r\n")]
     [InlineData("unix", "\n")]
-    public void defaultNewline(String value, String expected)
+    public void defaultNewline(String value, String? expected)
     {
-        String yamlText = String.Format("defaultNewline: {0}", value);
+        String yamlText = $"defaultNewline: {value}";
         StringReader reader = new StringReader(yamlText);
             
         SettingsYaml parser = new SettingsYaml();
@@ -51,8 +57,8 @@ backupRewrite: false
         }
         else
         {
-            Settings settings = parser.deserializeSettings(reader);
-            Assert.Equal(expected, settings.defaultNewline);
+            Settings? settings = parser.deserializeSettings(reader);
+            Assert.Equal(expected, settings?.defaultNewline);
         }
     }
 
@@ -75,8 +81,8 @@ backupRewrite: false
         }
         else
         {
-            Settings settings = parser.deserializeSettings(reader);
-            Assert.Equal(value, settings.defaultEncoding.WebName);
+            Settings? settings = parser.deserializeSettings(reader);
+            Assert.Equal(value, settings?.defaultEncoding.WebName);
         }
     }
 }

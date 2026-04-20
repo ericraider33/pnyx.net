@@ -17,36 +17,36 @@ public class RowTransformerWithColumns : IRowTransformer
 
     public List<String>? transformHeader(List<String> header)
     {
-        List<String> subColumns = subColumnsIn(header);
+        List<String> subColumns = subColumnsIn(header, "");
         List<String>? transformed = rowTransformer.transformHeader(subColumns);
         if (transformed == null)
             return null;
         
-        return subColumnsOut(transformed, header);
+        return subColumnsOut(transformed, header, "");
     }
 
-    public List<String>? transformRow(List<String> row)
+    public List<String?>? transformRow(List<String?> row)
     {
-        List<String> subColumns = subColumnsIn(row);
-        List<String>? transformed = rowTransformer.transformRow(subColumns);
+        List<String?> subColumns = subColumnsIn(row, "");
+        List<String?>? transformed = rowTransformer.transformRow(subColumns);
         if (transformed == null)
             return null;
         
-        return subColumnsOut(transformed, row);
+        return subColumnsOut(transformed, row, "");
     }
 
-    private List<String> subColumnsIn(List<String> row)
+    private List<T> subColumnsIn<T>(List<T> row, T pad)
     {
-        List<String> subColumns = new List<String>(indexes.Length);
+        List<T> subColumns = new List<T>(indexes.Length);
         foreach (int columnIndex in indexes)
         {
-            String column = columnIndex < row.Count ? row[columnIndex] : "";
+            T column = columnIndex < row.Count ? row[columnIndex] : pad;
             subColumns.Add(column);
         }
         return subColumns;
     }
 
-    private List<String> subColumnsOut(List<String> transformed, List<String> row)
+    private List<T> subColumnsOut<T>(List<T> transformed, List<T> row, T pad)
     {
         for (int i = 0; i < indexes.Length; i++)
         {
@@ -55,7 +55,7 @@ public class RowTransformerWithColumns : IRowTransformer
                 continue;
 
             if (transformed == null)
-                row[columnIndex] = "";
+                row[columnIndex] = pad;
             else
                 row[columnIndex] = transformed[i];
         }

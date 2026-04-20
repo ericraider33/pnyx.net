@@ -14,9 +14,9 @@ public class HasColumnIndexes : IRowFilter
     /// <summary>
     /// Function to perform a check whether content is present or not. Return True to keep row; false to reject / skip row 
     /// </summary>
-    private readonly Func<string, bool>? checkContent;
+    private readonly Func<string?, bool>? checkContent;
 
-    public HasColumnIndexes(IEnumerable<ColumnIndex> columns, bool verifyColumnHasText = true, Func<string, bool>? checkContent = null)
+    public HasColumnIndexes(IEnumerable<ColumnIndex> columns, bool verifyColumnHasText = true, Func<string?, bool>? checkContent = null)
     {
         this.columnIndexes = new HashSet<ColumnIndex>(columns);
         this.verifyColumnHasText = verifyColumnHasText;
@@ -25,7 +25,7 @@ public class HasColumnIndexes : IRowFilter
         maxColumnNumber = columnIndexes.Max(x => x) ?? 0;
     }
 
-    public bool shouldKeepRow(List<String> row)
+    public bool shouldKeepRow(List<String?> row)
     {
         if (row.Count < (maxColumnNumber.Index + 1))
             return false;
@@ -34,7 +34,7 @@ public class HasColumnIndexes : IRowFilter
         {
             foreach (ColumnIndex columnIndex in columnIndexes)
             {
-                String column = row[columnIndex.Index];
+                String? column = row[columnIndex.Index];
                 if (String.IsNullOrEmpty(column))
                     return false;
             }
@@ -46,12 +46,10 @@ public class HasColumnIndexes : IRowFilter
         {
             foreach (ColumnIndex columnIndex in columnIndexes)
             {
-                string column = row[columnIndex.Index];
+                string? column = row[columnIndex.Index];
                 if (!checkContent(column))
                     return false;
             }
-
-            return true;
         }
             
         return true;

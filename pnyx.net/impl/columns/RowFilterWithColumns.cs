@@ -15,12 +15,12 @@ public class RowFilterWithColumns : IRowFilter
         this.rowFilter = rowFilter;
     }
 
-    public bool shouldKeepRow(List<String> row)
+    public bool shouldKeepRow(List<String?> row)
     {
-        List<String> subColumns = new List<String>(indexes.Length);
+        List<String?> subColumns = new (indexes.Length);
         foreach (int columnIndex in indexes)
         {
-            String column = columnIndex < row.Count ? row[columnIndex] : "";
+            String? column = columnIndex < row.Count ? row[columnIndex] : "";
             subColumns.Add(column);
         }
 

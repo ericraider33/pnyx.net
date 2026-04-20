@@ -23,15 +23,18 @@ public class EncodingTypeConverter : IYamlTypeConverter
         return parseText(valueText);
     }
 
-    public void WriteYaml(IEmitter emitter, Object value, Type type)
+    public void WriteYaml(IEmitter emitter, Object? value, Type type)
     {
+        if (value == null)
+            throw new ArgumentNullException(nameof(value), "Encoding value cannot be null");
+        
         Encoding encoding = (Encoding) value;
         emitter.Emit(new Scalar(encoding.WebName));
     }
 
     public static Encoding parseText(String valueText)
     {
-        EncodingInfo match = Encoding.GetEncodings().FirstOrDefault(enc => TextUtil.isEqualsIgnoreCase(enc.Name, valueText));
+        EncodingInfo? match = Encoding.GetEncodings().FirstOrDefault(enc => TextUtil.isEqualsIgnoreCase(enc.Name, valueText));
         if (match == null)
             throw new InvalidArgumentException("Could not convert text '{0}' to an encoding", valueText);
             

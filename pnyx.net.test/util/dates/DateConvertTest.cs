@@ -10,7 +10,7 @@ public class DateConvertTest
 {
     public class ObjectWithDate
     {
-        public string name { get; set; }
+        public string? name { get; set; }
         [JsonConverter(typeof(DateConverter))]
         public DateTime dateOfBirth { get; set; }
     }
@@ -29,14 +29,14 @@ public class DateConvertTest
     public void json_to_object()
     {
         string json = """{"name":"EE","dateOfBirth":"1975-05-29"}""";
-        ObjectWithDate x = JsonSerializer.Deserialize<ObjectWithDate>(json);
-        Assert.Equal("EE", x.name);
-        Assert.Equal(new DateTime(1975, 5, 29), x.dateOfBirth);
+        ObjectWithDate? x = JsonSerializer.Deserialize<ObjectWithDate>(json);
+        Assert.Equal("EE", x?.name);
+        Assert.Equal(new DateTime(1975, 5, 29), x?.dateOfBirth);
     }
     
     public class ObjectWithDateOnly
     {
-        public string name { get; set; }
+        public string? name { get; set; }
         public DateOnly dateOfBirth { get; set; }
     }
 
@@ -54,8 +54,8 @@ public class DateConvertTest
     public void json_to_object_date_only()
     {
         string json = """{"name":"EE","dateOfBirth":"1975-05-29"}""";
-        ObjectWithDateOnly x = JsonSerializer.Deserialize<ObjectWithDateOnly>(json);
-        Assert.Equal("EE", x.name);
-        Assert.Equal(new DateOnly(1975, 5, 29), x.dateOfBirth);
+        ObjectWithDateOnly? x = JsonSerializer.Deserialize<ObjectWithDateOnly>(json);
+        Assert.Equal("EE", x?.name);
+        Assert.Equal(new DateOnly(1975, 5, 29), x?.dateOfBirth);
     }
 }

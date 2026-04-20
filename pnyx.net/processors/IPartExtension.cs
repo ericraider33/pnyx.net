@@ -1,7 +1,6 @@
 using System;
-using pnyx.net.processors;
 
-namespace pnyx.net;
+namespace pnyx.net.processors;
 
 public static class IPartExtension
 {

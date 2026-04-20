@@ -6,7 +6,7 @@ namespace pnyx.net.impl.bools;
 
 public class XorRowFilter : IRowFilter
 {
-    public readonly List<IRowFilter> filters = new ();
+    public List<IRowFilter> filters { get; } = new ();
 
     public XorRowFilter()
     {            
@@ -17,7 +17,7 @@ public class XorRowFilter : IRowFilter
         filters.AddRange(source);
     }
         
-    public bool shouldKeepRow(List<String> row)
+    public bool shouldKeepRow(List<String?> row)
     {
         bool keep = false;
         foreach (IRowFilter filter in filters)

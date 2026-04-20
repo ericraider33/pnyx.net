@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using pnyx.net.util;
 using Xunit;
 
@@ -170,7 +171,7 @@ public class TextUtilTest
         verifyIsDecimal("1a", null);        
     }
 
-    private void verifyIsDecimal(string text, decimal? expected, String clean = null)
+    private void verifyIsDecimal(string? text, decimal? expected, String? clean = null)
     {
         bool isDecimal = TextUtil.isDecimal(text);
         Assert.Equal(expected.HasValue, isDecimal);
@@ -178,9 +179,9 @@ public class TextUtilTest
         if (!isDecimal)
             return;
 
-        decimal actual = decimal.Parse(text);
-        Assert.Equal(expected.Value, actual);
-        Assert.Equal(clean ?? text, actual.ToString());
+        decimal actual = decimal.Parse(text ?? "");
+        Assert.Equal(expected, actual);
+        Assert.Equal(clean ?? text, actual.ToString(CultureInfo.InvariantCulture));
     }
 
     [Fact]

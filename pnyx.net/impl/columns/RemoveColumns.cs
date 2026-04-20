@@ -7,7 +7,7 @@ namespace pnyx.net.impl.columns;
 
 public class RemoveColumns: IRowTransformer
 {
-    public readonly HashSet<ColumnIndex> columnIndices;
+    public HashSet<ColumnIndex> columnIndices { get; }
 
     public RemoveColumns(IEnumerable<ColumnIndex> columns)
     {
@@ -16,10 +16,10 @@ public class RemoveColumns: IRowTransformer
 
     public List<String> transformHeader(List<String> header)
     {
-        return RowUtil.removeColumns(header, columnIndices);
+        return RowUtil.removeColumnsHeader(header, columnIndices);
     }
 
-    public List<String> transformRow(List<String> row)
+    public List<String?> transformRow(List<String?> row)
     {
         return RowUtil.removeColumns(row, columnIndices);
     }
