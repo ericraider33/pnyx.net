@@ -12,7 +12,6 @@ public class ExampleSettings
         const String input = "line one\nline two";
         await using (Pnyx p = new Pnyx())
         {
-                
             p.setSettings(stdIoDefault: true);    
             p.readString(input);
             await p.process(); // automatically writes to STD-OUT

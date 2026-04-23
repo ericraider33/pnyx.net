@@ -65,9 +65,9 @@ public class ExampleInput
             await processor!.endOfFile();  // flushes buffering and output 
         }
 
-        public void setNextRowProcessor(IRowProcessor next_)
+        public void setNextRowProcessor(IRowProcessor next)
         {
-            processor = next_;
+            processor = next;
         }
     }
         

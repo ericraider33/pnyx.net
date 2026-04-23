@@ -8,24 +8,6 @@ namespace pncs.cmd.examples.documentation.library;
 
 public class ExampleRow
 {
-    // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleRow andShim
-    public static async Task andShim()
-    {
-        const String input = @"Line one,a,,c
-Line two,a,b,c
-Line three,,,c
-"; 
-        await using (Pnyx p = new Pnyx())
-        {
-            p.readString(input);
-            p.parseCsv();
-            p.shimAnd(p2 => p2.hasLine());
-            p.writeStdout();
-        }                        
-        // outputs:
-        // "Line two",a,b,c            
-    }
-        
     // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleRow orShim
     public static async Task orShim()
     {
@@ -44,6 +26,24 @@ Line three,,,c
         // "Line one",a,,c
         // "Line two",a,b,c
         // "Line three",,,c            
+    }
+    
+    // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleRow andShim
+    public static async Task andShim()
+    {
+        const String input = @"Line one,a,,c
+Line two,a,b,c
+Line three,,,c
+"; 
+        await using (Pnyx p = new Pnyx())
+        {
+            p.readString(input);
+            p.parseCsv();
+            p.shimAnd(p2 => p2.hasLine());
+            p.writeStdout();
+        }                        
+        // outputs:
+        // "Line two",a,b,c            
     }
 
     // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleRow filterFunc
@@ -82,20 +82,6 @@ Line two,LOSER
     }
 
     // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleRow printDelimiter
-    public static async Task printDelimiter()
-    {
-        const String input = "col1,\"Column, zwei\""; 
-        await using (Pnyx p = new Pnyx())
-        {
-            p.readString(input);
-            p.parseCsv();
-            p.printDelimiter("|");
-            p.writeStdout();
-        }                        
-        // outputs: col1|Column, zwei
-    }
-
-    // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleRow printDelimiter
     public static async Task print()
     {
         const String input = "Socialism,Communism,Fascism"; 
@@ -107,5 +93,19 @@ Line two,LOSER
             p.writeStdout();
         }                        
         // outputs: Failed Systems: Socialism, Communism, and Fascism  
+    }
+
+    // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleRow printDelimiter
+    public static async Task printDelimiter()
+    {
+        const String input = "col1,\"Column, zwei\""; 
+        await using (Pnyx p = new Pnyx())
+        {
+            p.readString(input);
+            p.parseCsv();
+            p.printDelimiter("|");
+            p.writeStdout();
+        }                        
+        // outputs: col1|Column, zwei
     }
 }

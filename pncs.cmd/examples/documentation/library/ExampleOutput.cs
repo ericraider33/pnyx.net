@@ -31,7 +31,7 @@ public class ExampleOutput
             p.readString(input);               
             p.writeStdout();
         }     
-        // outputs: converts windows to unix newlines
+        // outputs: converts Windows or Mac to Unix newlines
     }
         
     public class CustomEndLine : ILineProcessor

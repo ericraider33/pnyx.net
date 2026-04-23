@@ -12,7 +12,10 @@ public class ExampleFluent
     public static async Task builder()
     {
         await using (var p = new Pnyx())
-            p.readString("a,b,c,d").parseCsv().print("$4|$3|$2|$1").writeStdout();
+            p.readString("a,b,c,d")
+             .parseCsv()
+             .print("$4|$3|$2|$1")
+             .writeStdout();
 
         // outputs: d|c|b|a           
     }

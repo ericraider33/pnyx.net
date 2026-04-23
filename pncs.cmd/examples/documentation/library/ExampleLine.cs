@@ -15,7 +15,7 @@ public class ExampleLine
     // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleLine not
     public static async Task not()
     {
-        const String input = @"Line one: house
+        const string input = @"Line one: house
 Line two: cat, dog
 Line three: separation of economics and state
 "; 
@@ -33,7 +33,7 @@ Line three: separation of economics and state
     // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleLine or
     public static async Task or()
     {
-        const String input = @"Line one: house
+        const string input = @"Line one: house
 Line two: cat, dog
 Line three: separation of economics and state
 "; 
@@ -55,7 +55,7 @@ Line three: separation of economics and state
     // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleLine filterFunc
     public static async Task filterFunc()
     {
-        const String input = @"Text1with0numbers
+        const string input = @"Text1with0numbers
 log3message
 Oliver Twist
 "; 
@@ -64,7 +64,7 @@ Oliver Twist
             p.readString(input);
             p.lineFilter(line =>
             {
-                String numbers = ParseExtensions.extractNumeric(line);
+                string numbers = ParseExtensions.extractNumeric(line);
                 return numbers.Length > 0 && int.Parse(numbers) > 5;
             });
             p.writeStdout();
@@ -76,7 +76,7 @@ Oliver Twist
     // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleLine transformerFunc
     public static async Task transformerFunc()
     {
-        const String input = @"Text1with0numbers
+        const string input = @"Text1with0numbers
 log3message
 Oliver Twist
 ";
@@ -85,19 +85,22 @@ Oliver Twist
             p.readString(input);
             p.lineTransformer(line =>
             {
-                String numbers = ParseExtensions.extractNumeric(line);
+                string numbers = ParseExtensions.extractNumeric(line);
                 return numbers;
             });
+            p.hasLine();
             p.writeStdout();
         }                        
         // outputs:
-        // 10                        
+        // 10           
+        // 3
+        //
     }
         
     // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleLine parseDelimiter
     public static async Task parseDelimiter()
     {
-        const String input = "a|b|c|d|e|f|g";
+        const string input = "a|b|c|d|e|f|g";
         await using (Pnyx p = new Pnyx())
         {
             p.readString(input);
@@ -113,28 +116,31 @@ Oliver Twist
     {
         public List<string?> lineToRow(string line)
         {
-            Tuple<String,String>? pair = line.splitAt(":=");
+            Tuple<string,string>? pair = line.splitAt(":=");
             if (pair == null)
-                return new List<String?>();
+                return new List<string?>();
             
             return [pair.Item1.Trim(), pair.Item2.Trim()];
         }
 
         public string rowToLine(List<string?> row)
         {
-            return $"{row[0]} := {String.Concat(row.Skip(1))}";
+            return $"{row[0]} := {string.Concat(row.Skip(1))}";
         }
 
         public IRowProcessor? buildRowDestination(StreamInformation streamInformation, Stream stream)
         {
-            return null; // return 'null' if standard line parser (StreamToLineProcessor) is acceptable 
+            // Returns custom stream processor if desired, for parsing newlines, as is needed with 
+            // a CSV parser that properly handles embedded newlines.
+            // Otherwise, return 'null' when standard line parser (StreamToLineProcessor) is acceptable
+            return null;  
         }
     }
         
     // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleLine rowConverter
     public static async Task rowConverter()
     {
-        const String input = "set x := (set == 0 ? 0 : 100 / set)";
+        const string input = "set x := (set == 0 ? 0 : 100 / set)";
         await using (Pnyx p = new Pnyx())
         {
             p.readString(input);
@@ -148,11 +154,11 @@ Oliver Twist
     // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleLine embeddedNewlineParseCsv
     public static async Task embeddedNewlineParseCsv()
     {
-        const String input = "a,\"Long\nText\n\"";
+        const string input = "a,\"Long\nText\n\"";
         await using (Pnyx p = new Pnyx())
         {
             p.readString(input);          // StreamToLineProcessor
-            p.print("$0");                // forces line state
+            p.print("$0");                // forces line-state to prevent auto-wire to row-state (see below)
             p.parseCsv(strict: false);
             p.selectColumns(2,1);
             p.writeStdout();     
@@ -166,7 +172,7 @@ Oliver Twist
     // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleLine embeddedNewlineAsCsv
     public static async Task embeddedNewlineAsCsv()
     {
-        const String input = "a,\"Long\nText\n\"";
+        const string input = "a,\"Long\nText\n\"";
         await using Pnyx p = new Pnyx();
         p.asCsv(p2 => p2.readString(input)); // CsvStreamToRowProcessor 
         p.selectColumns(2,1);
@@ -179,7 +185,7 @@ Oliver Twist
     // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleLine embeddedNewlineParseCsv
     public static async Task embeddedNewlineAutoAsCsv()
     {
-        const String input = "a,\"Long\nText\n\"";
+        const string input = "a,\"Long\nText\n\"";
         await using (Pnyx p = new Pnyx())
         {
             p.readString(input); // CsvStreamToRowProcessor (auto-wired)
