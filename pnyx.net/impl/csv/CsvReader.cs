@@ -33,6 +33,12 @@ public class CsvReader : CsvStreamToRowProcessor
         reader = new StreamReader(stream, streamInformation.defaultEncoding, streamInformation.detectEncodingFromByteOrderMarks);            
     }
 
+    public bool strict
+    {
+        get => settings.strict;
+        set => settings.strict = value;
+    }
+
     public override Task process()
     {
         throw new IllegalStateException("Use readRow method instead");

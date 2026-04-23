@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\pnyx.automapper\pnyx.automapper.csproj" />
       <ProjectReference Include="..\pnyx.cmd.shared\pnyx.cmd.shared.csproj" />
       <ProjectReference Include="..\pnyx.net\pnyx.net.csproj" />
     </ItemGroup>
