@@ -20,6 +20,7 @@ public class ExampleFluent
     // dotnet pncs.cmd.dll -e=documentation ExampleFluent minimalExplicit
     public static async Task minimalExplicit()
     {
+        // echos STDIN to STDOUT
         await using Pnyx p = new Pnyx();
         p.readStdin();
         p.writeStdout();
@@ -28,6 +29,7 @@ public class ExampleFluent
     // dotnet pncs.cmd.dll -e=documentation ExampleFluent minimalImplicit
     public static async Task minimalImplicit()
     {
+        // echos STDIN to STDOUT
         await using Pnyx p = new Pnyx();
         p.setSettings(stdIoDefault: true);
     }
@@ -35,6 +37,7 @@ public class ExampleFluent
     // dotnet pncs.cmd.dll -e=documentation ExampleFluent argsExplicit
     public static async Task argsExplicit(string[] args)
     {
+        // echoes input file (arg #1) to output file (arg #2)
         await using Pnyx p = new Pnyx();
         p.setCommandLineArgs(args);
         p.readArg(1);
@@ -44,6 +47,7 @@ public class ExampleFluent
     // dotnet pncs.cmd.dll -e=documentation ExampleFluent argsImplicit
     public static async Task argsImplicit(string[] args)
     {
+        // echoes input file (arg #1) to output file (arg #2)
         await using Pnyx p = new Pnyx();
         p.setCommandLineArgs(args);
     }
