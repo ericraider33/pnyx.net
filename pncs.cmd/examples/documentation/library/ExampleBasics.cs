@@ -12,9 +12,9 @@ using pnyx.net.util;
 
 namespace pncs.cmd.examples.documentation.library;
 
-public class ExampleProcessorChain
+public class ExampleBasics
 {
-    // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleProcessorChain processorChain
+    // pnyx -e=documentation ExampleBasics processorChain
     public static async Task processorChain()
     {
         StreamInformation streamInformation = new StreamInformation(new Settings());
@@ -47,7 +47,7 @@ public class ExampleProcessorChain
         // outputs: Hello World, with love from Pnyx...            
     }
 
-    // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleProcessorChain sedShim
+    // pnyx -e=documentation ExampleBasics sedShim
     public static async Task sedShim()
     {
         await using (Pnyx p = new Pnyx())

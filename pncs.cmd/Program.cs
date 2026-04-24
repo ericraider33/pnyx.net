@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using pncs.cmd.examples;
+using pncs.cmd.examples.documentation.library;
 using pnyx.cmd.shared;
 using pnyx.net.errors;
 using pnyx.net.fluent;
@@ -14,9 +15,9 @@ namespace pncs.cmd;
 
 public class Program
 {
-    public static async Task<int> Main(String[] args)
+    public static async Task<int> Main(string[] args)
     {
-        Dictionary<String, String?> switches = ArgsUtil.parseDictionary(ref args);
+        Dictionary<string, string?> switches = ArgsUtil.parseDictionary(ref args);
         try
         {
             if (switches.hasAny("-h", "--help"))
@@ -30,7 +31,7 @@ public class Program
             SettingsYaml.parseSetting();
 
             // Undocumented flag / used for testing
-            String? example = switches.value("-e", "--example");
+            string? example = switches.value("-e", "--example");
             if (example != null)
                 return await runExample(example, args);
                 
@@ -47,9 +48,9 @@ public class Program
         }
     }
 
-    private static async Task<int> runCSharp(Dictionary<String, String?> switches, String[] args)
+    private static async Task<int> runCSharp(Dictionary<string, string?> switches, string[] args)
     {
-        String source;
+        string source;
         if (switches.hasAny("-i", "--inline"))
         {
             if (args.Length == 0)
@@ -109,7 +110,7 @@ public class Program
         Console.WriteLine("pncs.cmd {0}", assemblyName?.Version);            
     }
         
-    private static int printUsage(String? message = null, int errorCode = 0)
+    private static int printUsage(string? message = null, int errorCode = 0)
     {
         if (message == null && errorCode == 0)
             printVersion();        // shows version when user asks for Help
@@ -128,7 +129,7 @@ public class Program
         Console.WriteLine("-h, --help              show this help message and exit");
         Console.WriteLine("-d, --debug             prints stack trace upon exception");
         Console.WriteLine("-v, --version           shows version of application");            
-        Console.WriteLine("-i, --inline            flag to specify that first parameter is an inline CSharp String instead of a file path");
+        Console.WriteLine("-i, --inline            flag to specify that first parameter is an inline CSharp string instead of a file path");
         Console.WriteLine("-vs, --verboseSettings  flag to display settings. program after displaying settings");
         Console.WriteLine();
         Console.WriteLine("required arguments:");
@@ -137,7 +138,7 @@ public class Program
         return errorCode;
     }
 
-    private static async Task<int> runExample(String example, String[] args)
+    private static async Task<int> runExample(string example, string[] args)
     {                        
         switch (example.ToLower())
         {
@@ -148,13 +149,23 @@ public class Program
         }
     }
 
-    private static async Task<int> runDocumentationExample(String[] args)
+    private static async Task<int> runDocumentationExample(string[] args)
     {
-        if (args.Length != 2)
+        if (args.Length < 2)
             return printUsage("Invalid Parameters: Documentation examples require a class name and a method name as parameters");
             
-        String typeName = args[0];
-        String methodName = args[1];
+        string typeName = args[0];
+        
+        // Fully qualified type name, if using just the class name
+        if (!typeName.Contains("."))
+        {
+            string? exampleType = typeof(ExampleBasics).FullName;
+            if (exampleType != null)
+                typeName = exampleType.Replace(nameof(ExampleBasics), typeName);
+        }
+        
+        string methodName = args[1];
+        string[] methodArgs = args.Skip(2).ToArray();                                  // remaining arguments are passed to the example method  
 
         // Finds type
         Assembly cmdAssembly = typeof(Program).Assembly;
@@ -170,11 +181,26 @@ public class Program
 #pragma warning restore IL2075
         if (method == null)
             throw new InvalidArgumentException("Static method '{0}' could not be found on type: {1}", methodName, typeName);
-            
-        // Runs example
-        Object? result = method.Invoke(null, []);
-        if (result is Task)
-            await (Task)result;
+
+        ParameterInfo[] parameters = method.GetParameters();
+        if (parameters.Length == 0)
+        {
+            // Runs example
+            Object? result = method.Invoke(null, []);
+            if (result is Task task)
+                await task;
+        }
+        else if (parameters.Length == 1)
+        {
+            // Runs example
+            Object? result = method.Invoke(null, [methodArgs]);
+            if (result is Task task)
+                await task;
+        }
+        else
+        {
+            throw new InvalidArgumentException("Method '{0}' on type: {1} has more than one parameter", methodName, typeName);
+        }
             
         return 0;
     }

@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Linq;
 using pnyx.net.errors;
-using pnyx.net.fluent;
 
-namespace pnyx.cmd.shared;
+namespace pnyx.net.fluent;
 
 public class ArgsInputOutput : INumberedInputOutput
 {

@@ -1,6 +1,3 @@
-using System;
-using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using pnyx.net.fluent;
 
@@ -8,27 +5,46 @@ namespace pncs.cmd.examples.documentation.library;
 
 public class ExampleFluent
 {
-    // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleFluent builder
+    // dotnet pncs.cmd.dll -e=documentation ExampleFluent builder
     public static async Task builder()
     {
-        await using (var p = new Pnyx())
-            p.readString("a,b,c,d")
-             .parseCsv()
-             .print("$4|$3|$2|$1")
-             .writeStdout();
+        await using Pnyx p = new Pnyx();
+        p.readString("a,b,c,d")
+         .parseCsv()
+         .print("$4|$3|$2|$1")
+         .writeStdout();
 
         // outputs: d|c|b|a           
     }
-
-    // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleFluent pnyxMethods
-    public static async Task pnyxMethods()
+    
+    // dotnet pncs.cmd.dll -e=documentation ExampleFluent minimalExplicit
+    public static async Task minimalExplicit()
     {
-        MethodInfo[] methods = typeof(Pnyx).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
-            
-        String names = String.Join("\n", methods.Select(mi => mi.Name));
-        await using (var p = new Pnyx())
-            p.readString(names).write(@"c:\dev\ee.txt");
+        await using Pnyx p = new Pnyx();
+        p.readStdin();
+        p.writeStdout();
     }
-
-    // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleFluent pnyxHtml
+    
+    // dotnet pncs.cmd.dll -e=documentation ExampleFluent minimalImplicit
+    public static async Task minimalImplicit()
+    {
+        await using Pnyx p = new Pnyx();
+        p.setSettings(stdIoDefault: true);
+    }
+    
+    // dotnet pncs.cmd.dll -e=documentation ExampleFluent argsExplicit
+    public static async Task argsExplicit(string[] args)
+    {
+        await using Pnyx p = new Pnyx();
+        p.setCommandLineArgs(args);
+        p.readArg(1);
+        p.writeArg(2);
+    }
+    
+    // dotnet pncs.cmd.dll -e=documentation ExampleFluent argsImplicit
+    public static async Task argsImplicit(string[] args)
+    {
+        await using Pnyx p = new Pnyx();
+        p.setCommandLineArgs(args);
+    }
 }

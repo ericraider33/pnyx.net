@@ -88,7 +88,13 @@ public class Pnyx : IAsyncDisposable
 
     public Pnyx setNumberedInputOutput(INumberedInputOutput? toSet)
     {
-        this.numberedInputOutput = toSet;
+        numberedInputOutput = toSet;
+        return this;
+    }
+
+    public Pnyx setCommandLineArgs(string[] args)
+    {
+        numberedInputOutput = new ArgsInputOutput(args);
         return this;
     }
 
