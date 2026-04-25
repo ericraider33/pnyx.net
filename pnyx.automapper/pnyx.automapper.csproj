@@ -1,10 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
+
+        <!-- Nuget Specs -->
+        <PackageId>pnyx.automapper</PackageId>
+        <Authors>BuckTheOdds LLC.</Authors>
+        <Company>BuckTheOdds LLC.</Company>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <Title>pnyx.net file transform library</Title>
+        <PackageDescription>Pnyx brings all of your favorite unix file transform tools like grep, sed and awk to your preferred programming language.</PackageDescription>
+        <Copyright>Copyright 2018-2026</Copyright>
+        <IsPackable>true</IsPackable>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <PackageProjectUrl>http://pnyx.me/</PackageProjectUrl>
+        <PackageTags>ETL Pnyx awk sed grep linux tool csv parse file</PackageTags>
+        <PackageReleaseNotes>Continual improvements</PackageReleaseNotes>
+        <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+        <PackageVersion>2.0.1</PackageVersion>
         <AssemblyVersion>2.0.1</AssemblyVersion>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
@@ -13,6 +29,11 @@
 
     <ItemGroup>
       <PackageReference Include="AutoMapper" Version="16.1.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="LICENSE.md" Pack="true" PackagePath="" />
+        <None Include="README.md" Pack="true" PackagePath="" />
     </ItemGroup>
 
 </Project>

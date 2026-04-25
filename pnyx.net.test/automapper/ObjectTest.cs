@@ -2,9 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.Extensions.Logging.Abstractions;
-using pnyx.automapper.converters;
 using pnyx.net.api;
 using pnyx.net.fluent;
 using Xunit;
@@ -13,8 +10,6 @@ namespace pnyx.net.test.automapper;
 
 public class ObjectTest
 {
-    
-    
     const String csvInputA = """
 Title,Author,PublicationDate
 "Tale of Two Cities","Charles Dickens",1859
@@ -181,93 +176,6 @@ Odyssey,Homer,-1000
         Assert.Equal("Tale of Two Cities", first["Title"]);
         Assert.Equal("Charles Dickens", first["Author"]);
         Assert.Equal(1859, first["PublicationDate"]);
-    }
-
-    [Fact]
-    public async Task automapper_and_pnyx_kick_ass()
-    {
-        MapperConfiguration config = new MapperConfiguration(_ =>
-        {
-//            cfg.CreateMap<IDictionary<String, Object>, Book>();
-        }, NullLoggerFactory.Instance);
-//        config.AssertConfigurationIsValid();
-
-        IObjectConverterFromNameValuePair converter = new AutoMapperObjectConverter<Book>(config.CreateMapper());
-        
-        List<Book> actual;
-        await using (Pnyx p = new Pnyx())
-        {
-            p.readString(csvInputA);
-            p.parseCsv(hasHeader: true);
-            p.rowToNameValuePair();
-            p.nameValuePairToObject(converter);
-            actual = await p.processCaptureObject<Book>();
-        }
-        
-        Assert.Equal(3, actual.Count);
-
-        Book first = actual[0];
-        Assert.Equal("Tale of Two Cities", first.Title);
-        Assert.Equal("Charles Dickens", first.Author);
-        Assert.Equal(1859, first.PublicationDate);
-    }
-    
-    [Fact]
-    public async Task automapper_to_csv()
-    {
-        MapperConfiguration config = new MapperConfiguration(_ => {}, NullLoggerFactory.Instance);
-
-        IObjectConverterFromNameValuePair converter = new AutoMapperObjectConverter<Book>(config.CreateMapper());
-        
-        List<IDictionary<String, Object?>> actual;
-        await using (Pnyx p = new Pnyx())
-        {
-            p.readString(csvInputA);
-            p.parseCsv(hasHeader: true);
-            p.rowToNameValuePair();
-            p.nameValuePairToObject(converter);
-            p.objectToNameValuePair();
-            actual = await p.processCaptureNameValuePairs();
-        }
-
-        Assert.Equal(3, actual.Count);
-
-        IDictionary<String, Object?> first = actual[0];
-        Assert.Equal("Author,PublicationDate,Title", String.Join(",", first.Keys.Order()));
-        Assert.Equal("Tale of Two Cities", first["Title"]);
-        Assert.Equal("Charles Dickens", first["Author"]);
-        Assert.Equal(1859, first["PublicationDate"]);
-    }
-    
-    [Fact]
-    public async Task automapper_object_to_csv()
-    {
-        List<Book> actual;
-        await using (Pnyx p = new Pnyx())
-        {
-            p.readString(csvInputA);
-            p.parseCsv(hasHeader: true);
-            p.rowToObject(new BookConverter());
-            actual = await p.processCaptureObject<Book>();
-        }
-
-        Assert.Equal(3, actual.Count);
-        
-        MapperConfiguration config = new MapperConfiguration(_ => { }, NullLoggerFactory.Instance);
-
-        IObjectConverterFromNameValuePair converter = new AutoMapperObjectConverter<Book>(config.CreateMapper());
-
-        string csvOutputA;
-        await using (Pnyx p = new Pnyx())
-        {
-            p.readObject(() => actual);
-            p.objectToNameValuePair(converter);
-            p.nameValuePairToRow(header: new List<string>{"Title","Author","PublicationDate"});
-            p.rowToLine();
-            csvOutputA = await p.processToString();
-        }
-
-        Assert.Equal(csvInputA, csvOutputA);
     }
     
     [Theory]

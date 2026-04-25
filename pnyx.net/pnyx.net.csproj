@@ -3,7 +3,6 @@
 	
 	<!-- Nuget Specs -->
     <PackageId>pnyx.net</PackageId>
-	<VersionPrefix>0.9.0</VersionPrefix>
     <Authors>BuckTheOdds LLC.</Authors>
     <Company>BuckTheOdds LLC.</Company>
     <PackageReadmeFile>README.md</PackageReadmeFile>

@@ -106,23 +106,29 @@ def buildCmd():
     # Print AWS url
     print("\nUpload cmd.zip file to URL: https://s3.console.aws.amazon.com/s3/buckets/bto-web-content/pnyx/cmd/?region=us-east-1&tab=overview")
     
-def buildNuget():
-    verifyDependencyDotNet()    
-    resetDirectory('pnyx.net/.out')
-       
+def buildNugetPnyxNet():
+    buildNuget('pnyx.net')
+    
+def buildNugetPnyxAutomapper():
+    buildNuget('pnyx.automapper')
+    
+def buildNuget(projectName):
+    verifyDependencyDotNet()
+    resetDirectory('{0}/.out'.format(projectName))
+
     # Cleans build
     print("\n\nRunning Step: Clean")
     subprocess.run(['dotnet','clean','--configuration','Release'], check=True)
 
     print("\n\nRunning Step: Restore")
-    subprocess.run(['dotnet','restore','pnyx.net/pnyx.net.csproj'], check=True)
-	
+    subprocess.run(['dotnet','restore','{0}/{0}.csproj'.format(projectName)], check=True)
+
     # Pack build
     print("\n\nRunning Step: Pack")
-    subprocess.run(['dotnet','pack','--output','.out/lib','pnyx.net/pnyx.net.csproj'], check=True)
-    
+    subprocess.run(['dotnet','pack','--output','.out/lib','{0}/{0}.csproj'.format(projectName)], check=True)
+
     # Prints nuget URL
-    print("\nUpload 'nupkg' file from '.out/lib/pnyx.net.x.x.x.nupkg' to URL: https://www.nuget.org/packages/manage/upload")
+    print("\nUpload 'nupkg' file from '.out/lib/{0}.x.x.x.nupkg' to URL: https://www.nuget.org/packages/manage/upload".format(projectName))
 
 
 def findCmdPackage():
@@ -190,7 +196,8 @@ def localInstall():
 if args.target == 'cmd':
     buildCmd()
 elif args.target == 'nuget':
-    buildNuget()
+    buildNugetPnyxNet()
+    buildNugetPnyxAutomapper()       
 elif args.target == 'localInstall':
     localInstall()
 else:
