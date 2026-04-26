@@ -6,7 +6,7 @@ using pnyx.net.api;
 using pnyx.net.fluent;
 using Xunit;
 
-namespace pnyx.net.test.automapper;
+namespace pnyx.net.test.processors;
 
 public class ObjectTest
 {

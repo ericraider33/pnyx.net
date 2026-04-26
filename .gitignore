@@ -4,4 +4,6 @@
 .out
 obj
 bin
+pnyx.automapper.test/out
+pnyx.cmd.test/out
 pnyx.net.test/out

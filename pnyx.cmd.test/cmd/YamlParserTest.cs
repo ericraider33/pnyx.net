@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using pnyx.net.errors;
 using Xunit;
 
-namespace pnyx.net.test.cmd;
+namespace pnyx.cmd.test.cmd;
 
 public class PnyxYamlTest
 {

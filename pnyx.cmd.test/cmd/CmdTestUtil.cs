@@ -6,7 +6,7 @@ using pnyx.cmd;
 using pnyx.net.fluent;
 using Xunit;
 
-namespace pnyx.net.test.cmd;
+namespace pnyx.cmd.test.cmd;
 
 public static class CmdTestUtil
 {

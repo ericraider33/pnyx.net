@@ -1,13 +1,12 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using pnyx.cmd.shared;
+using pnyx.cmd.test.util;
 using pnyx.net.fluent;
-using pnyx.net.test.util;
 using pnyx.net.util;
 using Xunit;
 
-namespace pnyx.net.test.cmd;
+namespace pnyx.cmd.test.cmd;
 
 public class ArgsInputOutputTest
 {
@@ -24,7 +23,7 @@ public class ArgsInputOutputTest
     [InlineData(3, false, true, "Implied input can only be used with 1 or 2 arguments")]
     public async Task impliedArgs(int argCount, bool read, bool write, String error)
     {
-        String inPath = Path.Combine(TestUtil.findTestFileLocation(), "encoding", "psalm23.unix.ansi.txt");
+        String inPath = Path.Combine(TestUtil.findTestFileLocation(), "cmd", "psalm23.unix.ansi.txt");
         String outPath = Path.Combine(TestUtil.findTestOutputLocation(), "argsOutput", Guid.NewGuid() + ".txt");
         FileUtil.assureDirectoryStructExists(outPath);
 
@@ -79,7 +78,7 @@ public class ArgsInputOutputTest
     [InlineData(2, 3, null, "ArgNumber 3 is missing from parameters")]
     public async Task explicitArgs(int argCount, int? readArg, int? writeArg, String error)
     {
-        String inPath = Path.Combine(TestUtil.findTestFileLocation(), "encoding", "psalm23.unix.ansi.txt");
+        String inPath = Path.Combine(TestUtil.findTestFileLocation(), "cmd", "psalm23.unix.ansi.txt");
         String outPath = Path.Combine(TestUtil.findTestOutputLocation(), "argsOutput", Guid.NewGuid() + ".txt");
         FileUtil.assureDirectoryStructExists(outPath);
 
