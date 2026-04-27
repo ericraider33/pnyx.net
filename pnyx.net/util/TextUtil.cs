@@ -32,7 +32,12 @@ public static class TextUtil
     {
         return String.IsNullOrEmpty(value) ? null : value;
     }
-
+    
+    public static string trimNullable(this string? value)
+    {
+        return String.IsNullOrWhiteSpace(value) ? String.Empty : value.Trim();
+    }
+    
     public static String? trimEmptyAsNull(this String? value)
     {
         return String.IsNullOrWhiteSpace(value) ? null : value.Trim();
