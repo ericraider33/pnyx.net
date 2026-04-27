@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using pnyx.net.errors;
 
 namespace pnyx.net.util.filters;
 
@@ -27,8 +28,11 @@ public class PagedResponse<TType> where TType : class
         this.recordsPerPage = recordsPerPage;
     }
 
-    public static PagedResponse<TType> fromRequest(PagedRequest request, List<TType> records)
+    public static PagedResponse<TType> fromRequest(PagedRequest? request, List<TType> records)
     {
+        if (request == null)
+            throw new IllegalStateException("Request cannot be null for PagedResponse creation");
+        
         return new PagedResponse<TType>(
             records, 
             request.pageNumber, 
@@ -38,8 +42,11 @@ public class PagedResponse<TType> where TType : class
             );
     }
 
-    public static PagedResponse<TType> firstPage(PagedRequest request, List<TType> records, int totalRecords)
+    public static PagedResponse<TType> firstPage(PagedRequest? request, List<TType> records, int totalRecords)
     {
+        if (request == null)
+            throw new IllegalStateException("Request cannot be null for PagedResponse creation");
+        
         PagedResponse<TType> pageInfo = new (records);
         pageInfo.currentPage = 1;
         pageInfo.totalRecords = totalRecords;

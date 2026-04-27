@@ -325,9 +325,17 @@ public static class TextUtil
         return lower == 0 && upper > 0;
     }
 
-    public static String? trunc(this String? text, int maxLength)
+    public static String? truncNullable(this String? text, int maxLength)
     {
-        if (text == null || text.Length <= maxLength)
+        if (text == null)
+            return null;
+
+        return text.trunc(maxLength);
+    }
+    
+    public static String trunc(this string text, int maxLength)
+    {
+        if (text.Length <= maxLength)
             return text;
 
         return text.Substring(0, maxLength);

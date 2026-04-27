@@ -18,14 +18,22 @@ public static class PhoneUtil
             phone = defualtAreaCode + phone;
 
         return phone.Length == 10 ? phone : null;
-    }        
-    
-    public static String? formatPhone(String? x)
+    }
+
+    public static String? formatPhoneNullable(String? x)
     {
         x = x.trimEmptyAsNull();
         if (x == null)
             return null;
+        
+        return formatPhone(x);
+    }
 
+    public static String formatPhone(String x)
+    {
+        if (String.IsNullOrEmpty(x))
+            return "";
+        
         if (x.Length < 7)
             return String.Concat("x", x);
 

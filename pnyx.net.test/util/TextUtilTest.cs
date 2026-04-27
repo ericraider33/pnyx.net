@@ -238,7 +238,7 @@ public class TextUtilTest
     [Fact]
     public void Trunc()
     {
-        Assert.Null(TextUtil.trunc(null, 3));
+        Assert.Null(TextUtil.truncNullable(null, 3));
         Assert.Equal("", TextUtil.trunc("", 3));
         Assert.Equal("a", TextUtil.trunc("a", 3));
         Assert.Equal("abc", TextUtil.trunc("abc", 3));

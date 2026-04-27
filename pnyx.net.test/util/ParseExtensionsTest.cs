@@ -93,8 +93,8 @@ public class ParseExtensionsTest
     [Fact]
     public void SplitAt()
     {
-        Assert.Null(ParseExtensions.splitAt("", ","));
-        Assert.Null(ParseExtensions.splitAt(null, ","));
+        Assert.Equal(new Tuple<String, String>("", ""), ParseExtensions.splitAt("", ","));
+        Assert.Null(ParseExtensions.splitAtNullable(null, ","));
         Assert.Equal(new Tuple<String, String>("a", ""), ParseExtensions.splitAt("a", ","));
         Assert.Equal(new Tuple<String, String>("a", ""), ParseExtensions.splitAt("a,", ","));
         Assert.Equal(new Tuple<String, String>("", "a"), ParseExtensions.splitAt(",a", ","));
@@ -105,8 +105,8 @@ public class ParseExtensionsTest
     [Fact]
     public void SplitAtIndex()
     {
-        Assert.Null(ParseExtensions.splitAtIndex("", 0));
-        Assert.Null(ParseExtensions.splitAtIndex(null, 0));
+        Assert.Equal(new Tuple<String, String>("", ""), ParseExtensions.splitAtIndex("", 0));
+        Assert.Null(ParseExtensions.splitAtIndexNullable(null, 0));
         Assert.Equal(new Tuple<String, String>("a", ""), ParseExtensions.splitAtIndex("a", 1));
         Assert.Equal(new Tuple<String, String>("a", ""), ParseExtensions.splitAtIndex("a", 2));
         Assert.Equal(new Tuple<String, String>("", "a"), ParseExtensions.splitAtIndex("a", 0));

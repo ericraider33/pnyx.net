@@ -66,25 +66,30 @@ public static class EnumUtil
         return enumValues;
     }
 
-    public static String? getLabel(this Enum? val)
+    public static string? getLabelNullable(this Enum? val)
     {
         if (val == null)
             return null;
-        
+
+        return getLabel(val);
+    }
+
+    public static string getLabel(this Enum val)
+    {
         Type type = val.GetType();
         string? valAsName = type.GetEnumName(val);
         if (valAsName == null)
-            return null;
+            return val.ToString();
             
         MemberInfo? mi = type.GetMember(valAsName).FirstOrDefault();
         if (mi == null)
-            return null;
+            return val.ToString();
 
         DescriptionAttribute? da = mi.GetCustomAttributes<DescriptionAttribute>().FirstOrDefault();
         if (da != null)
             return da.Description;
 
-        return valAsName.camelToSpace();
+        return valAsName.camelToSpace() ?? val.ToString();
     }
 
     public static T max<T>(params T[] source) where T : Enum

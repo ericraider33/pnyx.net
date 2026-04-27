@@ -8,11 +8,16 @@ namespace pnyx.net.util;
 
 public static class ParseExtensions
 {
-    public static Tuple<string, string>? splitAt(this String? input, String token, StringComparison comparisonType = StringComparison.Ordinal)
+    public static Tuple<string, string>? splitAtNullable(this String? input, String token, StringComparison comparisonType = StringComparison.Ordinal)
     {
         if (string.IsNullOrEmpty(input))
             return null;
 
+        return splitAt(input, token, comparisonType);
+    }
+
+    public static Tuple<string, string> splitAt(this String input, String token, StringComparison comparisonType = StringComparison.Ordinal)
+    {
         int index = input.IndexOf(token, comparisonType);
         if (index < 0)
             return new Tuple<string, string>(input, "");
@@ -20,22 +25,35 @@ public static class ParseExtensions
         return new Tuple<string, string>(input.Substring(0, index), input.Substring(index+token.Length));
     }
 
-    public static Tuple<string, string>? splitAtIndex(this String? input, int index)
+    public static Tuple<string, string>? splitAtIndexNullable(this String? input, int index)
     {
-        if (string.IsNullOrEmpty(input) || index < 0)
+        if (string.IsNullOrEmpty(input))
             return null;
+
+        return splitAtIndex(input, index);
+    }
+    
+    public static Tuple<string, string> splitAtIndex(this String input, int index)
+    {
+        if (index < 0)
+            return new Tuple<string, string>("", input);
 
         if (input.Length < index)
             return new Tuple<string, string>(input, "");
 
         return new Tuple<string, string>(input.Substring(0, index), input.Substring(index));
     }
-        
-    public static Tuple<string, string>? splitAtLast(this String? input, String token)
+
+    public static Tuple<string, string>? splitAtLastNullable(this String? input, String token)
     {
-        if (string.IsNullOrEmpty(input))
+        if (input == null)
             return null;
 
+        return splitAtLast(input, token);
+    }    
+    
+    public static Tuple<string, string> splitAtLast(this String input, String token)
+    {
         int index = input.LastIndexOf(token, StringComparison.Ordinal);
         if (index < 0)
             return new Tuple<string, string>(input, "");
