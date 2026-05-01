@@ -1,10 +1,41 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace pnyx.net.util.dates;
 
 public static class DateOnlyUtil
 {
+    public static DateOnly? parseNullable(String format, String? text)
+    {
+        if (String.IsNullOrEmpty(text))
+            return null;
+
+        try
+        {
+            return DateOnly.ParseExact(text, format, CultureInfo.CurrentCulture);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+    public static DateOnly parseExact(String format, String? text, DateTimeStyles style = DateTimeStyles.None, int? lineNumber = null)
+    {
+        if (text == null)
+            throw new ArgumentException("Value cannot be null", nameof(text));
+        
+        try
+        {
+            return DateOnly.ParseExact(text, format, CultureInfo.CurrentCulture, style);
+        }
+        catch (Exception)
+        {
+            throw new FormatException($"String '{text}' was not recognized as a valid Date format: {format}{(lineNumber == null ? "" : ", lineNumber=" + lineNumber)}");
+        }
+    }
+    
     public static String? toMDYYYY(this DateOnly? x)
     {
         if (x == null)
@@ -29,6 +60,16 @@ public static class DateOnlyUtil
     public static String toIso8601Date(this DateOnly source)
     {
         return source.ToString(DateUtil.FORMAT_ISO_8601_DATE);
+    }
+    
+    public static DateOnly parseIso8601Date(String source)
+    {
+        return parseExact(DateUtil.FORMAT_ISO_8601_DATE, source);
+    }
+
+    public static DateOnly? parseIso8601DateNullable(String? source)
+    {
+        return parseNullable(DateUtil.FORMAT_ISO_8601_DATE, source);
     }
     
     public static int calculateAge(DateOnly dateOfBirth, DateOnly today)
