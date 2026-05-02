@@ -17,7 +17,7 @@ public static class ListUtil
     /// <summary>
     /// Adds an item to the list if it is not null. Passed list is modified when item is not null. Passed list is returned for chaining.
     /// </summary>      
-    public static List<T?> addNotNull<T>(this List<T?> list, T? item) where T : class
+    public static List<T> addNotNull<T>(this List<T> list, T? item) where T : class
     {
         if (item == null)
             return list;

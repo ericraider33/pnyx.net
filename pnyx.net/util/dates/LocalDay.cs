@@ -61,7 +61,17 @@ public readonly struct LocalDay : IComparable<LocalDay>, IFormattable, IUtcCapab
         return LocalTimestamp.fromUtc(timeZone, utcTime.Value).day;
     }
 
-    public LocalDay? withTimeZone(DateTime? localDate)
+    public LocalDay withTimeZone(DateTime localDate)
+    {
+        return new LocalDay(timeZone, localDate.Date);
+    }
+
+    public LocalDay withTimeZone(DateOnly dateOnly)
+    {
+        return new LocalDay(timeZone, dateOnly);
+    }
+
+    public LocalDay? withTimeZoneNullable(DateTime? localDate)
     {
         if (localDate == null)
             return null;
@@ -69,7 +79,7 @@ public readonly struct LocalDay : IComparable<LocalDay>, IFormattable, IUtcCapab
         return new LocalDay(timeZone, localDate.Value.Date);
     }
 
-    public LocalDay? withTimeZone(DateOnly? dateOnly)
+    public LocalDay? withTimeZoneNullable(DateOnly? dateOnly)
     {
         if (dateOnly == null)
             return null;

@@ -10,8 +10,8 @@ public class DateRange
     
     public LocalRange toLocalRange(LocalDay today)
     {
-        LocalDay? startLocal = today.withTimeZone(startDate);
-        LocalDay? endLocal = today.withTimeZone(endDate);
+        LocalDay? startLocal = today.withTimeZoneNullable(startDate);
+        LocalDay? endLocal = today.withTimeZoneNullable(endDate);
         return LocalRange.build(type, today, startLocal, endLocal);
     }
     
