@@ -6,6 +6,12 @@ namespace pnyx.net.util.dates;
 
 public static class DateOnlyUtil
 {
+    public static DateTime toDateTime(this DateOnly date, TimeSpan? timeOfDay = null)
+    {
+        TimeOnly to = TimeOnly.FromTimeSpan(timeOfDay ?? TimeSpan.Zero);
+        return date.ToDateTime(to);
+    }
+    
     public static DateOnly? parseNullable(String format, String? text)
     {
         if (String.IsNullOrEmpty(text))
