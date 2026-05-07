@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using pnyx.net.fluent;
+using pnyx.net.impl;
+using pnyx.net.impl.columns;
+using pnyx.net.impl.sed;
 using pnyx.net.util;
 
 namespace pncs.cmd.examples.documentation.library;
@@ -108,4 +111,80 @@ Line two,LOSER
         }                        
         // outputs: col1|Column, zwei
     }
+    
+    // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleRow rowFilterColumn
+    public static async Task rowFilterColumn()
+    {
+        const String input = @"
+Line one,Atlanta,City located in the southwestern United States.
+Line two,New York,The most populous city in the United States.
+Line three,Tampa,Sunny and warm city on the west coast of Florida.
+";
+        await using Pnyx p = new Pnyx();
+        p.readString(input);
+        p.parseCsv();
+        p.rowFilterColumn(RowConstants.B, new Grep("a"));
+        p.writeStdout();
+        // outputs:
+        // Line one,Atlanta,City located in the southwestern United States.
+        // Line three,Tampa,Sunny and warm city on the west coast of Florida.
+    }
+    
+    // pnyx -e=documentation pncs.cmd.examples.documentation.library.ExampleRow rowTransformerColumn
+    public static async Task rowTransformerColumn()
+    {
+        const String input = @"
+Line one,Atlanta
+Line two,New York
+Line three,Tampa
+";
+        await using Pnyx p = new Pnyx();
+        p.readString(input);
+        p.parseCsv();
+        p.rowTransformerColumn(RowConstants.B, new SedReplace(".*", @"City of \0"));
+        p.writeStdout();
+        // outputs:
+        // Line one,City of Atlanta
+        // Line two,City of New York
+        // Line three,City of Tampa
+    }
+
+    
+    // pnyx -e=documentation ExampleRow withColumnsFilter
+    public static async Task withColumnsFilter()
+    {
+        const String input = @"
+Line one,Atlanta,City located in the southwestern United States.
+Line two,New York,The most populous city in the United States.
+Line three,Tampa,Sunny and warm city on the west coast of Florida.
+";
+        await using Pnyx p = new Pnyx();
+        p.readString(input);
+        p.parseCsv();
+        p.withColumns(p2 => p2.grep("a"), RowConstants.B);
+        p.writeStdout();
+        // outputs:
+        // Line one,Atlanta,City located in the southwestern United States.
+        // Line three,Tampa,Sunny and warm city on the west coast of Florida.
+    }
+    
+    // pnyx -e=documentation ExampleRow withColumnsTransformer
+    public static async Task withColumnsTransformer()
+    {
+        const String input = @"
+Line one,Atlanta
+Line two,New York
+Line three,Tampa
+";
+        await using Pnyx p = new Pnyx();
+        p.readString(input);
+        p.parseCsv();
+        p.withColumns(p2 => p2.sed(".*", @"City of \0"), RowConstants.B);
+        p.writeStdout();
+        // outputs:
+        // Line one,City of Atlanta
+        // Line two,City of New York
+        // Line three,City of Tampa
+    }
+    
 }
