@@ -892,6 +892,22 @@ public class Pnyx : IAsyncDisposable
             
         return rowPart(new RowTransformerProcessor(transform));
     }
+
+    public Pnyx rowFilterColumn(ColumnIndex columnIndex, ILineFilter lineFilter)
+    {
+        IRowFilter rowFilter = new RowFilterByColumn(columnIndex, lineFilter);
+
+        // Directly calls rowPart to skip any current row wrapping 
+        return rowPart(new RowFilterProcessor(rowFilter));
+    }
+
+    public Pnyx rowTransformerColumn(ColumnIndex columnIndex, ILineTransformer lineTransformer)
+    {
+        IRowTransformer transformer = new RowTransformerByColumn(columnIndex, lineTransformer);
+        
+        // Directly calls rowPart to skip any current row wrapping 
+        return rowPart(new RowTransformerProcessor(transformer));
+    }
         
     public Pnyx rowFilter(Func<List<String?>, bool> filter)
     {
@@ -1049,9 +1065,19 @@ public class Pnyx : IAsyncDisposable
         return lineFilter(new Grep(textToFind, caseSensitive));
     }
 
+    public Pnyx grepColumn(ColumnIndex columnIndex, String textToFind, bool caseSensitive = true)
+    {
+        return rowFilterColumn(columnIndex, new Grep(textToFind, caseSensitive));
+    }
+
     public Pnyx egrep(String expression, bool caseSensitive = true)
     {
         return lineFilter(new EGrep(expression, caseSensitive));
+    }
+
+    public Pnyx egrepColumn(ColumnIndex columnIndex, String expression, bool caseSensitive = true)
+    {
+        return rowFilterColumn(columnIndex, new EGrep(expression, caseSensitive));
     }
 
     public Pnyx hasLine()
@@ -1062,6 +1088,11 @@ public class Pnyx : IAsyncDisposable
     public Pnyx sed(String pattern, String replacement, String? flags = null)
     {
         return lineTransformer(new SedReplace(pattern, replacement, flags));
+    }
+    
+    public Pnyx sedColumn(ColumnIndex columnIndex, String pattern, String replacement, String? flags = null)
+    {
+        return rowTransformerColumn(columnIndex, new SedReplace(pattern, replacement, flags));
     }
 
     public Pnyx sedLineNumber()

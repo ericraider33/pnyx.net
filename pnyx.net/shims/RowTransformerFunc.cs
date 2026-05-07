@@ -8,8 +8,8 @@ namespace pnyx.net.shims;
 
 public class RowTransformerFunc : IRowTransformer
 {        
-    public Func<List<String?>, List<String?>?> rowTransformerFunc;
-    public bool treatHeaderAsRow;
+    public Func<List<String?>, List<String?>?> rowTransformerFunc { get; }
+    public bool treatHeaderAsRow { get; }
 
     public RowTransformerFunc(Func<List<string?>, List<string?>?> rowTransformerFunc, bool treatHeaderAsRow = false)
     {

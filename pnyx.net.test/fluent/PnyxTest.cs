@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using pnyx.net.errors;
 using pnyx.net.fluent;
 using pnyx.net.impl;
+using pnyx.net.impl.columns;
 using pnyx.net.impl.sed;
 using pnyx.net.util;
 using Xunit;
@@ -458,6 +459,31 @@ valueX1,valueX1
 
         Assert.Equal("", actual);
     }
+    
+    [Fact]
+    public async Task grepColumn()
+    {
+        String actual;
+        await using (Pnyx p = new Pnyx())
+        {
+            p.readString(PLANETS_GODS);
+            p.parseCsv();
+            p.grepColumn(RowConstants.C, "titan", caseSensitive: false);
+            actual = await p.processToString();
+        }
+
+        Assert.Equal(PLANETS_GODS_TITANS, actual);
+
+        await using (Pnyx p = new Pnyx())
+        {
+            p.readString(PLANETS_GODS);
+            p.parseCsv();
+            p.grepColumn(RowConstants.B, "titan", caseSensitive: false);
+            actual = await p.processToString();
+        }
+
+        Assert.Equal("", actual);
+    }
 
     [Fact]
     public async Task withColumnsTransformer()
@@ -478,6 +504,31 @@ valueX1,valueX1
             p.readString(EARTH);
             p.parseCsv();
             p.withColumns(pn => pn.sed("t", "X", "gi"), 1, 2);
+            actual = await p.processToString();
+        }
+
+        Assert.Equal(@"Gaia,Xerra,""Mother goddess of the earth""", actual);
+    }
+
+    [Fact]
+    public async Task sedColumn()
+    {
+        String actual;
+        await using (Pnyx p = new Pnyx())
+        {
+            p.readString(EARTH);
+            p.parseCsv();
+            p.sedColumn(RowConstants.C, "t", "X", "gi");
+            actual = await p.processToString();
+        }
+
+        Assert.Equal(@"Gaia,Terra,""MoXher goddess of Xhe earXh""", actual);
+
+        await using (Pnyx p = new Pnyx())
+        {
+            p.readString(EARTH);
+            p.parseCsv();
+            p.sedColumn(RowConstants.B, "t", "X", "gi");
             actual = await p.processToString();
         }
 

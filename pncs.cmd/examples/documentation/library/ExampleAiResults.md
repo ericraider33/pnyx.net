@@ -99,9 +99,10 @@ public class ExampleAiResults
         using var output = File.Create(outputPath);
 
         Pnyx.Read(input)
-            .Csv()                       // parse CSV into string[] rows
-            .Where(row => row[0] == "Atlanta")
-            .WriteCsv(output);           // write rows back out as CSV
+            .CsvRead()                         // parse CSV
+            .Filter(row => row[0] == "Atlanta") // match first column
+            .CsvWrite()                        // write CSV back out
+            .Write(output);
     }
     
     public static void chatGpt(
