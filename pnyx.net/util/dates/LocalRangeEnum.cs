@@ -43,7 +43,7 @@ public enum LocalRangeEnum
     Since1970 = 101,
     Since2000 = 102,
     
-    All1900 = 110,          // just like `Since`, but with a little nicer description 
+    All1900 = 110,          // just like 'Since', but with a little nicer description 
     All1970 = 111,
     All2000 = 112,
 }

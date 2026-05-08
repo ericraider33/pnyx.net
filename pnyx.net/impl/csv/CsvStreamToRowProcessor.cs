@@ -23,8 +23,8 @@ public class CsvStreamToRowProcessor : IRowSource, IAsyncDisposable
     private readonly StringBuilder stringBuilder = new StringBuilder();
     
     /// <summary>
-    /// Returns true when the end of the file has been reached, either via `CsvReader` or via `CsvStreamToRowProcessor.process` method.
-    /// Manually calling `readRow` will result a null being returned when `endOfFile` is true.
+    /// Returns true when the end of the file has been reached, either via 'CsvReader' or via 'CsvStreamToRowProcessor.process' method.
+    /// Manually calling 'readRow' will result a null being returned when 'endOfFile' is true.
     /// </summary>
     public bool endOfFile { get; private set; }
         

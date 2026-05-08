@@ -17,7 +17,7 @@ public static class TestUtil
         {
             string? assemblyName = typeof(TestUtil).Assembly.GetName().Name;
             if (assemblyName == null)
-                throw new NullReferenceException("Could not obtain a `Name` for TestUtil assembly");
+                throw new NullReferenceException("Could not obtain a 'Name' for TestUtil assembly");
                 
             path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             while (path != null && !path.EndsWith(assemblyName))
@@ -45,7 +45,7 @@ public static class TestUtil
         {
             string? assemblyName = typeof(TestUtil).Assembly.GetName().Name;
             if (assemblyName == null)
-                throw new NullReferenceException("Could not obtain a `Name` for TestUtil assembly");
+                throw new NullReferenceException("Could not obtain a 'Name' for TestUtil assembly");
                 
             path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             while (path != null && !path.EndsWith(assemblyName))

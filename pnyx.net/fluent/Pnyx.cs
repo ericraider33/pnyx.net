@@ -1296,9 +1296,9 @@ public class Pnyx : IAsyncDisposable
 
     /// <summary>
     /// Writes output to a temporary file. Once all processing is done, the temporary file is renamed
-    /// to the original source-input file. Since renaming may fail, the original file is backed up when `backupOriginal`
+    /// to the original source-input file. Since renaming may fail, the original file is backed up when 'backupOriginal'
     /// flag is true, via parameter or value from settings. Once the entire operation is complete and successful, the
-    /// `deleteBackup` is used to clean up the backup file. Note, this final clean up only rule if all other preceeding
+    /// 'deleteBackup' is used to clean up the backup file. Note, this final clean up only rule if all other preceeding
     /// steps success, which is the suggested default behavior.  
     /// </summary>
     public Pnyx rewrite(bool? backupOriginal = null, bool? deleteBackup = null)
