@@ -8,7 +8,7 @@ namespace pnyx.net.util;
 
 public static class TextUtil
 {
-    public static String concate(String delimiter, params String?[]? x)
+    public static String concate(String delimiter, params string?[]? x)
     {
         if (x == null)
             return "";
@@ -28,7 +28,7 @@ public static class TextUtil
         return results.ToString();
     }
 
-    public static String? emptyAsNull(this String? value)
+    public static string? emptyAsNull(this string? value)
     {
         return String.IsNullOrEmpty(value) ? null : value;
     }
@@ -38,12 +38,12 @@ public static class TextUtil
         return String.IsNullOrWhiteSpace(value) ? String.Empty : value.Trim();
     }
     
-    public static String? trimEmptyAsNull(this String? value)
+    public static string? trimEmptyAsNull(this string? value)
     {
         return String.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 
-    public static String padRight(String? text, int length, char pad = ' ')
+    public static String padRight(string? text, int length, char pad = ' ')
     {
         text = text ?? "";
         if (text.Length >= length)
@@ -58,7 +58,7 @@ public static class TextUtil
         return result.ToString();
     }
 
-    public static String padLeft(String? text, int length, char pad = ' ')
+    public static String padLeft(string? text, int length, char pad = ' ')
     {
         text = text ?? "";
         if (text.Length >= length)
@@ -73,7 +73,7 @@ public static class TextUtil
         return result.ToString();
     }
 
-    public static String multiply(String? text, int count, String? delimiter = " ")
+    public static String multiply(string? text, int count, string? delimiter = " ")
     {
         text = text ?? "";
         delimiter = delimiter ?? " ";
@@ -88,7 +88,7 @@ public static class TextUtil
         return result.ToString();
     }
 
-    public static bool isEqualsIgnoreCase(String? a, String? b)
+    public static bool isEqualsIgnoreCase(string? a, string? b)
     {
         if (a == null)
             return b == null;
@@ -99,7 +99,7 @@ public static class TextUtil
         return a.Equals(b, StringComparison.CurrentCultureIgnoreCase);
     }
 
-    public static bool startsWithAny(String? text, IEnumerable<String> toFind, bool ignoreCase = true)
+    public static bool startsWithAny(string? text, IEnumerable<String> toFind, bool ignoreCase = true)
     {
         if (text == null)
             return false;
@@ -111,7 +111,7 @@ public static class TextUtil
     }
 
     private static readonly Regex NUMBER_ONLY_EXPRESSION = new Regex("^[\\d]+$");
-    public static bool isAllNumbers(String? text)
+    public static bool isAllNumbers(string? text)
     {
         if (String.IsNullOrEmpty(text))
             return false;
@@ -120,7 +120,7 @@ public static class TextUtil
     }
 
     private static readonly Regex INTEGER_ONLY_EXPRESSION = new Regex("^[-+]?[\\d]+$");
-    public static bool isInteger(String? text)
+    public static bool isInteger(string? text)
     {
         if (String.IsNullOrEmpty(text))
             return false;
@@ -129,7 +129,7 @@ public static class TextUtil
     }
         
     private static readonly Regex DECIMAL_ONLY_EXPRESSION = new Regex("^[-+]?[\\d]+([.][\\d]*)?$");
-    public static bool isDecimal(String? text)
+    public static bool isDecimal(string? text)
     {
         if (String.IsNullOrEmpty(text))
             return false;
@@ -138,7 +138,7 @@ public static class TextUtil
     }
 
     private static readonly Regex LETTERS_ONLY_EXPRESSION = new Regex("^[a-zA-Z]+$");
-    public static bool isAllLetters(String? text)
+    public static bool isAllLetters(string? text)
     {
         if (String.IsNullOrEmpty(text))
             return false;
@@ -148,7 +148,7 @@ public static class TextUtil
 
 
     private static readonly Regex LETTER_ANY_EXPRESSION = new Regex("[a-zA-Z]");
-    public static bool hasAnyLetters(String? text)
+    public static bool hasAnyLetters(string? text)
     {
         if (String.IsNullOrEmpty(text))
             return false;
@@ -157,7 +157,7 @@ public static class TextUtil
     }
 
     private static readonly Regex SPECIAL_ANY_EXPRESSION = new Regex("[^0-9a-zA-Z\\s]");
-    public static bool hasAnySpecial(String? text)
+    public static bool hasAnySpecial(string? text)
     {
         if (String.IsNullOrEmpty(text))
             return false;
@@ -165,7 +165,7 @@ public static class TextUtil
         return SPECIAL_ANY_EXPRESSION.IsMatch(text);            
     }
 
-    public static bool hasConsecutiveCharacters(String? text, int threshold = 2)
+    public static bool hasConsecutiveCharacters(string? text, int threshold = 2)
     {
         if (String.IsNullOrEmpty(text))
             return false;
@@ -192,7 +192,7 @@ public static class TextUtil
     }        
         
     private static readonly Regex CHARACTER_ONLY_EXPRESSION = new Regex("^[a-zA-Z]+$");
-    public static bool isAllCharacters(String? text)
+    public static bool isAllCharacters(string? text)
     {
         if (String.IsNullOrEmpty(text))
             return false;
@@ -201,7 +201,7 @@ public static class TextUtil
     }
         
     private static readonly Regex BOOLEAN_EXPRESSION = new Regex("^(yes)|(no)|(true)|(false)$", RegexOptions.IgnoreCase);
-    public static bool isBoolean(String? text)
+    public static bool isBoolean(string? text)
     {
         if (String.IsNullOrEmpty(text))
             return false;
@@ -210,7 +210,7 @@ public static class TextUtil
     }
 
     private static readonly Regex CHARACTER_ANY_EXPRESSION = new Regex("[a-zA-Z]");
-    public static bool hasAnyCharacters(String? text)
+    public static bool hasAnyCharacters(string? text)
     {
         if (String.IsNullOrEmpty(text))
             return false;
@@ -219,7 +219,7 @@ public static class TextUtil
     }
 
     private static readonly Regex NUMBER_ANY_EXPRESSION = new Regex("[\\d]");
-    public static bool hasAnyNumbers(String? text)
+    public static bool hasAnyNumbers(string? text)
     {
         if (String.IsNullOrEmpty(text))
             return false;
@@ -228,7 +228,7 @@ public static class TextUtil
     }
 
     private static readonly Regex WHITE_SPACE_ANY_EXPRESSION = new Regex("[\\s]");
-    public static bool hasAnyWhiteSpace(String? text)
+    public static bool hasAnyWhiteSpace(string? text)
     {
         if (String.IsNullOrEmpty(text))
             return false;
@@ -236,7 +236,7 @@ public static class TextUtil
         return WHITE_SPACE_ANY_EXPRESSION.IsMatch(text);
     }
 
-    public static int indexOfIgnoreCase(this String? value, String? toFind)
+    public static int indexOfIgnoreCase(this string? value, string? toFind)
     {
         if (value == null || toFind == null)
             return -1;
@@ -244,7 +244,7 @@ public static class TextUtil
         return value.IndexOf(toFind, StringComparison.CurrentCultureIgnoreCase);
     }
 
-    public static bool containsIgnoreCase(this String? value, String? toFind)
+    public static bool containsIgnoreCase(this string? value, string? toFind)
     {
         if (value == null || toFind == null)
             return false;
@@ -252,7 +252,7 @@ public static class TextUtil
         return value.IndexOf(toFind, StringComparison.CurrentCultureIgnoreCase) >= 0;
     }
 
-    public static bool startsWithIgnoreCase(this String? value, String? toFind)
+    public static bool startsWithIgnoreCase(this string? value, string? toFind)
     {
         if (value == null || toFind == null)
             return false;
@@ -260,7 +260,7 @@ public static class TextUtil
         return value.IndexOf(toFind, StringComparison.CurrentCultureIgnoreCase) == 0;
     }
 
-    public static bool endsWithIgnoreCase(this String? value, String? toFind)
+    public static bool endsWithIgnoreCase(this string? value, string? toFind)
     {
         if (value == null || toFind == null)
             return false;
@@ -269,7 +269,7 @@ public static class TextUtil
         return index >= 0 && index == (value.Length - toFind.Length);
     }
 
-    public static String? findIgnoreCase(IEnumerable<String>? values, String? toMatch)
+    public static string? findIgnoreCase(IEnumerable<String>? values, string? toMatch)
     {
         if (values == null || toMatch == null)
             return null;
@@ -277,7 +277,7 @@ public static class TextUtil
         return values.FirstOrDefault(toCheck => toCheck.Equals(toMatch, StringComparison.CurrentCultureIgnoreCase));
     }
 
-    public static int findIndexIgnoreCase(List<String> values, String? toMatch)
+    public static int findIndexIgnoreCase(List<String> values, string? toMatch)
     {
         if (toMatch == null)
             return -1;
@@ -285,22 +285,22 @@ public static class TextUtil
         return values.FindIndex(toCheck => toCheck.Equals(toMatch, StringComparison.CurrentCultureIgnoreCase));
     }
         
-    public static String? toUpper(String? x)
+    public static string? toUpper(string? x)
     {
         return x?.ToUpper();
     }
 
-    public static String? trim(String? x)
+    public static string? trim(string? x)
     {
         return x?.Trim();
     }
 
-    public static int length(String? x)
+    public static int length(string? x)
     {
         return x?.Length ?? 0;
     }
 
-    public static bool isMixedCase(this String? x)
+    public static bool isMixedCase(this string? x)
     {
         if (x == null) 
             return false;
@@ -315,7 +315,7 @@ public static class TextUtil
         return lower > 0 && upper > 0;
     }
 
-    public static bool isUpperCase(this String? x)
+    public static bool isUpperCase(this string? x)
     {
         if (x == null) 
             return false;
@@ -330,7 +330,7 @@ public static class TextUtil
         return lower == 0 && upper > 0;
     }
 
-    public static String? truncNullable(this String? text, int maxLength)
+    public static string? truncNullable(this string? text, int maxLength)
     {
         if (text == null)
             return null;
@@ -346,7 +346,7 @@ public static class TextUtil
         return text.Substring(0, maxLength);
     }
 
-    public static String? truncRight(this String? text, int maxLength)
+    public static string? truncRight(this string? text, int maxLength)
     {
         if (text == null || text.Length <= maxLength)
             return text;
@@ -354,7 +354,7 @@ public static class TextUtil
         return text.Substring(text.Length-maxLength);
     }
 
-    public static String? truncAtWhitespace(String? text, int maxLength)
+    public static string? truncAtWhitespace(string? text, int maxLength)
     {
         if (text == null)
             return null;
@@ -377,7 +377,7 @@ public static class TextUtil
         return result.ToString();
     }
 
-    public static String? removeBeginning(String? source, String? beginning)
+    public static string? removeBeginning(string? source, string? beginning)
     {
         if (source == null || beginning == null || !source.StartsWith(beginning))
             return source;
@@ -385,7 +385,7 @@ public static class TextUtil
         return source.Substring(beginning.Length);
     }
 
-    public static String? removeEnding(String? source, String? ending)
+    public static string? removeEnding(string? source, string? ending)
     {
         if (source == null || ending == null || !source.EndsWith(ending))
             return source;
@@ -393,7 +393,7 @@ public static class TextUtil
         return source.Substring(0, source.Length - ending.Length);
     }
 
-    public static String? replaceEnding(String? source, String? oldEnding, String? newEnding)
+    public static string? replaceEnding(string? source, string? oldEnding, string? newEnding)
     {
         if (source == null || oldEnding == null || !source.EndsWith(oldEnding))
             return source;
@@ -402,7 +402,7 @@ public static class TextUtil
         return source.Substring(0, source.Length - oldEnding.Length) + newEnding;
     }
 
-    public static List<String> textToList(String? source, char delimiter = ',', bool trim = false)
+    public static List<String> textToList(string? source, char delimiter = ',', bool trim = false)
     {
         if (source == null)
             return new List<String>(0);
@@ -410,7 +410,7 @@ public static class TextUtil
         return source.Split(delimiter).Select(x => trim ? x.Trim() : x).ToList();
     }
 
-    public static String? textFromList(IEnumerable<String>? source, char delimiter = ',')
+    public static string? textFromList(IEnumerable<String>? source, char delimiter = ',')
     {
         if (source == null)
             return null;
@@ -418,7 +418,7 @@ public static class TextUtil
         return emptyAsNull(String.Join(delimiter.ToString(), source));
     }
 
-    public static String? replaceFirst(this String? input, String token, String? replacement = null)
+    public static string? replaceFirst(this string? input, String token, string? replacement = null)
     {
         if (String.IsNullOrEmpty(input))
             return null;
@@ -430,7 +430,7 @@ public static class TextUtil
         return String.Concat(input.Substring(0, index), replacement ?? "", input.Substring(index + token.Length));
     }
 
-    public static List<String> asList(this String? source)
+    public static List<String> asList(this string? source)
     {
         List<String> result = new List<String>();
         if (source != null)
@@ -438,19 +438,24 @@ public static class TextUtil
         return result;
     }
 
-    public static String? trimQuotes(this String? source)
+    public static string trimQuotes(this string source, char quote = '"')
+    {
+        int start = source[0] == quote ? 1 : 0;
+        int end = source[^1] == quote ? 1 : 0;
+        return source.Substring(start, Math.Max(0, source.Length-start-end));
+    }
+    
+    public static string? trimQuotesNullable(this string? source, char quote = '"')
     {
         if (String.IsNullOrEmpty(source))
             return source;
-
-        int start = source[0] == '"' ? 1 : 0;
-        int end = source[^1] == '"' ? 1 : 0;
-        return source.Substring(start, Math.Max(0, source.Length-start-end));
+        
+        return source.trimQuotes(quote);
     }
 
     private static readonly Regex DATE_LIKE_A = new Regex("^[\\d]{1,2}[-][\\d]{1,2}$");
     // Kludge to avoid excel from destroying date like text
-    public static String? protectedFromExcel(String? value)
+    public static string? protectedFromExcel(string? value)
     {
         if (value == null)
             return null;
@@ -476,7 +481,7 @@ public static class TextUtil
         }
     }
 
-    public static String? removeParentheses(String? input)
+    public static string? removeParentheses(string? input)
     {
         if (input == null)
             return input;
@@ -495,7 +500,7 @@ public static class TextUtil
         return input;
     }
 
-    public static String? removeParts(String? input, int startIndex, int endIndex)        // both indexes get removed
+    public static string? removeParts(string? input, int startIndex, int endIndex)        // both indexes get removed
     {
         if (String.IsNullOrEmpty(input))
             return input;
@@ -511,7 +516,7 @@ public static class TextUtil
         return result.ToString();
     }
 
-    public static Dictionary<char, int> countCharacters(String? source)
+    public static Dictionary<char, int> countCharacters(string? source)
     {
         Dictionary<char, int> counts = new Dictionary<char, int>();
         if (source == null)
@@ -527,7 +532,7 @@ public static class TextUtil
         return counts;
     }
 
-    public static String encodeSqlValue(String? source, bool quote = true, bool includePatternMatching = false, bool encodeNull = true)
+    public static String encodeSqlValue(string? source, bool quote = true, bool includePatternMatching = false, bool encodeNull = true)
     {
         if (encodeNull && source == null)
             return "null";
