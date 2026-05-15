@@ -151,4 +151,15 @@ public static class EnumUtil
 
         return (T) Enum.ToObject(typeof(T), m);
     }
+
+    public static bool areAllValid<T>(IEnumerable<T> source) where T : Enum
+    {
+        foreach (T toCheck in source)
+        {
+            if (!Enum.IsDefined(typeof(T), toCheck))
+                return false;
+        }
+
+        return true;
+    }
 }
