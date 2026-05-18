@@ -73,6 +73,17 @@ public static class ListUtil
         }
         list.Add(item);
     }    
+
+    /// <summary>
+    /// Adds item to list if it is not already present. 
+    /// </summary>
+    public static void addWhenMissing<T>(this List<T> list, T toAdd)
+    {
+        if (list.Contains(toAdd))
+            return;
+        
+        list.Add(toAdd);
+    }
     
     /// <summary>
     /// Creates a new list with all items that are not null. 

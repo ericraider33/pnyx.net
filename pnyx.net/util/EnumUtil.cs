@@ -152,6 +152,9 @@ public static class EnumUtil
         return (T) Enum.ToObject(typeof(T), m);
     }
 
+    /// <summary>
+    /// Returns true if all Enum values are defined as part of the Type. Use to validate when deserializing enum values. 
+    /// </summary>
     public static bool areAllValid<T>(IEnumerable<T> source) where T : Enum
     {
         foreach (T toCheck in source)
@@ -161,5 +164,13 @@ public static class EnumUtil
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Returns true if Enum value is defined as part of the Type. Use to validate when deserializing enum values. 
+    /// </summary>
+    public static bool isValid<T>(T toCheck) where T : Enum
+    {
+        return Enum.IsDefined(typeof(T), toCheck);
     }
 }

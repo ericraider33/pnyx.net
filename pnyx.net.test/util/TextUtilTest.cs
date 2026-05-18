@@ -219,7 +219,7 @@ public class TextUtilTest
     [Fact]
     public void TrimQuotes()
     {
-        Assert.Null(TextUtil.trimQuotes(null));
+        Assert.Null(TextUtil.trimQuotesNullable(null));
         Assert.Equal("", TextUtil.trimQuotes(""));
         Assert.Equal("", TextUtil.trimQuotes("\""));
         Assert.Equal("", TextUtil.trimQuotes("\"\""));
