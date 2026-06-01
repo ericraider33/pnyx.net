@@ -1215,7 +1215,7 @@ public class Pnyx : IAsyncDisposable
             
             IRowProcessor? rowDestination = null;
             if (output != null)
-                endRowConverter.buildRowDestination(streamInformation, output);
+                rowDestination = endRowConverter.buildRowDestination(streamInformation, output);
             
             if (rowDestination == null)
                 rowToLine();                    // converts to line, then falls through to (state == line)
