@@ -440,6 +440,9 @@ public static class TextUtil
 
     public static string trimQuotes(this string source, char quote = '"')
     {
+        if (source.Length == 0)
+            return source;
+        
         int start = source[0] == quote ? 1 : 0;
         int end = source[^1] == quote ? 1 : 0;
         return source.Substring(start, Math.Max(0, source.Length-start-end));
