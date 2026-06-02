@@ -125,7 +125,11 @@ public static class CasingExtensions
         return camelToSpace(text);
     }
 
-    public static string camelToSpace(this string text)
+    /// <summary>
+    /// Inserts spaces into the passed text, assuming it is camel case formatted. Further, 
+    /// the first character is always converted to upper case, to accomodate lower-case camel.
+    /// </summary>
+    public static string camelToSpace(this string text, bool capitalizeFirst = false)
     {
         StringBuilder result = new StringBuilder(text.Length + 10);
         CamelCharType lastType = CamelCharType.Other;
@@ -139,7 +143,11 @@ public static class CasingExtensions
                 result.Append(' ');
             }
 
-            result.Append(c);
+            if (result.Length == 0 && capitalizeFirst)
+                result.Append(Char.ToUpper(c));
+            else
+                result.Append(c);
+            
             lastType = currentType;
         }
 
