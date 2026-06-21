@@ -90,6 +90,8 @@ public readonly struct LocalTimestamp : IComparable<LocalTimestamp>, IFormattabl
         String result = withZ.Replace("Z", offsetAsText);
         return result;
     }
+    
+    public string toIso8601Timestamp() => local.toIso8601Timestamp();
 
     public bool Equals(LocalTimestamp other)
     {
