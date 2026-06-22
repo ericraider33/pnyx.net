@@ -6,6 +6,8 @@ namespace pnyx.net.util.dates;
 
 public static class DateOnlyUtil
 {
+    public static readonly DateOnly MIN_1900 = new DateOnly(1900, 1, 1); 
+    
     public static DateTime toDateTime(this DateOnly date, TimeSpan? timeOfDay = null)
     {
         TimeOnly to = TimeOnly.FromTimeSpan(timeOfDay ?? TimeSpan.Zero);
