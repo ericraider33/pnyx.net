@@ -88,7 +88,7 @@ public static class TextUtil
         return result.ToString();
     }
 
-    public static bool isEqualsIgnoreCase(string? a, string? b)
+    public static bool isEqualsIgnoreCase(this string? a, string? b)
     {
         if (a == null)
             return b == null;
