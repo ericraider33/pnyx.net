@@ -9,11 +9,11 @@ public class DateRange
     public DateTime? startDate { get; set; }
     public DateTime? endDate { get; set; }
     
-    public LocalRange toLocalRange(LocalDay today)
+    public LocalDayRange toLocalRange(LocalDay today)
     {
         LocalDay? startLocal = today.withTimeZoneNullable(startDate);
         LocalDay? endLocal = today.withTimeZoneNullable(endDate);
-        return LocalRange.build(type, today, startLocal, endLocal);
+        return LocalDayRange.build(type, today, startLocal, endLocal);
     }
     
     public static implicit operator DateRange(LocalRangeEnum type)
