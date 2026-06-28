@@ -100,4 +100,15 @@ public static class ListUtil
     {
         return args.Where(e => e != null).Cast<T>().ToList();
     }
+    
+    /// <summary>
+    /// Truncates list to specified count. If list is shorter than count, does nothing. The original list is modified. 
+    /// </summary>
+    public static void trunc<T>(this List<T> list, int count)
+    {
+        if (list.Count < count)
+            return;
+        
+        list.RemoveRange(count, list.Count - count);
+    }
 }
