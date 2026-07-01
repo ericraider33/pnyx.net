@@ -9,6 +9,9 @@ public class DateOnlyUtilTest
     [Fact]
     public void toString()
     {
+        DateOnly x = new DateOnly(2024, 5, 29);
+        Assert.Equal("5/29/2024", x.ToString());
+        
         TimeZoneInfo tz = TimeZoneName.Eastern.getTimeZoneInfo();
         LocalDay ld = LocalDay.fromLocal(tz, new DateTime(2024, 5, 29));
         Assert.Equal("2024-05-29", ld.ToString());
@@ -19,5 +22,12 @@ public class DateOnlyUtilTest
     {
         DateOnly x = new DateOnly(2024, 5, 29);
         Assert.Equal("5/29/2024", x.toMDYYYY());
+    }
+    
+    [Fact]
+    public void toIso8601Date()
+    {
+        DateOnly x = new DateOnly(2024, 5, 29);
+        Assert.Equal("2024-05-29", x.toIso8601Date());
     }
 }
