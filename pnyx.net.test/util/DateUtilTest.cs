@@ -13,6 +13,7 @@ public class DateUtilTest
         DateTime x = DateUtil.parseIso8601Timestamp(text);
         Assert.Equal("5/29/2024 7:08:09 AM", x.ToString());
         Assert.Equal(123, x.Millisecond);
+        Assert.Equal(DateTimeKind.Utc, x.Kind);
     }
 
     [Theory]
@@ -24,6 +25,7 @@ public class DateUtilTest
     {
         DateTime x = DateUtil.parseIso8601Timestamp(input);
         Assert.Equal(expected, x.ToString());
+        Assert.Equal(DateTimeKind.Utc, x.Kind);
     }
         
     [Fact]
@@ -33,6 +35,7 @@ public class DateUtilTest
         DateTime x = DateUtil.parseIso8601Timestamp(text);
         Assert.Equal("5/29/2024 7:08:09 AM", x.ToString());
         Assert.Equal(123, x.Millisecond);
+        Assert.Equal(DateTimeKind.Utc, x.Kind);
     }
     
     [Fact]
@@ -42,6 +45,7 @@ public class DateUtilTest
         DateTime x = DateUtil.parseIso8601Timestamp(text);
         Assert.Equal("5/29/2024 7:08:09 AM", x.ToString());
         Assert.Equal(123, x.Millisecond);
+        Assert.Equal(DateTimeKind.Utc, x.Kind);
     }
 
     [Fact]
@@ -51,6 +55,7 @@ public class DateUtilTest
         DateTime x = DateUtil.parseIso8601Timestamp(text);
         Assert.Equal("5/29/2024 7:08:09 AM", x.ToString());
         Assert.Equal(0, x.Millisecond);
+        Assert.Equal(DateTimeKind.Utc, x.Kind);
     }
 
     [Fact]
@@ -59,6 +64,7 @@ public class DateUtilTest
         string text = "2024-05-29";
         DateTime x = DateUtil.parseIso8601Timestamp(text);
         Assert.Equal("5/29/2024 12:00:00 AM", x.ToString());
+        Assert.Equal(DateTimeKind.Utc, x.Kind);
     }
     
     [Theory]

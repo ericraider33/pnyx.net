@@ -29,14 +29,14 @@ public static class DateUtil
         return date.AddDays(weeks * 7);
     }
     
-    public static DateTime? parseNullable(String format, String? text)
+    public static DateTime? parseNullable(String format, String? text, DateTimeStyles style = DateTimeStyles.None)
     {
         if (String.IsNullOrEmpty(text))
             return null;
 
         try
         {
-            return DateTime.ParseExact(text, format, CultureInfo.CurrentCulture);
+            return DateTime.ParseExact(text, format, CultureInfo.CurrentCulture, style);
         }
         catch (Exception)
         {
@@ -139,12 +139,12 @@ public static class DateUtil
     /// <returns>DateTime in UTC</returns>
     public static DateTime parseIso8601Timestamp(String source)
     {
-        return parseExact(getIso8601Format(source), source, style: DateTimeStyles.AdjustToUniversal);
+        return parseExact(getIso8601Format(source), source, style: DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal);
     }
 
     public static DateTime? parseIso8601TimestampNullable(String? source)
     {
-        return parseNullable(getIso8601Format(source), source);
+        return parseNullable(getIso8601Format(source), source, style: DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal);
     }
 
     public static String? toIso8601Date(this DateTime? source)
