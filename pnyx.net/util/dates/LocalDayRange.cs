@@ -1,8 +1,10 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace pnyx.net.util.dates;
 
-public class LocalDayRange : IUtcRange
+public class LocalDayRange : IUtcRange, IEnumerable<LocalDay>
 {
     public LocalDay start { get; }             // inclusive
     public LocalDay end { get;  }              // exclusive
@@ -17,6 +19,24 @@ public class LocalDayRange : IUtcRange
 
     public UtcDate startUtcDate => start.utc;
     public UtcDate endUtcDate => end.utc;
+
+    IEnumerator<LocalDay> IEnumerable<LocalDay>.GetEnumerator() => getEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => getEnumerator();
+
+    public IEnumerator<LocalDay> getEnumerator()
+    {
+        LocalDay current = start;
+        if (current >= end)
+        {
+            yield break;
+        }
+        
+        do
+        {
+            yield return current;
+            current = current.addDays(1);
+        } while (current < end);
+    }
     
 
     /// <summary>
