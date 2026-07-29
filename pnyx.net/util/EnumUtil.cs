@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using pnyx.net.util.dropdown;
 
 namespace pnyx.net.util;
 
@@ -172,5 +173,30 @@ public static class EnumUtil
     public static bool isValid<T>(T toCheck) where T : Enum
     {
         return Enum.IsDefined(typeof(T), toCheck);
+    }
+    
+    /// <summary>
+    /// Creates a dropdown list from an enum type. Default behavior excludes zero value, and orders output by text. 
+    /// </summary>
+    public static List<IntDropdownItem> toDropdownList<T>
+        (
+            T[]? toIgnore = null,
+            bool includeZero = false,
+            bool orderByText = true
+        ) where T : Enum
+    {
+        List<T> values;
+        if (toIgnore != null)
+            values = EnumUtil.valuesAsListIgnore<T>(toIgnore);
+        else
+            values = EnumUtil.valuesAsList<T>();
+        
+        IEnumerable<IntDropdownItem> query = values.Select(x => IntDropdownItem.fromEnum(x));
+        if (!includeZero)
+            query = query.Where(x => x.value > 0);
+        if (orderByText)
+            query = query.OrderBy(x => x.text);
+                
+        return query.ToList();
     }
 }
