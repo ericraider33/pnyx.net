@@ -108,7 +108,7 @@ public abstract class BeforeAfterBase<T> where T : class
     private void updateLine(bool keep)
     {
         int index = getIndex(lineNumber);
-        include[index] = include[index] || keep;                    // value may already be set from a previous entry with AFTER set
+        include[index] = include[index] || keep;                    // value may already be set from a previous entry AFTER set
 
         if (!keep)
             return;
