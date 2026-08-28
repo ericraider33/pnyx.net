@@ -88,15 +88,44 @@ public readonly struct UtcDate : IComparable<UtcDate>, IFormattable, IUtcCapable
     {
         return new UtcDate(utc + duration);
     }
-    
-    public UtcDate addDays(int x)
+
+    public UtcDate addSeconds(int seconds)
     {
-        return new UtcDate(utc.AddDays(x));
+        return new UtcDate(utc.AddSeconds(seconds));
+    }
+
+    public UtcDate addMinutes(int minutes, int seconds = 0)
+    {
+        DateTime toSet = utc.AddMinutes(minutes);
+        if (seconds > 0) toSet = toSet.AddSeconds(seconds);
+        return new UtcDate(toSet);
+    }
+
+    public UtcDate addHours(int hours, int minutes = 0, int seconds = 0)
+    {
+        DateTime toSet = utc.AddHours(hours);
+        if (minutes > 0) toSet = toSet.AddMinutes(minutes);
+        if (seconds > 0) toSet = toSet.AddSeconds(seconds);
+        return new UtcDate(toSet);
+    }
+    
+    public UtcDate addDays(int days, int hours = 0, int minutes = 0, int seconds = 0)
+    {
+        DateTime toSet = utc.AddDays(days);
+        if (hours > 0) toSet = toSet.AddHours(hours);
+        if (minutes > 0) toSet = toSet.AddMinutes(minutes);
+        if (seconds > 0) toSet = toSet.AddSeconds(seconds);
+        return new UtcDate(toSet);
     }
 
     public UtcDate addWeeks(int x)
     {
         return new UtcDate(utc.AddDays(x * 7));
+    }
+    
+    public UtcDate addMonths(int months)
+    {
+        return new UtcDate(utc.AddMonths(months));
     }
 
     public bool Equals(UtcDate other)
