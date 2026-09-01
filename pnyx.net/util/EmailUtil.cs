@@ -1,6 +1,7 @@
 using System;
 using System.Net.Mail;
 using System.Text.RegularExpressions;
+using pnyx.net.errors;
 
 namespace pnyx.net.util;
 
@@ -76,5 +77,114 @@ public class EmailUtil
         {
             return false;
         }
+    }
+    
+    /// <summary>
+    /// Generates an RFC 5322 compliant email address, with optional title  
+    /// </summary>
+    public static string? formatRfc5322EmailAddressNullable(string? emailAddress, string? title = null)
+    {
+        if (string.IsNullOrEmpty(emailAddress))
+            return null;
+
+        return formatRfc5322EmailAddress(emailAddress, title);
+    }   
+    
+    /// <summary>
+    /// Generates an RFC 5322 compliant email address, with optional title  
+    /// </summary>
+    public static string formatRfc5322EmailAddress(string emailAddress, string? title = null)
+    {
+        if (string.IsNullOrEmpty(emailAddress))
+            throw new InvalidArgumentException("Email address cannot be null or empty");
+
+        if (string.IsNullOrWhiteSpace(title))
+            return emailAddress;
+
+        // Escape special characters and wrap in quotes if needed
+        string displayName = title.Trim();
+
+        // Check if title contains special characters that require quoting
+        bool needsQuoting = displayName.Contains('"') || displayName.Contains('\\') || 
+            displayName.Contains(',') || displayName.Contains(';') ||
+            displayName.Contains('<') || displayName.Contains('>') ||
+            displayName.Contains('@');
+
+        if (needsQuoting)
+        {
+            // Escape backslashes and quotes
+            displayName = displayName.Replace("\\", "\\\\").Replace("\"", "\\\"");
+            displayName = $"\"{displayName}\"";
+        }
+
+        return $"{displayName} <{emailAddress}>";
+    }
+
+    /// <summary>
+    /// Parse the title and email address from an RFC 5322 formatted email address  
+    /// </summary>
+    public static EmailPair? parseRfc5322EmailAddressNullable(string? emailAddress)
+    {
+        if (string.IsNullOrEmpty(emailAddress))
+            return null;
+
+        try
+        {
+            return parseRfc5322EmailAddress(emailAddress);
+        }
+        catch (Exception err)
+        {
+            return null;
+        }
+    }
+    
+    /// <summary>
+    /// Parse the title and email address from an RFC 5322 formatted email address  
+    /// </summary>
+    public static EmailPair parseRfc5322EmailAddress(string emailAddress)
+    {
+        if (string.IsNullOrEmpty(emailAddress))
+            throw new InvalidArgumentException("Email address cannot be null or empty");
+
+        emailAddress = emailAddress.Trim();
+
+        // Check if it's a simple email address without display name
+        if (!emailAddress.Contains('<'))
+        {
+            if (!isEmailAddress(emailAddress))
+                throw new InvalidArgumentException("Invalid email format: " + emailAddress);
+
+            return new EmailPair(emailAddress);
+        }
+
+        // Extract display name and email parts
+        int angleStart = emailAddress.IndexOf('<');
+        int angleEnd = emailAddress.IndexOf('>');
+
+        if (angleEnd == -1 || angleEnd < angleStart)
+            throw new InvalidArgumentException("Invalid RFC 5322 email format");
+
+        string displayNamePart = emailAddress.Substring(0, angleStart).Trim();
+        string emailPart = emailAddress.Substring(angleStart + 1, angleEnd - angleStart - 1).Trim();
+        if (!isEmailAddress(emailPart))
+            throw new InvalidArgumentException("Invalid email format: " + emailPart);
+
+        // Process display name - remove quotes and unescape
+        string? displayName = null;
+        if (!string.IsNullOrWhiteSpace(displayNamePart))
+        {
+            displayName = displayNamePart;
+
+            // Remove surrounding quotes if present
+            if (displayName.StartsWith("\"") && displayName.EndsWith("\"") && displayName.Length >= 2)
+            {
+                displayName = displayName.Substring(1, displayName.Length - 2);
+                
+                // Unescape escaped characters
+                displayName = displayName.Replace("\\\"", "\"").Replace("\\\\", "\\");
+            }
+        }
+
+        return new EmailPair(emailPart, displayName);
     }
 }

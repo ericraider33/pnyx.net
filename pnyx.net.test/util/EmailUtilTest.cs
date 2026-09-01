@@ -61,5 +61,33 @@ public class EmailUtilTest
         Assert.Null(EmailUtil.validateAndRepair("NOMAIL@YAHOO.COM"));
         Assert.Null(EmailUtil.validateAndRepair("nomemail@yahoo.com"));
     }
+    
+    [Fact]
+    public void testParseRfc5322EmailAddress()
+    {
+        Assert.Equal(new EmailPair("john.doe@example.com"), EmailUtil.parseRfc5322EmailAddress("john.doe@example.com"));
+        Assert.Equal(new EmailPair("john.doe@example.com", "John Doe"), EmailUtil.parseRfc5322EmailAddress("John Doe <john.doe@example.com>"));
+        Assert.Equal(new EmailPair("john.doe@example.com", "John Doe"), EmailUtil.parseRfc5322EmailAddress("\"John Doe\" <john.doe@example.com>"));
+        Assert.Equal(new EmailPair("support@company.com", "Support Team"), EmailUtil.parseRfc5322EmailAddress("Support Team <support@company.com>"));
+        Assert.Equal(new EmailPair("test@test.com"), EmailUtil.parseRfc5322EmailAddress("<test@test.com>"));
+        Assert.Null(EmailUtil.parseRfc5322EmailAddressNullable("Invalid Email"));
+        Assert.Null(EmailUtil.parseRfc5322EmailAddressNullable(""));
+        Assert.Null(EmailUtil.parseRfc5322EmailAddressNullable(null));
+    }
+
+    [Fact]
+    public void testFormatRfc5322EmailAddress()
+    {
+        Assert.Equal("john.doe@example.com", EmailUtil.formatRfc5322EmailAddress("john.doe@example.com", null));
+        Assert.Equal("John Doe <john.doe@example.com>", EmailUtil.formatRfc5322EmailAddress("john.doe@example.com", "John Doe"));
+        Assert.Equal("\"John Doe, Jr.\" <john.doe@example.com>", EmailUtil.formatRfc5322EmailAddress("john.doe@example.com", "John Doe, Jr."));
+        Assert.Equal("support@company.com", EmailUtil.formatRfc5322EmailAddress("support@company.com", ""));
+        Assert.Equal("Support <support@company.com>", EmailUtil.formatRfc5322EmailAddress("support@company.com", "Support"));
+        Assert.Equal("\"John\\\\Doe\" <john.doe@example.com>", EmailUtil.formatRfc5322EmailAddress("john.doe@example.com", "John\\Doe"));
+        Assert.Null(EmailUtil.formatRfc5322EmailAddressNullable(null, "John Doe"));
+        Assert.Null(EmailUtil.formatRfc5322EmailAddressNullable("", "John Doe"));
+    }
+
+
         
 }
