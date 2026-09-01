@@ -132,7 +132,7 @@ public class EmailUtil
         {
             return parseRfc5322EmailAddress(emailAddress);
         }
-        catch (Exception err)
+        catch (Exception)
         {
             return null;
         }
