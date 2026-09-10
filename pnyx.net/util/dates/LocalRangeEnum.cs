@@ -1,5 +1,13 @@
 namespace pnyx.net.util.dates;
 
+/// <summary>
+/// Type used for capturing type for Typescript definitions
+/// </summary>
+public class LocalRangePlaceholder
+{
+    public LocalRangeEnum value { get; set; }
+}
+
 public enum LocalRangeEnum
 {
     Unspecified = 0,
