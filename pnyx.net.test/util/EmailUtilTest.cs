@@ -72,7 +72,7 @@ public class EmailUtilTest
         Assert.Equal(new EmailPair("test@test.com"), EmailUtil.parseRfc5322EmailAddress("<test@test.com>"));
         Assert.Null(EmailUtil.parseRfc5322EmailAddressNullable("Invalid Email"));
         Assert.Null(EmailUtil.parseRfc5322EmailAddressNullable(""));
-        Assert.Null(EmailUtil.parseRfc5322EmailAddressNullable(null));
+        Assert.Null(EmailUtil.parseRfc5322EmailAddressNullable((string?)null));
     }
 
     [Fact]

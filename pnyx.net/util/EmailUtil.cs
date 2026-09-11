@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Mail;
 using System.Text.RegularExpressions;
 using pnyx.net.errors;
@@ -186,5 +188,28 @@ public class EmailUtil
         }
 
         return new EmailPair(emailPart, displayName);
+    }
+
+    /// <summary>
+    /// Parses a list of RFC 5322 email addresses.
+    /// </summary>
+    public static List<EmailPair> parseRfc5322EmailAddress(List<string> emailAddresses)
+    {
+        return emailAddresses.Select(parseRfc5322EmailAddress).ToList();
+    }
+
+    /// <summary>
+    /// Parses a list of RFC 5322 email addresses.
+    /// </summary>
+    public static List<EmailPair>? parseRfc5322EmailAddressNullable(List<string>? emailAddresses)
+    {
+        if (emailAddresses == null)
+            return null;
+        
+        return emailAddresses
+            .Select(parseRfc5322EmailAddressNullable)
+            .Where(x => x != null)
+            .Cast<EmailPair>()
+            .ToList();
     }
 }
