@@ -199,4 +199,9 @@ public static class EnumUtil
                 
         return query.ToList();
     }
+    
+    public static List<IntDropdownItem> asDropdownList<T>(params T[] values) where T : Enum
+    {
+        return IntDropdownItem.fromEnumList(values);
+    }
 }
