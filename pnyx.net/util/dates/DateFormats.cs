@@ -13,5 +13,6 @@ public class DateFormats
     public const string yyyy_mm_dd = "yyyy-MM-dd";
 
     public const string m_d_yyyy_time_ampm = "M/d/yyyy hh:mm tt";
+    public const string time_ampm = "h:mm tt";
     
 }
