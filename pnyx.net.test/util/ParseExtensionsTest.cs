@@ -30,8 +30,8 @@ public class ParseExtensionsTest
 
         String actualText = String.Join(",", list);
         String expectedText = String.Join(",", expected);
-        Console.WriteLine("Source: {0}", actualText);
-        Console.WriteLine("Expect: {0}", expectedText);
+        // Console.WriteLine("Source: {0}", actualText);
+        // Console.WriteLine("Expect: {0}", expectedText);
         Assert.Equal(expectedText, actualText);
     }
 
