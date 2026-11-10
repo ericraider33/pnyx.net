@@ -164,6 +164,14 @@ public static class DateUtil
     {
         return source.ToString(FORMAT_ISO_8601_TIMESTAMP);
     }
+    
+    public static String? toIso8601Timestamp(this DateTime? source)
+    {
+        if (source == null)
+            return null;
+        
+        return source.Value.ToString(FORMAT_ISO_8601_TIMESTAMP);
+    }
 
     public static bool betweenAnd(DateTime date, DateTime startDate, DateTime endDate)
     {
