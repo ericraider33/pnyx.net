@@ -455,6 +455,14 @@ public static class TextUtil
         
         return source.trimQuotes(quote);
     }
+    
+    public static string assureFirstChar(this string source, char firstChar = '"')
+    {
+        if (source.StartsWith(firstChar))
+            return source;
+
+        return firstChar + source;
+    }
 
     private static readonly Regex DATE_LIKE_A = new Regex("^[\\d]{1,2}[-][\\d]{1,2}$");
     // Kludge to avoid excel from destroying date like text
