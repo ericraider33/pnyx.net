@@ -110,7 +110,12 @@ public readonly struct LocalDay : IComparable<LocalDay>, IFormattable, IUtcCapab
     {
         return local.toIso8601Date();
     }
-        
+
+    public string toMDYYYY()
+    {
+        return local.toMDYYYY();
+    }
+    
     public static LocalDay parse(String text, TimeZoneInfo? timeZone = null)
     {
         DateTime asDate = DateUtil.parseIso8601Date(text);
