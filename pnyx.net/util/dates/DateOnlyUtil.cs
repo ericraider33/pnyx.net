@@ -56,6 +56,11 @@ public static class DateOnlyUtil
     {
         return x.ToString(DateUtil.FORMAT_MDYYYY);
     }
+    
+    public static string toMonthTextAndYear(this DateOnly x)
+    {
+        return x.ToString(DateFormats.MonthTextAndYear);
+    }
 
     public static String? toIso8601Date(this DateOnly? source)
     {
